@@ -24,11 +24,25 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      # Step 4: Build APK
+      # Step 4: Decode and set up keystore
+      - name: Decode and set up keystore
+        env:
+          KEYSTORE_FILE: ${{ secrets.KEYSTORE_FILE }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          echo "$KEYSTORE_FILE" | base64 --decode > android/app/my-release-key.jks
+          echo "storePassword=$KEYSTORE_PASSWORD" >> android/key.properties
+          echo "keyAlias=$KEY_ALIAS" >> android/key.properties
+          echo "keyPassword=$KEY_PASSWORD" >> android/key.properties
+          echo "storeFile=android/app/my-release-key.jks" >> android/key.properties
+
+      # Step 5: Build APK
       - name: Build APK
         run: flutter build apk --release
 
-      # Step 5: Upload APK to GitHub Release
+      # Step 6: Upload APK to GitHub Release
       - name: Create GitHub Release
         id: create_release
         uses: actions/create-release@v1
@@ -40,7 +54,7 @@ jobs:
           draft: false
           prerelease: false
 
-      # Step 6: Upload APK to the release
+      # Step 7: Upload APK to the release
       - name: Upload APK to Release
         uses: actions/upload-release-asset@v1
         env:
