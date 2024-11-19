@@ -32,11 +32,11 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          echo "$KEYSTORE_FILE" | base64 --decode > ../app/my-release-key.jks
-          echo "storePassword=$KEYSTORE_PASSWORD" >> ../key.properties
-          echo "keyAlias=$KEY_ALIAS" >> ../key.properties
-          echo "keyPassword=$KEY_PASSWORD" >> ../key.properties
-          echo "storeFile=../app/my-release-key.jks" >> ../key.properties
+          echo "$KEYSTORE_FILE" | base64 --decode > android/app/my-release-key.jks
+          echo "storePassword=$KEYSTORE_PASSWORD" >> android/key.properties
+          echo "keyAlias=$KEY_ALIAS" >> android/key.properties
+          echo "keyPassword=$KEY_PASSWORD" >> android/key.properties
+          echo "storeFile=android/app/my-release-key.jks" >> android/key.properties
 
       # Step 5: Build APK
       - name: Build APK
