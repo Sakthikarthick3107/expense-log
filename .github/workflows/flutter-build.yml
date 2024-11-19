@@ -36,7 +36,7 @@ jobs:
           echo "storePassword=$KEYSTORE_PASSWORD" >> android/key.properties
           echo "keyAlias=$KEY_ALIAS" >> android/key.properties
           echo "keyPassword=$KEY_PASSWORD" >> android/key.properties
-          echo "storeFile=android/app/my-release-key.jks" >> android/key.properties
+          echo "storeFile=../app/my-release-key.jks" >> android/key.properties
 
       # Step 5: Build APK
       - name: Build APK
