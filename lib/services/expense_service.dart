@@ -112,27 +112,44 @@ class ExpenseService{
 
             }
         }
-        else if(metricBy == 'By day'){
+        else if (metricBy == 'By day') {
             UiService uiService = UiService();
             Map<DateTime, double> tempMetricsData = {DateTime(0): 0.0};
+
+            // Loop through expenses between start and end date
             for (var expense in expenses.where((exp) => exp.date.isAfter(startDate) && exp.date.isBefore(endDate.add(Duration(days: 1))))) {
                 DateTime day = expense.date;
+
+                // Update daily total for this specific date
                 tempMetricsData[day] = (tempMetricsData[day] ?? 0.0) + expense.price;
                 tempMetricsData[DateTime(0)] = (tempMetricsData[DateTime(0)] ?? 0.0) + expense.price;
             }
+
+            // Sort the dates
             List<DateTime> sortedDays = tempMetricsData.keys.toList()
-                ..remove(DateTime(0));
+                ..remove(DateTime(0)); // Remove the placeholder date
             sortedDays.sort();
 
+            // Initialize sorted metrics with the 'Total' key
             Map<String, double> sortedMetricsData = {'Total': 0.0};
 
+            // Loop through the sorted days and update the sortedMetricsData
             for (DateTime day in sortedDays) {
                 String dayString = uiService.displayDay(day);
+
+                // Add the daily total to the sorted metrics data
                 sortedMetricsData[dayString] = tempMetricsData[day]!;
+
+                // Add to the overall total
+                sortedMetricsData['Total'] = (sortedMetricsData['Total'] ?? 0.0) + tempMetricsData[day]!;
             }
 
+            // Set the final metric data
             metricData = sortedMetricsData;
         }
+
+        return metricData;
+
 
 
         return metricData;
