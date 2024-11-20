@@ -20,4 +20,11 @@ class ExpenseType{
     required this.name,
     this.description
     });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'description': description,
+    };
+  }
 }

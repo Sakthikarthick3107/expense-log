@@ -2,6 +2,7 @@ import 'package:expense_log/models/expense.dart';
 import 'package:expense_log/models/expense2.dart';
 import 'package:expense_log/models/expense_type.dart';
 import 'package:expense_log/services/settings_service.dart';
+import 'package:expense_log/services/ui_service.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
@@ -69,40 +70,71 @@ class ExpenseService{
        return expenseOfTheDate.fold(0.0 , (total,expense) => total +expense.price);
     }
 
-    Map<String,double> getMetrics(String duration){
+    Map<String,double> getMetrics(String duration , String metricBy){
         final expenseTypes = getExpenseTypes();
         final expenses = getExpenses();
-        Map<String, double> metricByType = {'Total': 0.0};
+        Map<String, double> metricData = {'Total': 0.0};
         DateTime now = DateTime.now();
         DateTime startDate = DateTime(now.year,now.month,now.day);
+        DateTime endDate = now;
 
         switch(duration){
             case 'This week':
-                startDate = startDate.subtract(Duration(days: now.weekday - 1));
+                startDate = startDate.subtract(Duration(days: now.weekday % 7));
+                endDate = startDate.add(Duration(days: 6));
                 break;
             case 'Last week':
-                startDate = startDate.subtract(Duration(days: now.weekday + 6 ));
+                startDate = startDate.subtract(Duration(days: (now.weekday + 6) % 7 + 7 ));
+                endDate = startDate.add(Duration(days: 6));
                 break;
             case 'This month':
                 startDate = DateTime(now.year , now.month ,1);
+                endDate = DateTime(now.year, now.month + 1, 0);
                 break;
             case 'Last month':
                 startDate = DateTime(now.year , now.month - 1 ,1);
+                endDate = DateTime(now.year, now.month, 0);
                 break;
         }
 
-        for(var expenseType in expenseTypes){
-            double total = expenses.where((expense) => 
+        if(metricBy == 'By type'){
+            for(var expenseType in expenseTypes){
+                double total = expenses.where((expense) =>
                 expense.expenseType.id == expenseType.id &&
-                expense.date.isAfter(startDate)
+                    expense.date.isAfter(startDate) &&
+                    expense.date.isBefore(endDate.add(Duration(days: 1)))
                 ).fold(0.0,(sum,expense) => sum + expense.price);
-            if(total != 0){
-                metricByType[expenseType.name] = total;
-                metricByType['Total'] = (metricByType['Total'] ?? 0.0) + total;
+                if(total != 0){
+                    metricData[expenseType.name] = total;
+                    metricData['Total'] = (metricData['Total'] ?? 0.0) + total;
+                }
+
+            }
+        }
+        else if(metricBy == 'By day'){
+            UiService uiService = UiService();
+            Map<DateTime, double> tempMetricsData = {DateTime(0): 0.0};
+            for (var expense in expenses.where((exp) => exp.date.isAfter(startDate) && exp.date.isBefore(endDate.add(Duration(days: 1))))) {
+                DateTime day = expense.date;
+                tempMetricsData[day] = (tempMetricsData[day] ?? 0.0) + expense.price;
+                tempMetricsData[DateTime(0)] = (tempMetricsData[DateTime(0)] ?? 0.0) + expense.price;
+            }
+            List<DateTime> sortedDays = tempMetricsData.keys.toList()
+                ..remove(DateTime(0));
+            sortedDays.sort();
+
+            Map<String, double> sortedMetricsData = {'Total': 0.0};
+
+            for (DateTime day in sortedDays) {
+                String dayString = uiService.displayDay(day);
+                sortedMetricsData[dayString] = tempMetricsData[day]!;
             }
 
+            metricData = sortedMetricsData;
         }
-        return metricByType;
+
+
+        return metricData;
     }
 
 }

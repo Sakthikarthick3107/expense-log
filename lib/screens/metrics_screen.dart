@@ -16,7 +16,9 @@ class MetricsScreen extends StatefulWidget {
 class _MetricsScreenState extends State<MetricsScreen> {
   late ExpenseService _expenseService;
   final List<String>  metricsDuration = ['This week','Last week','This month' , 'Last month'];
+  final List<String> metricsBy = ['By type' , 'By day'];
   final ValueNotifier<String> _selectedDurationNotifier = ValueNotifier<String>('This week');
+  final ValueNotifier<String> _selectedMetricBy = ValueNotifier<String>('By type');
   late Map<String,double> _metricsData = {};
 
 
@@ -24,10 +26,14 @@ class _MetricsScreenState extends State<MetricsScreen> {
   void initState(){
     super.initState();
     _expenseService = Provider.of<ExpenseService>(context , listen: false);
-    _metricsData = _expenseService.getMetrics(_selectedDurationNotifier.value);
-    _selectedDurationNotifier.addListener((){
-          _metricsData = _expenseService.getMetrics(_selectedDurationNotifier.value);
+    _metricsData = _expenseService.getMetrics(_selectedDurationNotifier.value , _selectedMetricBy.value);
 
+    _selectedDurationNotifier.addListener((){
+          _metricsData = _expenseService.getMetrics(_selectedDurationNotifier.value,_selectedMetricBy.value);
+
+    });
+    _selectedMetricBy.addListener((){
+        _metricsData = _expenseService.getMetrics(_selectedDurationNotifier.value,_selectedMetricBy.value);
     });
   }
 
@@ -39,16 +45,35 @@ class _MetricsScreenState extends State<MetricsScreen> {
         padding:const EdgeInsets.all(20),
         child: Column(
           children :[
+            Container(
+              child: const Text(
+                'Metrics',
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 24,
+
+                ),
+              ),
+            ),
              Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children:[
-                const Text(
-                'Metrics',
-                style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 24
+                DropdownButton<String>(
+                  value: _selectedMetricBy.value,
+
+                  onChanged: (String? newValue){
+                    setState(() {
+                      _selectedMetricBy.value = newValue!;
+                    });
+                  },
+                  items: metricsBy.map((String value){
+                    return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value)
+                    );
+
+                  }).toList(),
                 ),
-              ),
                 DropdownButton<String>(
                       value: _selectedDurationNotifier.value,
 

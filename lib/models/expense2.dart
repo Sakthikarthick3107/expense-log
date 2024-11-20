@@ -56,4 +56,17 @@ class Expense2{
         updated: updated ?? this.updated
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name':name,
+      'price': price,
+      'expenseType': expenseType.toJson(),
+      'date': date.toIso8601String() ,
+      'created': created.toIso8601String(),
+      'updated': updated?.toIso8601String()
+
+    };
+  }
 }
