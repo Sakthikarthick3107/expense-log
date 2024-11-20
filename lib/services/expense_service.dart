@@ -80,11 +80,11 @@ class ExpenseService{
 
         switch(duration){
             case 'This week':
-                startDate = startDate.subtract(Duration(days: now.weekday % 7));
+                startDate = startDate.subtract(Duration(days: startDate.weekday % 7));
                 endDate = startDate.add(Duration(days: 6));
                 break;
             case 'Last week':
-                startDate = startDate.subtract(Duration(days: (now.weekday + 6) % 7 + 7 ));
+                startDate = startDate.subtract(Duration(days: (startDate.weekday + 7) % 7 + 7));
                 endDate = startDate.add(Duration(days: 6));
                 break;
             case 'This month':
@@ -97,52 +97,64 @@ class ExpenseService{
                 break;
         }
 
-        if(metricBy == 'By type'){
+        if (metricBy == 'By type') {
             // setup
-            for(var expenseType in expenseTypes){
+            for (var expenseType in expenseTypes) {
                 double total = expenses.where((expense) =>
                 expense.expenseType.id == expenseType.id &&
-                    expense.date.isAfter(startDate) &&
-                    expense.date.isBefore(endDate.add(Duration(days: 1)))
-                ).fold(0.0,(sum,expense) => sum + expense.price);
-                if(total != 0){
+                    !expense.date.isBefore(startDate) &&  // Include start date
+                    expense.date.isBefore(endDate.add(Duration(days: 1)))) // Include end date
+                    .fold(0.0, (sum, expense) => sum + expense.price);
+
+                if (total != 0) {
                     metricData[expenseType.name] = total;
                     metricData['Total'] = (metricData['Total'] ?? 0.0) + total;
                 }
-
             }
         }
+
         else if (metricBy == 'By day') {
             UiService uiService = UiService();
-            Map<DateTime, double> tempMetricsData = {DateTime(0): 0.0};
 
-            // Loop through expenses between start and end date
+            // Temporary map to store total for each day, and a variable to accumulate the overall total.
+            Map<DateTime, double> tempMetricsData = {};
+            double overallTotal = 0.0; // Track the overall total separately
+
+            // Loop through all expenses that match the date range (startDate to endDate)
             for (var expense in expenses.where((exp) => exp.date.isAfter(startDate) && exp.date.isBefore(endDate.add(Duration(days: 1))))) {
                 DateTime day = expense.date;
 
-                // Update daily total for this specific date
+                // Accumulate the expense price for each day
                 tempMetricsData[day] = (tempMetricsData[day] ?? 0.0) + expense.price;
-                tempMetricsData[DateTime(0)] = (tempMetricsData[DateTime(0)] ?? 0.0) + expense.price;
+
+                // Accumulate the total for the entire period
+                overallTotal += expense.price;
             }
 
-            // Sort the dates
-            List<DateTime> sortedDays = tempMetricsData.keys.toList()
-                ..remove(DateTime(0)); // Remove the placeholder date
+            // Debug: Print tempMetricsData before sorting
+            print("Temp Metrics Data (Before Sorting): $tempMetricsData");
+
+            // Sort the days in ascending order
+            List<DateTime> sortedDays = tempMetricsData.keys.toList();
             sortedDays.sort();
 
-            // Initialize sorted metrics with the 'Total' key
-            Map<String, double> sortedMetricsData = {'Total': 0.0};
+            // Map to store the final sorted metrics with the 'Total' key
+            Map<String, double> sortedMetricsData = {'Total': overallTotal};
 
-            // Loop through the sorted days and update the sortedMetricsData
+            // Debug: Print sorted days
+            print("Sorted Days: $sortedDays");
+
+            // Loop through the sorted days and update the metrics data for each day
             for (DateTime day in sortedDays) {
                 String dayString = uiService.displayDay(day);
+                double dailyTotal = tempMetricsData[day]!;
 
                 // Add the daily total to the sorted metrics data
-                sortedMetricsData[dayString] = tempMetricsData[day]!;
-
-                // Add to the overall total
-                sortedMetricsData['Total'] = (sortedMetricsData['Total'] ?? 0.0) + tempMetricsData[day]!;
+                sortedMetricsData[dayString] = dailyTotal;
             }
+
+            // Debug: Print sorted metrics data
+            print("Sorted Metrics Data (After Processing): $sortedMetricsData");
 
             // Set the final metric data
             metricData = sortedMetricsData;
@@ -151,8 +163,6 @@ class ExpenseService{
         return metricData;
 
 
-
-        return metricData;
     }
 
 }
