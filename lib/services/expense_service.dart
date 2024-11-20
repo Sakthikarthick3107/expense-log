@@ -98,6 +98,7 @@ class ExpenseService{
         }
 
         if(metricBy == 'By type'){
+            // setup
             for(var expenseType in expenseTypes){
                 double total = expenses.where((expense) =>
                 expense.expenseType.id == expenseType.id &&
