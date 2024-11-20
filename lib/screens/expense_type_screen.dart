@@ -58,40 +58,43 @@ class _ExpenseTypeScreenState extends State<ExpenseTypeScreen> {
                     child: Text('No types'),
                   );
                 }
-                return GridView.builder(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 2,
-                    mainAxisSpacing: 4,
-                    childAspectRatio: 3
+                return Container(
+                  padding: EdgeInsets.all(10),
+                  child: GridView.builder(
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 2,
+                      mainAxisSpacing: 4,
+                      childAspectRatio: 3
 
-                  ),
-                  itemCount: expTypes.length,
-                  itemBuilder: (context, index) {
-                    final expType = expTypes[index];
-                    return GestureDetector(
-                      onTap: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => ExpenseTypeForm(
-                            type: expType,
-                          ),
-                        );
-                      },
-                      child: Card(
-                        elevation: 8,
-                        surfaceTintColor: Color(0xFFF0F8FF),
-                        color: Color(0xFFF0F8FF),
+                    ),
+                    itemCount: expTypes.length,
+                    itemBuilder: (context, index) {
+                      final expType = expTypes[index];
+                      return GestureDetector(
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) => ExpenseTypeForm(
+                              type: expType,
+                            ),
+                          );
+                        },
+                        child: Card(
+                          elevation: 8,
+                          surfaceTintColor: Color(0xFFF0F8FF),
+                          color: Color(0xFFF0F8FF),
 
-                        child: Center(
-                          child: Text(
-                            expType.name,
-                            style: const TextStyle(fontSize: 16),
+                          child: Center(
+                            child: Text(
+                              expType.name,
+                              style: const TextStyle(fontSize: 16),
+                            ),
                           ),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 );
 
               },
