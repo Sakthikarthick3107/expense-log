@@ -102,15 +102,18 @@ class _ExpenseTypeScreenState extends State<ExpenseTypeScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showDialog(context: context,
-              builder: (context) =>const ExpenseTypeForm()
-          );
-        },
-        child: const Icon(
-          Icons.add,
-          size: 30,
+      floatingActionButton: Container(
+        margin: EdgeInsets.symmetric(vertical: 50,horizontal: 30),
+        child: FloatingActionButton(
+          onPressed: () {
+            showDialog(context: context,
+                builder: (context) =>const ExpenseTypeForm()
+            );
+          },
+          child: const Icon(
+            Icons.add,
+            size: 30,
+          ),
         ),
       ),
     );

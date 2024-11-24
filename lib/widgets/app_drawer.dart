@@ -19,8 +19,9 @@ class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key, required this.onSelectScreen});
 
 
+
+
   Future<void> requestStoragePermission() async {
-    // Request the storage permission
     PermissionStatus status = await Permission.storage.request();
 
     if (status.isGranted) {
@@ -28,7 +29,6 @@ class AppDrawer extends StatelessWidget {
     } else if (status.isDenied) {
       print("Storage permission denied.");
     } else if (status.isPermanentlyDenied) {
-      // Direct the user to settings if permission is permanently denied
       openAppSettings();
     }
   }
@@ -44,7 +44,8 @@ class AppDrawer extends StatelessWidget {
             borderRadius: BorderRadius.zero
         ),
         child: Container(
-          padding: EdgeInsets.all(10),
+          padding:const EdgeInsets.all(10),
+          margin:const EdgeInsets.symmetric(vertical: 20),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,

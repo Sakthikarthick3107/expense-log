@@ -46,12 +46,11 @@ class _MetricsScreenState extends State<MetricsScreen> {
         child: Column(
           children :[
             Container(
-              child: const Text(
-                'Metrics',
+              child: Text(
+                '₹${_metricsData['Total']?.toStringAsFixed(2)}',
                 style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 24,
-
+                    fontSize: 35,
+                    fontWeight: FontWeight.bold
                 ),
               ),
             ),
@@ -91,9 +90,7 @@ class _MetricsScreenState extends State<MetricsScreen> {
                       }).toList(),
                 )
               ]
-            )
-
-            ,
+            ),
             Expanded(
                 child: ValueListenableBuilder(
                     valueListenable: Hive.box<Expense2>('expense2Box').listenable(),
@@ -102,12 +99,33 @@ class _MetricsScreenState extends State<MetricsScreen> {
                           valueListenable: Hive.box<ExpenseType>('expenseTypeBox').listenable(),
                           builder: (context,Box<ExpenseType> expenseBox , _){
                             // final metrics = _expenseService.getMetrics(_selectedDurationNotifier.value);
-                            final totalValue = _metricsData.remove('Total');
-                            if(totalValue != null){
-                              _metricsData['Total'] = totalValue;
+                            if(_metricsData.entries.where((metric )=> metric.key != 'Total').isEmpty){
+                              return Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Image.asset(
+                                      'assets/amongus.png',
+                                      width: 200,
+                                      height: 200,
+                                      fit: BoxFit.cover
+                                    ),
+                                    const Text(
+                                      'No metrics for the selected filters',
+                                      style: TextStyle(
+                                        fontSize: 20
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
+
+                                ),
+                              );
                             }
+
                             return ListView(
-                              children: _metricsData.entries.map((metric){
+                              children: _metricsData.entries.where((metric )=> metric.key != 'Total').map((metric){
                                 return ListTile(
                                   onTap: (){},
                                   title: Text(metric.key),
@@ -115,7 +133,7 @@ class _MetricsScreenState extends State<MetricsScreen> {
                                     '₹${metric.value.toStringAsFixed(2)}',
                                       style: TextStyle(
                                         fontSize: 16,
-                                        fontWeight: metric.key=='Total' ? FontWeight.bold : FontWeight.normal
+                                        fontWeight:  FontWeight.normal
                                       ),
                                   ),
                                 );

@@ -10,6 +10,7 @@ import 'package:expense_log/widgets/expense_form.dart';
 import 'package:expense_log/widgets/message_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
+import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 
 class DailyExpenseScreen extends StatefulWidget {
@@ -150,12 +151,30 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
                   valueListenable: Hive.box<Expense2>('expense2Box').listenable(),
                   builder: (context,Box<Expense2> box,_){
                     final expenseOfTheDate = _expenseService.getExpensesOfTheDay(_selectedDateNotifier.value);
-                      if(expenseOfTheDate.isEmpty){
-                        return const Center(
-                            child: Text('No expenses for  the day'),
-                        );
-                      }
-                      return ListView(
+                    if (expenseOfTheDate.isEmpty) {
+                      return  Column(
+
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Lottie.asset(
+                              'assets/add-note.json',
+                              width: 200,
+                              height: 200,
+                            ),
+                            Text(
+                                'Tap + icon to create expense for \n ${_uiService.displayDay(_selectedDateNotifier.value)}',
+                              style: TextStyle(
+
+                              ),
+                                textAlign: TextAlign.center,
+                            ),
+                          ],
+
+                      );
+                    }
+
+                    return ListView(
                         children: expenseOfTheDate.map((expOfDay){
                           return  Container(
                             padding:  const EdgeInsets.symmetric(horizontal: 8.0,vertical: 2.0),
@@ -213,8 +232,6 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
                                       fontSize: 22
                                     ),
                                 ),
-                            
-                              
                             ),
                           );
                         }).toList(),
@@ -227,25 +244,29 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
 
           ],
         ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: ()async{
-          final result =await showDialog<bool>(
-              context: context,
-              builder: (context) =>ExpenseForm(
-                expenseDate: _selectedDateNotifier.value
-              )
-          );
-          if(result == true){
-            setState(() {
-              totalExpense = _expenseService.selectedDayTotalExpense(_selectedDateNotifier.value);
-            });
+      floatingActionButton: Container(
+        margin: EdgeInsets.symmetric(vertical: 50,horizontal: 30),
+        child: FloatingActionButton(
 
-          }
+          onPressed: ()async{
+            final result =await showDialog<bool>(
+                context: context,
+                builder: (context) =>ExpenseForm(
+                  expenseDate: _selectedDateNotifier.value
+                )
+            );
+            if(result == true){
+              setState(() {
+                totalExpense = _expenseService.selectedDayTotalExpense(_selectedDateNotifier.value);
+              });
 
-        },
-        child: const Icon(
-            Icons.add,
-          size: 30,
+            }
+
+          },
+          child: const Icon(
+              Icons.add,
+            size: 30,
+          ),
         ),
       ),
     );

@@ -1,9 +1,14 @@
+
+import 'package:expense_log/models/expense2.dart';
+import 'package:expense_log/models/expense_type.dart';
 import 'package:expense_log/screens/daily_expense_screen.dart';
 import 'package:expense_log/screens/expense_type_screen.dart';
 import 'package:expense_log/screens/metrics_screen.dart';
 import 'package:expense_log/updates/app_update.dart';
 import 'package:expense_log/widgets/app_drawer.dart';
+import 'package:expense_log/widgets/message_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -26,6 +31,8 @@ class _HomeScreenState extends State<HomeScreen> {
       appUpdate.checkForUpdates(context);
     });
     _fetchVersion();
+
+
   }
   Future<void> _fetchVersion() async {
     final packageInfo = await PackageInfo.fromPlatform();

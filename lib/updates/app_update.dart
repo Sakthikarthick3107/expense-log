@@ -21,6 +21,7 @@ class AppUpdate{
       if(response.statusCode == 200){
         final jsonData = jsonDecode(response.body);
         final latestVersion = jsonData['tag_name'];
+
         final releaseNotes = jsonData['body'] ?? 'No release notes provided.';
         final downloadUrl = jsonData['assets'][0]['browser_download_url'];
         print('Url downlpad - $downloadUrl');
@@ -36,7 +37,7 @@ class AppUpdate{
       }
       else {
         MessageWidget.showSnackBar(context: context, message: 'Failed to fetch release', status: 0);
-        // print('Failed to fetch release info: ${response.statusCode}');
+
       }
     }
     catch(e){
