@@ -52,9 +52,9 @@ class _HomeScreenState extends State<HomeScreen> {
       drawer: AppDrawer(onSelectScreen: _onDrawerItemSelected),
         appBar: AppBar(
           title:const  Text(
-            'ExpenseLog',
+            'Expense_Log',
             style:const TextStyle(
-                fontSize: 24,
+                fontSize: 22,
                 fontWeight: FontWeight.bold
             ),
 
@@ -67,7 +67,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 'Version $version',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 14
+                  fontSize: 12
                 ),
               ),
             )
