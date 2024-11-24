@@ -30,16 +30,16 @@ void main() async{
   await requestPermissions();
 
   await Hive.initFlutter();
-  Hive.registerAdapter(ExpenseAdapter());
+  // Hive.registerAdapter(ExpenseAdapter());
   Hive.registerAdapter(ExpenseTypeAdapter());
   Hive.registerAdapter(Expense2Adapter());
 
-  await Hive.openBox<Expense>('expenseBox');
+  // await Hive.openBox<Expense>('expenseBox');
   await Hive.openBox<Expense2>('expense2Box');
   await Hive.openBox<ExpenseType>('expenseTypeBox');
   await Hive.openBox('settingsBox');
 
-  await checkAndRunMigration();
+  // await checkAndRunMigration();
   runApp(
       MultiProvider(providers: [
              Provider(create: (_)=>SettingsService()),

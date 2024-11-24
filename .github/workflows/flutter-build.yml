@@ -24,7 +24,16 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      # Step 4: Decode and set up keystore
+      # Step 4: Extract version from pubspec.yaml
+      - name: Extract version from pubspec.yaml
+        id: extract_version
+        run: |
+          VERSION=$(grep '^version: ' pubspec.yaml | sed 's/version: //g')
+          VERSION_TAG="v${VERSION%%+*}" # Use only the version part, ignoring build number after '+'
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "VERSION_TAG=$VERSION_TAG" >> $GITHUB_ENV      
+
+      # Step 5: Decode and set up keystore
       - name: Decode and set up keystore
         env:
           KEYSTORE_FILE: ${{ secrets.KEYSTORE_FILE }}
@@ -38,11 +47,11 @@ jobs:
           echo "keyPassword=$KEY_PASSWORD" >> android/key.properties
           echo "storeFile=../app/my-release-key.jks" >> android/key.properties
 
-      # Step 5: Build APK
+      # Step 6: Build APK
       - name: Build APK
         run: flutter build apk --release
 
-      # Step 6: Upload APK to GitHub Release
+      # Step 7: Upload APK to GitHub Release
       - name: Create GitHub Release
         id: create_release
         uses: actions/create-release@v1
@@ -54,7 +63,7 @@ jobs:
           draft: false
           prerelease: false
 
-      # Step 7: Upload APK to the release
+      # Step 8: Upload APK to the release
       - name: Upload APK to Release
         uses: actions/upload-release-asset@v1
         env:
