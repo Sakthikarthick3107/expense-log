@@ -5,6 +5,7 @@ import 'package:expense_log/models/expense2.dart';
 import 'package:expense_log/models/expense_type.dart';
 import 'package:expense_log/screens/daily_expense_screen.dart';
 import 'package:expense_log/screens/expense_type_screen.dart';
+import 'package:expense_log/widgets/message_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -42,49 +43,60 @@ class AppDrawer extends StatelessWidget {
         shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.zero
         ),
-        child: ListView(
-          children: <Widget>[
-            ListTile(
-              onTap: () {
-                onSelectScreen(0);
-                // Navigator.pushReplacement(
-                //   context,
-                //   MaterialPageRoute(builder: (context) => DailyExpenseScreen()),
-                // );
-              },
-              leading: const Icon(
-                  Icons.currency_rupee
-              ),
-              title: const Text('Daily Expense'),
-            ),
-            ListTile(
-              onTap: () {
-                onSelectScreen(1);
-                // Navigator.pushReplacement(
-                //   context,
-                //   MaterialPageRoute(builder: (context) => ExpenseTypeScreen()),
-                // );
-              },
-              leading: Icon(
-                  Icons.type_specimen
-              ),
-              title: Text('Expense Type'),
-            ),
-            ListTile(
-              onTap: () {
-                onSelectScreen(2);
-                // Navigator.pushReplacement(
-                //   context,
-                //   MaterialPageRoute(builder: (context) => ExpenseTypeScreen()),
-                // );
-              },
-              leading: Icon(
-                  Icons.calculate_rounded
-              ),
-              title: Text('Metrics'),
-            )
+        child: Container(
+          padding: EdgeInsets.all(10),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
 
-          ],
+                  Column(
+
+                    children: [
+                      ListTile(
+                        onTap: () {
+                          onSelectScreen(0);
+                        },
+                        leading: const Icon(
+                            Icons.currency_rupee
+                        ),
+                        title: const Text('Daily Expense'),
+                      ),
+                      ListTile(
+                        onTap: () {
+                          onSelectScreen(1);
+                        },
+                        leading: Icon(
+                            Icons.type_specimen
+                        ),
+                        title: Text('Expense Type'),
+                      ),
+                      ListTile(
+                        onTap: () {
+                          onSelectScreen(2);
+
+                        },
+                        leading: Icon(
+                            Icons.calculate_rounded
+                        ),
+                        title: Text('Metrics'),
+                      )
+                    ],
+                  ),
+
+                  ListTile(
+                onTap: () {
+                  MessageWidget.showToast(message: 'This feature will be available soon', status: 0);
+                },
+                leading: Icon(
+                    Icons.settings
+                ),
+                title: Text('Settings'),
+              )
+
+                ],
+
+          ),
         ),
       ),
     );
