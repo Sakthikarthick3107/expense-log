@@ -1,6 +1,7 @@
 import 'package:expense_log/screens/daily_expense_screen.dart';
 import 'package:expense_log/screens/expense_type_screen.dart';
 import 'package:expense_log/screens/metrics_screen.dart';
+import 'package:expense_log/updates/app_update.dart';
 import 'package:expense_log/widgets/app_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -20,6 +21,10 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final appUpdate = AppUpdate();
+      appUpdate.checkForUpdates(context);
+    });
     _fetchVersion();
   }
   Future<void> _fetchVersion() async {

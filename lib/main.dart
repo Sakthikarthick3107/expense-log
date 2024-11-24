@@ -61,16 +61,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final appUpdate = AppUpdate();
-      appUpdate.checkForUpdates(context);
-    });
+
       return MaterialApp(
       title: 'ExpenseLog',
       debugShowCheckedModeBanner: false,
       theme: appTheme,
       
-      home: const HomeScreen()
+      home:  const Scaffold(
+        body: HomeScreen(),
+      ),
     );
   }
 }

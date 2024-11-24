@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:expense_log/widgets/message_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -28,10 +29,13 @@ class AppUpdate{
         }
         else {
           print('App is up-to-date!');
+          MessageWidget.showSnackBar(context: context, message: 'App is upto date', status: 1);
+
         }
       }
       else {
-        print('Failed to fetch release info: ${response.statusCode}');
+        MessageWidget.showSnackBar(context: context, message: 'Failed to fetch release', status: 0);
+        // print('Failed to fetch release info: ${response.statusCode}');
       }
     }
     catch(e){
@@ -104,9 +108,9 @@ class AppUpdate{
               child: Text('Later'),
             ),
             TextButton(
-              onPressed: () {
+              onPressed: () async{
                 Navigator.pop(context);
-                _launchUrl(downloadUrl);
+                await _launchUrl(downloadUrl);
               },
               child: Text('Update'),
             ),
@@ -117,11 +121,21 @@ class AppUpdate{
   }
 
   Future<void> _launchUrl(String url) async {
-    if (await canLaunch(url)) {
-      await launch(url);
+    final Uri uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
     } else {
       print('Could not launch $url');
     }
+  }
+
+  void _showSnackBar(BuildContext context, String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: color,
+      ),
+    );
   }
 
 }
