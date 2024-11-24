@@ -56,9 +56,14 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           actions: [
             Container(
-              padding: EdgeInsets.all(10),
+              // padding: EdgeInsets.all(10),
+              margin: EdgeInsets.all(20),
               child: Text(
-                '$version'
+                'Version $version',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14
+                ),
               ),
             )
           ],
