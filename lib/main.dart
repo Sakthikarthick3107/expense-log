@@ -8,6 +8,7 @@ import 'package:expense_log/services/expense_service.dart';
 import 'package:expense_log/services/settings_service.dart';
 import 'package:expense_log/services/ui_service.dart';
 import 'package:expense_log/themes/app_theme.dart';
+import 'package:expense_log/updates/app_update.dart';
 import 'package:expense_log/widgets/app_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
@@ -40,6 +41,7 @@ void main() async{
   await Hive.openBox('settingsBox');
 
   // await checkAndRunMigration();
+
   runApp(
       MultiProvider(providers: [
              Provider(create: (_)=>SettingsService()),
@@ -59,7 +61,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final appUpdate = AppUpdate();
+      appUpdate.checkForUpdates(context);
+    });
+      return MaterialApp(
       title: 'ExpenseLog',
       debugShowCheckedModeBanner: false,
       theme: appTheme,

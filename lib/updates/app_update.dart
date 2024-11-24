@@ -40,6 +40,25 @@ class AppUpdate{
   }
 
   bool isNewVersion(String latest, String current) {
+    latest = latest.replaceFirst('v', '');
+    current = current.replaceFirst('v', '');
+
+    bool isLatestSemantic = latest.contains('.');
+    bool isCurrentSemantic = current.contains('.');
+
+    if (!isLatestSemantic && !isCurrentSemantic) {
+      int latestBuild = int.parse(latest);
+      int currentBuild = int.parse(current);
+      return latestBuild > currentBuild;
+    }
+
+    if (isLatestSemantic && !isCurrentSemantic) {
+      return true;
+    }
+
+    if (!isLatestSemantic && isCurrentSemantic) {
+      return false;
+    }
 
     List<int> latestParts = _parseVersion(latest);
     List<int> currentParts = _parseVersion(current);
