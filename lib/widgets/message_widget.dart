@@ -27,7 +27,7 @@ class MessageWidget{
             backgroundColor: backgroundColor,
             textColor: textColor,
             fontSize: fontSize,
-            timeInSecForIosWeb: timeInSecForIosWeb!
+            // timeInSecForIosWeb: timeInSecForIosWeb!
         );
   }
   static void cancelToast(){
