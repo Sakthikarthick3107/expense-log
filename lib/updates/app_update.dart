@@ -23,6 +23,7 @@ class AppUpdate{
         final latestVersion = jsonData['tag_name'];
         final releaseNotes = jsonData['body'] ?? 'No release notes provided.';
         final downloadUrl = jsonData['assets'][0]['browser_download_url'];
+        print('Url downlpad - $downloadUrl');
         if (isNewVersion(latestVersion, currentVersion)) {
           print('New version available: $latestVersion');
           showUpdateDialog(context, downloadUrl, releaseNotes);
@@ -121,21 +122,18 @@ class AppUpdate{
   }
 
   Future<void> _launchUrl(String url) async {
-    final Uri uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    } else {
-      print('Could not launch $url');
+    try{
+      final Uri uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        MessageWidget.showToast(message: 'Could not launch the update', status: 1);
+        print('Could not launch $url');
+      }
     }
-  }
+    catch(e){
+      MessageWidget.showToast(message: 'Invalid update URL', status: 1);
+    }
 
-  void _showSnackBar(BuildContext context, String message, Color color) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: color,
-      ),
-    );
   }
-
 }
