@@ -28,6 +28,7 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
   final ValueNotifier<DateTime> _selectedDateNotifier = ValueNotifier<DateTime>(DateTime.now());
   double totalExpense = 0.0;
   Map<int,Expense2> deleteList =  {};
+  late Map<String,double> _metricsData = {};
 
   @override
   void initState(){
@@ -36,13 +37,14 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
       _expenseService = Provider.of<ExpenseService>(context,listen: false);
       _settingsService = Provider.of<SettingsService>(context,listen: false);
       totalExpense = _expenseService.selectedDayTotalExpense(_selectedDateNotifier.value);
-
+      _metricsData = _expenseService.getMetrics('This month','By type');
       _selectedDateNotifier.addListener((){
         setState(() {
           totalExpense = _expenseService.selectedDayTotalExpense(_selectedDateNotifier.value);
           deleteList.clear();
         });
       });
+
   }
 
   @override
@@ -55,199 +57,241 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
   @override
   Widget build(BuildContext context) {
     return  Scaffold(
-        body: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(
-                    onPressed: (){
-                      setState(() {
-                        _selectedDateNotifier.value =  _selectedDateNotifier.value.subtract(const Duration(days: 1));
-                      });
+        body: GestureDetector(
+          onHorizontalDragEnd: (details){
+                if(details.primaryVelocity! < 0){
+                  setState(() {
+                    _selectedDateNotifier.value =  _selectedDateNotifier.value.add(const Duration(days: 1));
+                  });
+                }
+                else if(details.primaryVelocity! > 0){
+                  setState(() {
+                    _selectedDateNotifier.value =  _selectedDateNotifier.value.subtract(const Duration(days: 1));
+                  });
+                }
+          },
+          child: Column(
+            children: [
+              Container(
+                padding:const EdgeInsets.all(10),
+                margin: const EdgeInsets.symmetric(horizontal: 10,vertical: 4),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(30.0),
+                  color: Colors.white,
+                  boxShadow: [
 
-
-                    },
-                    padding:const EdgeInsets.all(20.0),
-                    icon:const Icon(Icons.arrow_back_ios)
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.5),
+                      spreadRadius: 2,
+                      blurRadius: 5,
+                      offset:const Offset(0, 3),
+                    ),
+                  ],
                 ),
-                ValueListenableBuilder<DateTime>(
-                    valueListenable: _selectedDateNotifier,
-                    builder: (context,selectedDate,_){
-                        return TextButton(
-                            onPressed: ()async{
-                              DateTime pickDate =await _uiService.selectDate(context);
-                              setState(() {
-                                _selectedDateNotifier.value = pickDate;
-                              });
-
-
-                            },
-                            child:Text(
-                              _uiService.displayDay(_selectedDateNotifier.value),
-
-                              style:const TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w700
-                              ),
-                            )
-                        );
-                    }),
-
-                IconButton(
-                    onPressed: (){
-                      setState(() {
-                        _selectedDateNotifier.value =  _selectedDateNotifier.value.add(const Duration(days: 1));
-                      });
-
-                    },
-                    padding:const EdgeInsets.all(20.0),
-                    icon:const Icon(Icons.arrow_forward_ios)
-                )
-              ],
-            ),
-            Container(
-              padding: const EdgeInsets.all(16.0),
-
-              color: Colors.transparent,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+                child: Center(
+                  child: Text(
+                      '₹${_metricsData['Total']?.toStringAsFixed(2)} - This month',
+                    textAlign: TextAlign.center,
+                    style:const TextStyle(
+                      // fontStyle: FontStyle.italic,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16
+                    ),
+                  ),
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  IconButton(
+                      onPressed: (){
+                        setState(() {
+                          _selectedDateNotifier.value =  _selectedDateNotifier.value.subtract(const Duration(days: 1));
+                        });
 
-                  ValueListenableBuilder(
+
+                      },
+                      padding:const EdgeInsets.all(20.0),
+                      icon:const Icon(Icons.arrow_back_ios)
+                  ),
+                  ValueListenableBuilder<DateTime>(
                       valueListenable: _selectedDateNotifier,
-                      builder: (context,date,_){
-                        if(deleteList.isNotEmpty){
+                      builder: (context,selectedDate,_){
                           return TextButton(
-                              onPressed: (){
-                                _expenseService.deleteExpense(deleteList);
-                                  setState(() {
+                              onPressed: ()async{
+                                DateTime pickDate =await _uiService.selectDate(context);
+                                setState(() {
+                                  _selectedDateNotifier.value = pickDate;
+                                });
 
-                                    deleteList.clear();
-                                    totalExpense = _expenseService.selectedDayTotalExpense(_selectedDateNotifier.value);
-                                  });
+
                               },
-                              child: Text(
-                                'Delete (${deleteList.length})',
+                              child:Text(
+                                _uiService.displayDay(_selectedDateNotifier.value),
+
                                 style:const TextStyle(
                                     color: Colors.black,
-                                    fontSize: 20),
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w700
+                                ),
                               )
                           );
-                        }
-                        else{
-                          return Text(
-                            "₹${totalExpense.toStringAsFixed(2)}",
-                            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                          );
-                        }
-                      })
+                      }),
+
+                  IconButton(
+                      onPressed: (){
+                        setState(() {
+                          _selectedDateNotifier.value =  _selectedDateNotifier.value.add(const Duration(days: 1));
+                        });
+
+                      },
+                      padding:const EdgeInsets.all(20.0),
+                      icon:const Icon(Icons.arrow_forward_ios)
+                  )
                 ],
               ),
-            ),
-            Expanded(
-        child: ValueListenableBuilder(
-                  valueListenable: Hive.box<Expense2>('expense2Box').listenable(),
-                  builder: (context,Box<Expense2> box,_){
-                    final expenseOfTheDate = _expenseService.getExpensesOfTheDay(_selectedDateNotifier.value);
-                    if (expenseOfTheDate.isEmpty) {
-                      return  Column(
+              Container(
+                padding: const EdgeInsets.all(16.0),
 
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Lottie.asset(
-                              'assets/add-note.json',
-                              width: 200,
-                              height: 200,
-                            ),
-                            Text(
-                                'Tap + icon to create expense for \n ${_uiService.displayDay(_selectedDateNotifier.value)}',
-                              style: TextStyle(
+                color: Colors.transparent,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
 
-                              ),
-                                textAlign: TextAlign.center,
-                            ),
-                          ],
-
-                      );
-                    }
-
-                    return ListView(
-                        children: expenseOfTheDate.map((expOfDay){
-                          return  Container(
-                            padding:  const EdgeInsets.symmetric(horizontal: 8.0,vertical: 2.0),
-                            decoration:const BoxDecoration(
-                              borderRadius: BorderRadius.all(Radius.circular(20))
-                            ),
-                            child: ListTile(
-                                tileColor: deleteList.isNotEmpty && deleteList.containsKey(expOfDay.id) ? Colors.blueGrey : Colors.transparent,
-                                onTap: ()async{
-                            
-                                  if(deleteList.isNotEmpty){
+                    ValueListenableBuilder(
+                        valueListenable: _selectedDateNotifier,
+                        builder: (context,date,_){
+                          if(deleteList.isNotEmpty){
+                            return TextButton(
+                                onPressed: (){
+                                  _expenseService.deleteExpense(deleteList);
                                     setState(() {
-                                      if(deleteList.containsKey(expOfDay.id)){
-                                        deleteList.remove(expOfDay.id);
-                                      }
-                                      else{
+
+                                      deleteList.clear();
+                                      totalExpense = _expenseService.selectedDayTotalExpense(_selectedDateNotifier.value);
+                                    });
+                                },
+                                child: Text(
+                                  'Delete (${deleteList.length})',
+                                  style:const TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 20),
+                                )
+                            );
+                          }
+                          else{
+                            return Text(
+                              "₹${totalExpense.toStringAsFixed(2)}",
+                              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                            );
+                          }
+                        })
+                  ],
+                ),
+              ),
+              Expanded(
+          child: ValueListenableBuilder(
+                    valueListenable: Hive.box<Expense2>('expense2Box').listenable(),
+                    builder: (context,Box<Expense2> box,_){
+                      final expenseOfTheDate = _expenseService.getExpensesOfTheDay(_selectedDateNotifier.value);
+                      if (expenseOfTheDate.isEmpty) {
+                        return  Column(
+
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Lottie.asset(
+                                'assets/add-note.json',
+                                width: 200,
+                                height: 200,
+                              ),
+                              Text(
+                                  'Tap + icon to create expense for \n ${_uiService.displayDay(_selectedDateNotifier.value)}',
+                                style: TextStyle(
+
+                                ),
+                                  textAlign: TextAlign.center,
+                              ),
+                            ],
+
+                        );
+                      }
+
+                      return ListView(
+                          children: expenseOfTheDate.map((expOfDay){
+                            return  Container(
+                              padding:  const EdgeInsets.symmetric(horizontal: 8.0,vertical: 2.0),
+                              decoration:const BoxDecoration(
+                                borderRadius: BorderRadius.all(Radius.circular(20))
+                              ),
+                              child: ListTile(
+                                  tileColor: deleteList.isNotEmpty && deleteList.containsKey(expOfDay.id) ? Colors.blueGrey : Colors.transparent,
+                                  onTap: ()async{
+
+                                    if(deleteList.isNotEmpty){
+                                      setState(() {
+                                        if(deleteList.containsKey(expOfDay.id)){
+                                          deleteList.remove(expOfDay.id);
+                                        }
+                                        else{
+                                          deleteList[expOfDay.id] = expOfDay;
+                                        }
+                                      });
+                                    }
+                                    else{
+                                        final result = await showDialog<bool>(
+                                            context: context,
+                                            builder: (context) =>ExpenseForm(
+                                                expenseDate: _selectedDateNotifier.value,
+                                                expense: expOfDay,
+                                            )
+                                        );
+                                        if(result == true){
+                                          setState(() {
+                                            totalExpense = _expenseService.selectedDayTotalExpense(_selectedDateNotifier.value);
+                                          });
+                                        }
+                                    }
+                                  },
+                                  onLongPress: (){
+                                    setState(() {
+                                      if (!deleteList.containsKey(expOfDay.id)) {
                                         deleteList[expOfDay.id] = expOfDay;
                                       }
                                     });
-                                  }
-                                  else{
-                                      final result = await showDialog<bool>(
-                                          context: context,
-                                          builder: (context) =>ExpenseForm(
-                                              expenseDate: _selectedDateNotifier.value,
-                                              expense: expOfDay,
-                                          )
-                                      );
-                                      if(result == true){
-                                        setState(() {
-                                          totalExpense = _expenseService.selectedDayTotalExpense(_selectedDateNotifier.value);
-                                        });
-                                      }
-                                  }
-                                },
-                                onLongPress: (){
-                                  setState(() {
-                                    if (!deleteList.containsKey(expOfDay.id)) {
-                                      deleteList[expOfDay.id] = expOfDay;
-                                    }
-                                  });
-                                },
-                                title: Text(
-                                    expOfDay.name,
-                                    style:const TextStyle(
-                                      fontSize: 24
-                                    ),
-                                ),
-                                subtitle: Text(
-                                  expOfDay.expenseType.name
-                                ),
-                                trailing: Text(
-                                    expOfDay.price.toString(),
-                                    style:const TextStyle(
-                                      fontSize: 22
-                                    ),
-                                ),
-                            ),
-                          );
-                        }).toList(),
-                      );
-                  },
-                )
+                                  },
+                                  title: Text(
+                                      expOfDay.name,
+                                      style:const TextStyle(
+                                        fontSize: 24
+                                      ),
+                                  ),
+                                  subtitle: Text(
+                                    expOfDay.expenseType.name
+                                  ),
+                                  trailing: Text(
+                                      expOfDay.price.toString(),
+                                      style:const TextStyle(
+                                        fontSize: 22
+                                      ),
+                                  ),
+                              ),
+                            );
+                          }).toList(),
+                        );
+                    },
+                  )
 
-            ),
+              ),
 
 
-          ],
+            ],
+          ),
         ),
       floatingActionButton: Container(
         margin: EdgeInsets.symmetric(vertical: 50,horizontal: 30),
         child: FloatingActionButton(
-
+          tooltip: 'Create new expense',
           onPressed: ()async{
             final result =await showDialog<bool>(
                 context: context,

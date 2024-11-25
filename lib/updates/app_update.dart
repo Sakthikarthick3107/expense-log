@@ -92,14 +92,14 @@ class AppUpdate{
       barrierDismissible: false,
       builder: (context) {
         return AlertDialog(
-          title: Text('Update Available'),
+          title:const Text('Update Available'),
           content: SingleChildScrollView(
             child: ListBody(
               children: [
-                Text('A new version of the app is available.'),
-                SizedBox(height: 10),
-                Text('Release Notes:'),
-                SizedBox(height: 10),
+                const Text('A new version of the app is available.'),
+                const SizedBox(height: 4),
+                const Text('Release Notes:'),
+                const SizedBox(height: 10),
                 Text(releaseNotes),
               ],
             ),
