@@ -44,7 +44,7 @@ void main() async{
 
   runApp(
       MultiProvider(providers: [
-             Provider(create: (_)=>SettingsService()),
+             ChangeNotifierProvider(create: (_)=>SettingsService()),
               Provider(create: (_)=>ExpenseService()),
               Provider(create: (_) => UiService()),
               // ProxyProvider2<ExpenseService,SettingsService,UiService>(
@@ -61,15 +61,18 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      return Consumer<SettingsService>(
+          builder: (context,settingsService,child){
+            return MaterialApp(
+              title: 'ExpenseLog',
+              debugShowCheckedModeBanner: false,
+              theme: appTheme(settingsService.isDarkTheme()),
 
-      return MaterialApp(
-      title: 'ExpenseLog',
-      debugShowCheckedModeBanner: false,
-      theme: appTheme,
-      
-      home:  const Scaffold(
-        body: HomeScreen(),
-      ),
-    );
+              home:  const Scaffold(
+                body: HomeScreen(),
+              ),
+            );
+          });
+
   }
 }

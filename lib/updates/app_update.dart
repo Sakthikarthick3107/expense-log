@@ -24,13 +24,13 @@ class AppUpdate{
 
         final releaseNotes = jsonData['body'] ?? 'No release notes provided.';
         final downloadUrl = jsonData['assets'][0]['browser_download_url'];
-        print('Url downlpad - $downloadUrl');
+        // print('Url downlpad - $downloadUrl');
         if (isNewVersion(latestVersion, currentVersion)) {
-          print('New version available: $latestVersion');
+          // print('New version available: $latestVersion');
           showUpdateDialog(context, downloadUrl, releaseNotes);
         }
         else {
-          print('App is up-to-date!');
+          // print('App is up-to-date!');
           MessageWidget.showSnackBar(context: context, message: 'App is upto date', status: 1);
 
         }
@@ -41,7 +41,8 @@ class AppUpdate{
       }
     }
     catch(e){
-      print('Error checking for updates: $e');
+      // print('Error checking for updates: $e');
+      MessageWidget.showSnackBar(context: context, message: 'Error while checking updates', status: 0);
     }
   }
 

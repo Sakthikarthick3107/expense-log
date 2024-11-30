@@ -81,8 +81,8 @@ class _ExpenseTypeScreenState extends State<ExpenseTypeScreen> {
                         },
                         child: Card(
                           elevation: 8,
-                          surfaceTintColor: Color(0xFFF0F8FF),
-                          color: Color(0xFFF0F8FF),
+                          // surfaceTintColor: Color(0xFFF0F8FF),
+                          // color: Color(0xFFF0F8FF),
 
                           child: Center(
                             child: Text(

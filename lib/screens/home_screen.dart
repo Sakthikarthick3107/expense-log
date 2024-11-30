@@ -58,10 +58,11 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       drawer: AppDrawer(onSelectScreen: _onDrawerItemSelected),
         appBar: AppBar(
-          title:const  Text(
+          title:  Text(
             'Expense_Log',
             style:const TextStyle(
                 fontSize: 22,
+                color: Colors.white,
                 fontWeight: FontWeight.bold
             ),
 
@@ -71,7 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
               // padding: EdgeInsets.all(10),
               margin: EdgeInsets.all(20),
               child: Text(
-                'Version $version',
+                '$version',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 12

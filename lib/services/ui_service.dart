@@ -11,12 +11,13 @@ import 'package:intl/intl.dart';
 class UiService{
 
 
-  Future<DateTime> selectDate(BuildContext context) async{
+  Future<DateTime> selectDate(BuildContext context,{DateTime? last}) async{
     final DateTime? pickedDate = await showDatePicker(
         context: context,
         firstDate: DateTime(1990),
-        lastDate: DateTime(2200),
-        initialDate: DateTime.now()
+        lastDate: last != null ? last :  DateTime(2200),
+        initialDate: DateTime.now(),
+
     );
     return pickedDate!;
   }

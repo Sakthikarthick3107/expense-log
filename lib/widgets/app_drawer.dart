@@ -5,6 +5,7 @@ import 'package:expense_log/models/expense2.dart';
 import 'package:expense_log/models/expense_type.dart';
 import 'package:expense_log/screens/daily_expense_screen.dart';
 import 'package:expense_log/screens/expense_type_screen.dart';
+import 'package:expense_log/screens/settings_screen.dart';
 import 'package:expense_log/widgets/message_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -39,20 +40,18 @@ class AppDrawer extends StatelessWidget {
 
       child: Drawer(
 
-        backgroundColor: Colors.white,
-        shape: const RoundedRectangleBorder(
+        // backgroundColor: Colors.white,
+        shape:  RoundedRectangleBorder(
             borderRadius: BorderRadius.zero
         ),
         child: Container(
-          padding:const EdgeInsets.all(10),
-          margin:const EdgeInsets.symmetric(vertical: 20),
+          padding: EdgeInsets.all(10),
+          margin: EdgeInsets.symmetric(vertical: 20),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
                   Column(
-
                     children: [
                       ListTile(
                         onTap: () {
@@ -61,7 +60,7 @@ class AppDrawer extends StatelessWidget {
                         leading: const Icon(
                             Icons.currency_rupee
                         ),
-                        title: const Text('Daily Expense'),
+                        title:  Text('Daily Expense'),
                       ),
                       ListTile(
                         onTap: () {
@@ -87,7 +86,9 @@ class AppDrawer extends StatelessWidget {
 
                   ListTile(
                 onTap: () {
-                  MessageWidget.showToast(message: 'This feature will be available soon', status: 0);
+                  Navigator.pop(context);
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsScreen()));
+                  // MessageWidget.showToast(message: 'This feature will be available soon', status: 0);
                 },
                 leading: Icon(
                     Icons.settings

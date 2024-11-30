@@ -58,6 +58,7 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
   Widget build(BuildContext context) {
     return  Scaffold(
         body: GestureDetector(
+
           onHorizontalDragEnd: (details){
                 if(details.primaryVelocity! < 0){
                   setState(() {
@@ -73,24 +74,25 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
           child: Column(
             children: [
               Container(
+
                 padding:const EdgeInsets.all(10),
                 margin: const EdgeInsets.symmetric(horizontal: 10,vertical: 4),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(30.0),
-                  color: Colors.white,
-                  boxShadow: [
-
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.5),
-                      spreadRadius: 2,
-                      blurRadius: 5,
-                      offset:const Offset(0, 3),
-                    ),
-                  ],
+                  // color: Colors.white,
+                  // boxShadow: [
+                  //
+                  //   BoxShadow(
+                  //     color: Colors.grey.withOpacity(0.5),
+                  //     spreadRadius: 2,
+                  //     blurRadius: 5,
+                  //     offset:const Offset(0, 3),
+                  //   ),
+                  // ],
                 ),
                 child: Center(
                   child: Text(
-                      '₹${_metricsData['Total']?.toStringAsFixed(2)} - This month',
+                      'This month : ₹ ${_metricsData['Total']?.toStringAsFixed(2)}',
                     textAlign: TextAlign.center,
                     style:const TextStyle(
                       // fontStyle: FontStyle.italic,
@@ -119,7 +121,7 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
                       builder: (context,selectedDate,_){
                           return TextButton(
                               onPressed: ()async{
-                                DateTime pickDate =await _uiService.selectDate(context);
+                                DateTime pickDate =await _uiService.selectDate(context , last: DateTime.now());
                                 setState(() {
                                   _selectedDateNotifier.value = pickDate;
                                 });
@@ -130,7 +132,7 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
                                 _uiService.displayDay(_selectedDateNotifier.value),
 
                                 style:const TextStyle(
-                                    color: Colors.black,
+                                    // color: Colors.black,
                                     fontSize: 22,
                                     fontWeight: FontWeight.w700
                                 ),
@@ -140,10 +142,17 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
 
                   IconButton(
                       onPressed: (){
-                        setState(() {
-                          _selectedDateNotifier.value =  _selectedDateNotifier.value.add(const Duration(days: 1));
-                        });
+                        if(_selectedDateNotifier.value.year == DateTime.now().year &&
+                            _selectedDateNotifier.value.month == DateTime.now().month &&
+                            _selectedDateNotifier.value.day == DateTime.now().day){
+                            MessageWidget.showSnackBar(context: context, message: 'Cannot able to set daily expense for future dates', status: 0);
 
+                        }
+                        else{
+                          setState(() {
+                            _selectedDateNotifier.value =  _selectedDateNotifier.value.add(const Duration(days: 1));
+                          });
+                        }
                       },
                       padding:const EdgeInsets.all(20.0),
                       icon:const Icon(Icons.arrow_forward_ios)
@@ -162,26 +171,31 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
                         valueListenable: _selectedDateNotifier,
                         builder: (context,date,_){
                           if(deleteList.isNotEmpty){
-                            return TextButton(
+                            return ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+
+                              ),
                                 onPressed: (){
                                   _expenseService.deleteExpense(deleteList);
                                     setState(() {
 
                                       deleteList.clear();
                                       totalExpense = _expenseService.selectedDayTotalExpense(_selectedDateNotifier.value);
+                                      _metricsData = _expenseService.getMetrics('This month','By type');
                                     });
                                 },
                                 child: Text(
                                   'Delete (${deleteList.length})',
                                   style:const TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 20),
+                                      color: Colors.white,
+                                      fontSize: 16),
                                 )
                             );
                           }
                           else{
                             return Text(
-                              "₹${totalExpense.toStringAsFixed(2)}",
+                              "₹ ${totalExpense.toStringAsFixed(2)}",
                               style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                             );
                           }
@@ -220,13 +234,20 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
                       return ListView(
                           children: expenseOfTheDate.map((expOfDay){
                             return  Container(
-                              padding:  const EdgeInsets.symmetric(horizontal: 8.0,vertical: 2.0),
+                              padding:  const EdgeInsets.symmetric(horizontal: 10.0),
                               decoration:const BoxDecoration(
                                 borderRadius: BorderRadius.all(Radius.circular(20))
                               ),
                               child: ListTile(
-                                  tileColor: deleteList.isNotEmpty && deleteList.containsKey(expOfDay.id) ? Colors.blueGrey : Colors.transparent,
-                                  onTap: ()async{
+                                  // tileColor: deleteList.isNotEmpty && deleteList.containsKey(expOfDay.id) ? Colors.grey : Colors.transparent,
+                                  leading:deleteList.isNotEmpty ? Icon(
+                                      deleteList.containsKey(expOfDay.id) ?
+                                          Icons.check_box
+                                          :
+                                    Icons.check_box_outline_blank,
+                                    color: deleteList.containsKey(expOfDay.id) ? Colors.green : Colors.grey,
+                                  ):null ,
+                                onTap: ()async{
 
                                     if(deleteList.isNotEmpty){
                                       setState(() {
@@ -249,6 +270,7 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
                                         if(result == true){
                                           setState(() {
                                             totalExpense = _expenseService.selectedDayTotalExpense(_selectedDateNotifier.value);
+                                            _metricsData = _expenseService.getMetrics('This month','By type');
                                           });
                                         }
                                     }
@@ -263,16 +285,19 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
                                   title: Text(
                                       expOfDay.name,
                                       style:const TextStyle(
-                                        fontSize: 24
+                                        fontSize: 20
                                       ),
                                   ),
                                   subtitle: Text(
-                                    expOfDay.expenseType.name
+                                    expOfDay.expenseType.name,
+                                    style: TextStyle(
+                                      fontSize: 12
+                                    ),
                                   ),
                                   trailing: Text(
                                       expOfDay.price.toString(),
                                       style:const TextStyle(
-                                        fontSize: 22
+                                        fontSize: 18
                                       ),
                                   ),
                               ),
@@ -302,6 +327,7 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
             if(result == true){
               setState(() {
                 totalExpense = _expenseService.selectedDayTotalExpense(_selectedDateNotifier.value);
+                _metricsData = _expenseService.getMetrics('This month','By type');
               });
 
             }
