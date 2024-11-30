@@ -47,7 +47,7 @@ class _MetricsScreenState extends State<MetricsScreen> {
           children :[
             Container(
               child: Text(
-                '₹${_metricsData['Total']?.toStringAsFixed(2)}',
+                '₹ ${_metricsData['Total']?.toStringAsFixed(2)}',
                 style: TextStyle(
                     fontSize: 35,
                     fontWeight: FontWeight.bold
@@ -128,7 +128,7 @@ class _MetricsScreenState extends State<MetricsScreen> {
                               children: _metricsData.entries.where((metric )=> metric.key != 'Total').map((metric){
                                 return ListTile(
                                   onTap: (){},
-                                  title: Text(metric.key),
+                                  title: Text(metric.key , style: TextStyle(fontSize: 18),),
                                   trailing: Text(
                                     '₹${metric.value.toStringAsFixed(2)}',
                                       style: TextStyle(

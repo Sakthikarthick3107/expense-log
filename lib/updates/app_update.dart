@@ -126,7 +126,9 @@ class AppUpdate{
   Future<void> _launchUrl(String url) async {
       final Uri uri = Uri.parse(url);
       if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
+        await launchUrl(uri,
+            // mode: LaunchMode.externalApplication
+        );
       } else {
         MessageWidget.showToast(message: 'Could not launch the update', status: 1);
       }

@@ -4,6 +4,7 @@ import 'package:expense_log/widgets/message_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -32,20 +33,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
   }
 
+  Future<void> _launchURL(String url) async {
+    if (await canLaunchUrl(Uri.parse(url))) {
+      await launchUrl(Uri.parse(url));
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+
+  Future<void> _launchMail(String url) async{
+    final Uri emailUri = Uri(
+      scheme: 'mailto',
+      path: url,
+      query: 'subject=Hello&body=How are you?'
+    );
+    if(await canLaunchUrl(emailUri)){
+      await launchUrl(emailUri);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Settings'),
+        title: Text('Settings',
+          style: TextStyle(
+            color: Colors.white
+          ),
+        ),
       ),
       body: Container(
         padding: EdgeInsets.all(20),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ListTile(
               onTap: (){
                 setState(() {
-                  settingIndex = 1;
+                  settingIndex = settingIndex == 1 ? 0 : 1;
                 });
               },
               title: Text('About'),
@@ -92,7 +117,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ListTile(
               onTap: (){
                 setState(() {
-                  settingIndex = 2;
+                  settingIndex = settingIndex == 2 ? 0 : 2;
                 });
               },
               title: Text('Theme'),
@@ -103,7 +128,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                     return Container(
                       padding: EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 0),
+                          horizontal: 40, vertical: 0),
                       child: Column(
                         children: [
                           ListTile(
@@ -141,7 +166,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ListTile(
               onTap: (){
                 setState(() {
-                  settingIndex = 3;
+                  settingIndex = settingIndex ==3 ? 0 : 3;
                 });
                 final appUpdate = AppUpdate();
                 appUpdate.checkForUpdates(context);
@@ -150,7 +175,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             if(settingIndex == 3)
              Container(
-                 padding :EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+                 padding :EdgeInsets.symmetric(horizontal: 40, vertical: 0),
                   child : Column(
                     children: [
                       Row(
@@ -162,6 +187,88 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       )
                     ],
                   )
+              ),
+            ListTile(
+              onTap: (){
+                setState(() {
+                  settingIndex = settingIndex ==4 ? 0 : 4;
+                });
+              },
+              title: Text('Developer Info'),
+            ),
+            if(settingIndex == 4)
+              Container(
+                padding :EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                        'Sakthikarthick Nagendran',
+                      style: TextStyle(
+                        fontSize: 18
+                      ),
+
+                    ),
+                    Text(
+                      'Chennai',
+                      style: TextStyle(
+                          fontSize: 14
+                      ),
+
+                    ),
+                    SizedBox(height: 20),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 10,
+                      children: [
+                        InkWell(
+                          onTap: (){
+                            _launchMail('sakthikarthick3107@gmail.com');
+                          },
+                          child: Container(
+                              padding: EdgeInsets.symmetric(horizontal: 15,vertical: 6),
+
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.orange, width: 2),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text('Mail')),
+                        ),
+                        SizedBox(width: 10,),
+                        InkWell(
+                          onTap: (){
+                            _launchURL('https://sakthikarthick3107.netlify.app');
+
+                          },
+                          child: Container(
+                              padding: EdgeInsets.symmetric(horizontal: 15,vertical: 6),
+
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.orange, width: 2),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text('Portfolio')),
+                        ),
+                        SizedBox(width: 10,),
+                        InkWell(
+                          onTap: (){
+                            _launchURL('https://www.instagram.com/__intelligent__psycho__/');
+                          },
+                          child: Container(
+                              padding: EdgeInsets.symmetric(horizontal: 15,vertical: 6),
+
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.orange, width: 2),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text('Instagram')),
+                        ),
+
+                      ],
+                    ),
+
+                  ],
+                ),
               )
           ],
         ),
