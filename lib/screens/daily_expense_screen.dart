@@ -61,9 +61,18 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
 
           onHorizontalDragEnd: (details){
                 if(details.primaryVelocity! < 0){
-                  setState(() {
-                    _selectedDateNotifier.value =  _selectedDateNotifier.value.add(const Duration(days: 1));
-                  });
+                  if(_selectedDateNotifier.value.year == DateTime.now().year &&
+                      _selectedDateNotifier.value.month == DateTime.now().month &&
+                      _selectedDateNotifier.value.day == DateTime.now().day){
+                    MessageWidget.showSnackBar(context: context, message: 'Cannot able to set daily expense for future dates', status: 0);
+
+                  }
+                  else{
+                    setState(() {
+                      _selectedDateNotifier.value =  _selectedDateNotifier.value.add(const Duration(days: 1));
+                    });
+                  }
+
                 }
                 else if(details.primaryVelocity! > 0){
                   setState(() {
