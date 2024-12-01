@@ -122,6 +122,7 @@ ThemeData appTheme(bool isDarkTheme) {
             color: isDarkTheme ? Colors.white : Colors.black,
             fontFamily: 'Poppins'
         ),
+
         subtitleTextStyle: TextStyle(
             fontSize: 16,
             color: isDarkTheme ? Colors.white : Colors.black,
@@ -143,9 +144,10 @@ ThemeData appTheme(bool isDarkTheme) {
       backgroundColor: isDarkTheme ? Color(0xFF2F2F2F) : Colors.white
     ),
     iconTheme: IconThemeData(
-
       color: isDarkTheme ? Colors.white :Colors.black
     ),
+
+
     
     useMaterial3: true,
   );

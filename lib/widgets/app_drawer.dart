@@ -57,8 +57,9 @@ class AppDrawer extends StatelessWidget {
                         onTap: () {
                           onSelectScreen(0);
                         },
-                        leading: const Icon(
-                            Icons.currency_rupee
+                        leading:  Icon(
+                            Icons.currency_rupee,
+                         color: Theme.of(context).iconTheme.color
                         ),
                         title:  Text('Daily Expense'),
                       ),
@@ -67,7 +68,8 @@ class AppDrawer extends StatelessWidget {
                           onSelectScreen(1);
                         },
                         leading: Icon(
-                            Icons.type_specimen
+                            Icons.type_specimen_outlined,
+                            color: Theme.of(context).iconTheme.color
                         ),
                         title: Text('Expense Type'),
                       ),
@@ -77,7 +79,8 @@ class AppDrawer extends StatelessWidget {
 
                         },
                         leading: Icon(
-                            Icons.calculate_rounded
+                            Icons.calculate_rounded,
+                            color: Theme.of(context).iconTheme.color
                         ),
                         title: Text('Metrics'),
                       )
@@ -91,7 +94,8 @@ class AppDrawer extends StatelessWidget {
                   // MessageWidget.showToast(message: 'This feature will be available soon', status: 0);
                 },
                 leading: Icon(
-                    Icons.settings
+                    Icons.settings,
+                    color: Theme.of(context).iconTheme.color
                 ),
                 title: Text('Settings'),
               )

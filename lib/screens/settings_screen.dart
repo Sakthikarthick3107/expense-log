@@ -18,12 +18,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   int settingIndex = 0;
   String version = '';
+  int downloads = 0;
 
   @override
   void initState(){
     super.initState();
     _settingsService = Provider.of<SettingsService>(context,listen: false);
     _fetchVersion();
+    downloadsCount();
+  }
+
+  Future<void> downloadsCount()async{
+    int count = await _settingsService.fetchDownloadCount()  as int;
+    setState(() {
+      downloads = count;
+    });
+
   }
 
   Future<void> _fetchVersion() async {
@@ -87,20 +97,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text('Downloads'),
-                              FutureBuilder<int?>(
-                                  future: settingsService.fetchDownloadCount(),
-                                  builder: (context,snapshot){
+                             Text(downloads.toString())
 
-                                    if(snapshot.data == -1){
-                                      MessageWidget.showSnackBar(context: context, message: "Failed fetching download count", status: 0);
-                                    }
-
-                                    return Text(
-                                        snapshot.data == null ? '...' : snapshot.data.toString()
-
-                                    );
-                                  }
-                              )
                             ],
                           ),
                           Row(

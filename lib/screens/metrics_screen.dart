@@ -20,20 +20,23 @@ class _MetricsScreenState extends State<MetricsScreen> {
   final ValueNotifier<String> _selectedDurationNotifier = ValueNotifier<String>('This week');
   final ValueNotifier<String> _selectedMetricBy = ValueNotifier<String>('By type');
   late Map<String,double> _metricsData = {};
+  late Map<Map<String, double>,List< Map<String, double>>> _metricsData2 = {};
 
+  String? _selectedKey ;
 
   @override
   void initState(){
     super.initState();
     _expenseService = Provider.of<ExpenseService>(context , listen: false);
     _metricsData = _expenseService.getMetrics(_selectedDurationNotifier.value , _selectedMetricBy.value);
-
+    _metricsData2 = _expenseService.getMetrics2(_selectedDurationNotifier.value , _selectedMetricBy.value);
     _selectedDurationNotifier.addListener((){
           _metricsData = _expenseService.getMetrics(_selectedDurationNotifier.value,_selectedMetricBy.value);
-
+          _metricsData2 = _expenseService.getMetrics2(_selectedDurationNotifier.value , _selectedMetricBy.value);
     });
     _selectedMetricBy.addListener((){
         _metricsData = _expenseService.getMetrics(_selectedDurationNotifier.value,_selectedMetricBy.value);
+        _metricsData2 = _expenseService.getMetrics2(_selectedDurationNotifier.value , _selectedMetricBy.value);
     });
   }
 
@@ -47,7 +50,7 @@ class _MetricsScreenState extends State<MetricsScreen> {
           children :[
             Container(
               child: Text(
-                '₹ ${_metricsData['Total']?.toStringAsFixed(2)}',
+                '₹ ${_metricsData2.keys.first['Total']?.toStringAsFixed(2)}',
                 style: TextStyle(
                     fontSize: 35,
                     fontWeight: FontWeight.bold
@@ -68,7 +71,7 @@ class _MetricsScreenState extends State<MetricsScreen> {
                   items: metricsBy.map((String value){
                     return DropdownMenuItem<String>(
                         value: value,
-                        child: Text(value)
+                        child: Text(value , style : TextStyle(fontSize:20))
                     );
 
                   }).toList(),
@@ -84,7 +87,7 @@ class _MetricsScreenState extends State<MetricsScreen> {
                       items: metricsDuration.map((String value){
                         return DropdownMenuItem<String>(
                             value: value,
-                            child: Text(value)
+                            child: Text(value , style : TextStyle(fontSize:20))
                         );
 
                       }).toList(),
@@ -99,7 +102,8 @@ class _MetricsScreenState extends State<MetricsScreen> {
                           valueListenable: Hive.box<ExpenseType>('expenseTypeBox').listenable(),
                           builder: (context,Box<ExpenseType> expenseBox , _){
                             // final metrics = _expenseService.getMetrics(_selectedDurationNotifier.value);
-                            if(_metricsData.entries.where((metric )=> metric.key != 'Total').isEmpty){
+                            final primaryMetric = _metricsData2.keys;
+                            if(primaryMetric.where((metric )=> metric.keys.first != 'Total').isEmpty){
                               return Center(
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
@@ -125,20 +129,66 @@ class _MetricsScreenState extends State<MetricsScreen> {
                             }
 
                             return ListView(
-                              children: _metricsData.entries.where((metric )=> metric.key != 'Total').map((metric){
-                                return ListTile(
-                                  onTap: (){},
-                                  title: Text(metric.key , style: TextStyle(fontSize: 18),),
-                                  trailing: Text(
-                                    '₹${metric.value.toStringAsFixed(2)}',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight:  FontWeight.normal
-                                      ),
+                              children: primaryMetric.where((metric )=> metric.keys.first != 'Total').map((metric){
+                                final key = metric.keys.first;
+                                final value = metric[key] ?? 0.0;
+                                final secondaryMetrics = _metricsData2[metric];
+                                return Column(
+                                  children :[
+                                  ListTile(
+                                    onTap: (){
+                                      setState(() {
+                                        _selectedKey = _selectedKey == key ? null : key;
+                                        // print(_selectedKey);
+                                      });
+                                    },
+                                    title: Text(key, style: TextStyle(fontSize: 18),),
+                                    trailing: Text(
+                                      '₹${value.toStringAsFixed(2)}',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight:  FontWeight.normal
+                                        ),
+                                    ),
                                   ),
+                                    AnimatedSize(
+                                        duration: const Duration(milliseconds: 200),
+                                        curve: Curves.easeInOut,
+                                        child: _selectedKey == key && secondaryMetrics != null ?
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 30),
+                                          child: Column(
+                                            children: secondaryMetrics.map((secondary) {
+                                              final secondaryMetricName = secondary.keys.first;
+                                              final secondaryMetricValue = secondary[secondaryMetricName] ?? 0.0;
+                                              return Row(
+                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                children: [
+                                                  Text(
+                                                    secondaryMetricName,
+                                                    style: TextStyle(fontSize: 14,color: Colors.grey[700],),
+                                                  ),
+                                                  Text(
+                                                    '₹${secondaryMetricValue.toStringAsFixed(2)}',
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                      color: Colors.grey[700],
+                                                    ),
+                                                  )
+                                                ],
+                                              );
+                                            }).toList(),
+                                          ),
+                                        )
+                                            : SizedBox.shrink()
+                                    ),
+
+                                ]
                                 );
                               }).toList(),
                             );
+
+
                           });
                     })
 

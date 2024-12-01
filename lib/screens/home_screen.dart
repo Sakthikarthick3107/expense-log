@@ -59,7 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
       drawer: AppDrawer(onSelectScreen: _onDrawerItemSelected),
         appBar: AppBar(
           title:  Text(
-            'Expense_Log',
+            'expense.log',
             style:const TextStyle(
                 fontSize: 22,
                 color: Colors.white,
