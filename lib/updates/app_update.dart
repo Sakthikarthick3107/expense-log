@@ -2,14 +2,65 @@ import 'dart:convert';
 
 import 'package:expense_log/widgets/message_widget.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_app_installer/flutter_app_installer.dart';
+import 'package:install_plugin/install_plugin.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class AppUpdate{
   final String owner = 'Sakthikarthick3107';
   final String repo = 'expense-log';
+  String downloadProgress = '-1';
+
+  Future<void> downloadAndInstallApk(String downloadUrl) async {
+    final dio = Dio();
+    final appDir = await getExternalStorageDirectory();
+    final apkPath = '${appDir?.path}/expense_log.apk';
+
+
+    try {
+      await dio.download(
+        downloadUrl,
+        apkPath,
+        onReceiveProgress: (received, total) {
+          if (total != -1) {
+            downloadProgress = "${(received / total * 100).toStringAsFixed(0)}%";
+            print("Download Progress: ${(received / total * 100).toStringAsFixed(0)}%");
+          }
+        },
+      );
+      print("APK Downloaded at: $apkPath");
+      installApk(apkPath);
+    } catch (e) {
+      print("Failed to download APK: $e");
+    }
+  }
+
+  Future<void> installApk(String apkPath) async {
+    try {
+      // Request storage permissions before proceeding with APK installation
+      final PermissionStatus status = await Permission.storage.request();
+
+      // Check if permission is granted
+      if (status.isGranted) {
+        final FlutterAppInstaller flutterAppInstaller = FlutterAppInstaller();
+        await flutterAppInstaller.installApk(filePath: apkPath);
+        print('APK installed successfully');
+      } else {
+        print('Storage permission is denied');
+      }
+    } catch (e) {
+      print("Failed to install APK: $e");
+    } finally {
+      SystemNavigator.pop();
+    }
+  }
 
   Future<void> checkForUpdates(BuildContext context) async{
     final url = Uri.parse('https://api.github.com/repos/$owner/$repo/releases/latest');
@@ -96,6 +147,7 @@ class AppUpdate{
           title:const Text('Update Available'),
           content: SingleChildScrollView(
             child: ListBody(
+
               children: [
                 const Text('A new version of the app is available.'),
                 const SizedBox(height: 4),
@@ -103,7 +155,7 @@ class AppUpdate{
                 const SizedBox(height: 10),
                 Text(releaseNotes),
               ],
-            ),
+            )
           ),
           actions: [
             TextButton(
@@ -112,8 +164,9 @@ class AppUpdate{
             ),
             TextButton(
               onPressed: () async{
-                Navigator.pop(context);
-                await _launchUrl(downloadUrl);
+                Navigator.pop(context,true);
+                // await _launchUrl(downloadUrl);
+                downloadAndInstallApk(downloadUrl);
               },
               child: Text('Update'),
             ),
