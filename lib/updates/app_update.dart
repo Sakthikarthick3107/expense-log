@@ -21,7 +21,7 @@ class AppUpdate{
   Future<void> downloadAndInstallApk(String downloadUrl) async {
     final dio = Dio();
     final appDir = await getExternalStorageDirectory();
-    final apkPath = '${appDir?.path}/expense_log.apk';
+    final apkPath = '${appDir?.path}/Download/expense_log.apk';
 
 
     try {
@@ -62,6 +62,8 @@ class AppUpdate{
     }
   }
 
+
+
   Future<void> checkForUpdates(BuildContext context) async{
     final url = Uri.parse('https://api.github.com/repos/$owner/$repo/releases/latest');
     try{
@@ -76,7 +78,7 @@ class AppUpdate{
         final releaseNotes = jsonData['body'] ?? 'No release notes provided.';
         final downloadUrl = jsonData['assets'][0]['browser_download_url'];
         // print('Url downlpad - $downloadUrl');
-        if (isNewVersion(latestVersion, currentVersion)) {
+        if (!isNewVersion(latestVersion, currentVersion)) {
           // print('New version available: $latestVersion');
           showUpdateDialog(context, downloadUrl, releaseNotes);
         }
@@ -165,8 +167,8 @@ class AppUpdate{
             TextButton(
               onPressed: () async{
                 Navigator.pop(context,true);
-                // await _launchUrl(downloadUrl);
-                downloadAndInstallApk(downloadUrl);
+                await _launchUrl(downloadUrl);
+                // downloadAndInstallApk(downloadUrl);
               },
               child: Text('Update'),
             ),
@@ -180,7 +182,12 @@ class AppUpdate{
       final Uri uri = Uri.parse(url);
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri,
-            // mode: LaunchMode.externalApplication
+          mode: LaunchMode.externalApplication
+          //   mode: LaunchMode.inAppBrowserView,
+          // webViewConfiguration: const WebViewConfiguration(
+          //   enableJavaScript: true, // Enable JavaScript if needed
+          //   enableDomStorage: true, // Enable DOM storage for advanced web features
+          // ),
         );
       } else {
         MessageWidget.showToast(message: 'Could not launch the update', status: 1);
