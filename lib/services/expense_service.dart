@@ -188,7 +188,7 @@ class ExpenseService{
                     Map<DateTime, double> secondaryTempMetric = {};
                     for(var expenseDate in filterWithType){
                         DateTime day = DateTime(expenseDate.date.year , expenseDate.date.month ,expenseDate.date.day) ;
-                        secondaryTempMetric[day] = secondaryTempMetric[day] ?? 0 + expenseDate.price;
+                        secondaryTempMetric[day] = (secondaryTempMetric[day] ?? 0) + expenseDate.price;
                     }
 
                     List<DateTime> sortedDays = secondaryTempMetric.keys.toList();
@@ -241,7 +241,7 @@ class ExpenseService{
                 Map<String,double> tempSecMetric = {};
 
                 for(var exp in todaysExpense){
-                    tempSecMetric[exp.expenseType.name] = tempSecMetric[exp.expenseType.name] ?? 0.0 + exp.price;
+                    tempSecMetric[exp.expenseType.name] = (tempSecMetric[exp.expenseType.name] ?? 0.0) + exp.price;
                 }
                 for (var entry in tempSecMetric.entries) {
                     Map<String, double> tempMetric = {};
