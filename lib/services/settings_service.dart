@@ -1,11 +1,41 @@
 import 'dart:convert';
 
+import 'package:expense_log/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
+import 'package:google_sign_in/google_sign_in.dart';
 
 class SettingsService with ChangeNotifier{
     final _settingsBox = Hive.box('settingsBox');
+
+    Future<User?> getUser() async{
+        String userName = await _settingsBox.get('userName',defaultValue: '');
+        if(userName == ''){
+            return null;
+        }
+        User user = User(userName: userName);
+        return user;
+
+    }
+
+    Future<void> googleSignIn() async{
+        // print('Servicee g starts');
+        final GoogleSignIn _googleSignIn = GoogleSignIn();
+        try {
+            GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+
+            if (googleUser != null) {
+                _settingsBox.put('userName',googleUser.displayName);
+                _settingsBox.put('email' ,googleUser.email);
+                print('Signed in as: ${googleUser.displayName}');
+                print('Email: ${googleUser.email}');
+            }
+        } catch (error) {
+            print('Google Sign-In error: $error');
+        }
+    }
+
 
     Future<int> getBoxKey(String key) async{
         int currentId = await _settingsBox.get(key,defaultValue: 0) as int;

@@ -1,3 +1,4 @@
+import 'package:expense_log/models/user.dart';
 import 'package:expense_log/services/settings_service.dart';
 import 'package:expense_log/updates/app_update.dart';
 import 'package:expense_log/widgets/message_widget.dart';
@@ -19,6 +20,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   int settingIndex = 0;
   String version = '';
   int downloads = 0;
+  User? user;
 
   @override
   void initState(){
@@ -26,6 +28,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _settingsService = Provider.of<SettingsService>(context,listen: false);
     _fetchVersion();
     downloadsCount();
+    _checkIfUserExists();
   }
 
   Future<void> downloadsCount()async{
@@ -33,13 +36,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() {
       downloads = count;
     });
-
   }
 
   Future<void> _fetchVersion() async {
     final packageInfo = await PackageInfo.fromPlatform();
     setState(() {
       version = packageInfo.version;
+    });
+  }
+
+  Future<void> _checkIfUserExists() async{
+    User? userData = await _settingsService.getUser();
+    setState(() {
+      user = userData;
     });
   }
 
@@ -66,7 +75,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Settings',
+        title: Text(user != null? user!.userName :'Settings',
           style: TextStyle(
             color: Colors.white
           ),
@@ -77,6 +86,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if(user == null)
+            ListTile(
+              onTap: ()async{
+                await _settingsService.googleSignIn();
+                User? userData = await _settingsService.getUser();
+                setState((){
+
+                  setState(() {
+                    user = userData;
+                  });
+                });
+              },
+              title: Text('Signin using Google'),
+            )
+           ,
             ListTile(
               onTap: (){
                 setState(() {
@@ -85,7 +109,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
               title: Text('About'),
             ),
-            if(settingIndex == 1)
+            AnimatedSize(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeInOut,
+              child : settingIndex == 1 ?
               Consumer<SettingsService>(
                   builder: (context,settingsService , child){
                     return Container(
@@ -97,7 +124,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text('Downloads'),
-                             Text(downloads.toString())
+                              Text(downloads.toString())
 
                             ],
                           ),
@@ -111,7 +138,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ],
                       ),
                     );
-                  }),
+                  })
+                  : SizedBox.shrink()
+            ),
+
             ListTile(
               onTap: (){
                 setState(() {
@@ -120,9 +150,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
               title: Text('Theme'),
             ),
-            if(settingIndex == 2)
-              Consumer<SettingsService>(
-                builder: (context , settingsService,child){
+            AnimatedSize(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeInOut,
+                child: settingIndex == 2 ?
+                Consumer<SettingsService>(
+                  builder: (context , settingsService,child){
 
                     return Container(
                       padding: EdgeInsets.symmetric(
@@ -130,9 +163,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       child: Column(
                         children: [
                           ListTile(
-                            onTap:(){
-                              _settingsService.setTheme(false);
-                            },
+                              onTap:(){
+                                _settingsService.setTheme(false);
+                              },
                               leading: Icon(
                                   !settingsService.isDarkTheme()
                                       ? Icons.check_box
@@ -157,10 +190,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                     );
 
-                },
+                  },
 
-              ),
-
+                ) :
+                SizedBox.shrink(),
+            ),
             ListTile(
               onTap: (){
                 setState(() {
@@ -171,21 +205,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
               title: Text('Updates'),
             ),
-            if(settingIndex == 3)
-             Container(
-                 padding :EdgeInsets.symmetric(horizontal: 40, vertical: 0),
-                  child : Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('Current Version'),
-                          Text(version)
-                        ],
-                      )
-                    ],
-                  )
-              ),
+            AnimatedSize(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeInOut,
+                child: settingIndex == 3 ?
+                Container(
+                    padding :EdgeInsets.symmetric(horizontal: 40, vertical: 0),
+                    child : Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Current Version'),
+                            Text(version)
+                          ],
+                        )
+                      ],
+                    )
+                )
+                  : SizedBox.shrink(),
+            ),
             ListTile(
               onTap: (){
                 setState(() {
@@ -194,80 +233,85 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
               title: Text('Developer Info'),
             ),
-            if(settingIndex == 4)
-              Container(
-                padding :EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
+            AnimatedSize(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                child: settingIndex == 4 ?
+                Container(
+                  padding :EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
                         'Sakthikarthick Nagendran',
-                      style: TextStyle(
-                        fontSize: 18
+                        style: TextStyle(
+                            fontSize: 18
+                        ),
+
+                      ),
+                      Text(
+                        'Chennai',
+                        style: TextStyle(
+                            fontSize: 14
+                        ),
+
+                      ),
+                      SizedBox(height: 20),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 10,
+                        children: [
+                          InkWell(
+                            onTap: (){
+                              _launchMail('sakthikarthick3107@gmail.com');
+                            },
+                            child: Container(
+                                padding: EdgeInsets.symmetric(horizontal: 15,vertical: 6),
+
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.orange, width: 2),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text('Mail')),
+                          ),
+                          SizedBox(width: 10,),
+                          InkWell(
+                            onTap: (){
+                              _launchURL('https://sakthikarthick3107.netlify.app');
+
+                            },
+                            child: Container(
+                                padding: EdgeInsets.symmetric(horizontal: 15,vertical: 6),
+
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.orange, width: 2),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text('Portfolio')),
+                          ),
+                          SizedBox(width: 10,),
+                          InkWell(
+                            onTap: (){
+                              _launchURL('https://www.instagram.com/__intelligent__psycho__/');
+                            },
+                            child: Container(
+                                padding: EdgeInsets.symmetric(horizontal: 15,vertical: 6),
+
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.orange, width: 2),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text('Instagram')),
+                          ),
+
+                        ],
                       ),
 
-                    ),
-                    Text(
-                      'Chennai',
-                      style: TextStyle(
-                          fontSize: 14
-                      ),
-
-                    ),
-                    SizedBox(height: 20),
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: 10,
-                      children: [
-                        InkWell(
-                          onTap: (){
-                            _launchMail('sakthikarthick3107@gmail.com');
-                          },
-                          child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: 15,vertical: 6),
-
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.orange, width: 2),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Text('Mail')),
-                        ),
-                        SizedBox(width: 10,),
-                        InkWell(
-                          onTap: (){
-                            _launchURL('https://sakthikarthick3107.netlify.app');
-
-                          },
-                          child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: 15,vertical: 6),
-
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.orange, width: 2),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Text('Portfolio')),
-                        ),
-                        SizedBox(width: 10,),
-                        InkWell(
-                          onTap: (){
-                            _launchURL('https://www.instagram.com/__intelligent__psycho__/');
-                          },
-                          child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: 15,vertical: 6),
-
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.orange, width: 2),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Text('Instagram')),
-                        ),
-
-                      ],
-                    ),
-
-                  ],
-                ),
-              )
+                    ],
+                  ),
+                )
+                    : SizedBox.shrink() ,
+            )
           ],
         ),
       ),

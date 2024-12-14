@@ -147,6 +147,9 @@ ThemeData appTheme(bool isDarkTheme) {
       color: isDarkTheme ? Colors.white :Colors.black
     ),
 
+    snackBarTheme: SnackBarThemeData(
+      backgroundColor: Colors.deepOrange,
+    ),
 
     
     useMaterial3: true,

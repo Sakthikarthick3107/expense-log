@@ -12,14 +12,14 @@ class MessageWidget{
 
   static void showToast({
       required String message,
-      required int status,
+      int? status,
       ToastGravity gravity = ToastGravity.BOTTOM,
       Toast length = Toast.LENGTH_SHORT,
       Color textColor = Colors.white,
       double fontSize = 16.0,
       int? timeInSecForIosWeb,
     }) {
-        Color backgroundColor = status == 1 ? Colors.green : Colors.red;
+        Color? backgroundColor = status == 1 ? Colors.green : status == 0 ? Colors.red : null;
         Fluttertoast.showToast(
             msg: message,
             toastLength: length,
@@ -37,13 +37,13 @@ class MessageWidget{
   static void showSnackBar({
     required BuildContext context,
     required String message,
-    required int status,
+    int? status,
     SnackBarBehavior behavior = SnackBarBehavior.floating,
     Duration duration = const Duration(seconds: 4),
     Color textColor = Colors.white,
     double fontSize = 16.0
   }){
-      Color backgroundColor = status == 1 ? Colors.green : Colors.red;
+    Color? backgroundColor = status == 1 ? Colors.green : status == 0 ? Colors.red : null;
       final snackBar = SnackBar(
           content: Text(
               message,

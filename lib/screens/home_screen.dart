@@ -1,15 +1,22 @@
 
 import 'package:expense_log/models/expense2.dart';
 import 'package:expense_log/models/expense_type.dart';
+import 'package:expense_log/models/user.dart';
 import 'package:expense_log/screens/daily_expense_screen.dart';
 import 'package:expense_log/screens/expense_type_screen.dart';
 import 'package:expense_log/screens/metrics_screen.dart';
+import 'package:expense_log/services/NotificationService.dart';
+import 'package:expense_log/services/settings_service.dart';
+import 'package:expense_log/services/ui_service.dart';
 import 'package:expense_log/updates/app_update.dart';
 import 'package:expense_log/widgets/app_drawer.dart';
 import 'package:expense_log/widgets/message_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:provider/provider.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -22,16 +29,25 @@ class _HomeScreenState extends State<HomeScreen> {
 
   String version = '';
   int _currentIndex = 0;
+  User? user;
+  late SettingsService _settingsService;
+  late UiService _uiService;
+
+
 
   @override
   void initState() {
     super.initState();
+    _scheduleNotifications();
+    _settingsService = Provider.of<SettingsService>(context,listen: false);
+    _uiService = Provider.of<UiService>(context,listen: false);
+    _checkIfUserExists();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final appUpdate = AppUpdate();
       appUpdate.checkForUpdates(context);
+      welcomeGreeting();
     });
     _fetchVersion();
-
 
   }
   Future<void> _fetchVersion() async {
@@ -40,6 +56,103 @@ class _HomeScreenState extends State<HomeScreen> {
       version = packageInfo.version;
     });
   }
+
+  void _scheduleNotifications() {
+    String userName = user != null ? user!.userName : 'User';
+    NotificationService.scheduleNotification(
+      id: 1,
+      title: 'Good Morning, $userName!',
+      body: 'Start your day with your favourite activity.',
+      hour: 5,
+      minute: 0,
+    );
+
+    NotificationService.scheduleNotification(
+      id: 2,
+      title: 'Morning Reminder, $userName!',
+      body: 'Have a check whether you missed any expenses?',
+      hour: 7,
+      minute: 0,
+    );
+
+    NotificationService.scheduleNotification(
+      id: 3,
+      title: 'Good Morning Reminder, $userName!',
+      body: 'Did you forget to add your meals expenses?',
+      hour: 9,
+      minute: 0,
+    );
+
+    NotificationService.scheduleNotification(
+      id: 4,
+      title: 'Good Afternoon, $userName!',
+      body: 'Did you track your afternoon expenses?',
+      hour: 11,
+      minute: 0,
+    );
+
+    NotificationService.scheduleNotification(
+      id: 5,
+      title: 'Good Afternoon Reminder, $userName!',
+      body: 'Don\'t forget to track after having your snacks.',
+      hour: 13,
+      minute: 0,
+    );
+
+    NotificationService.scheduleNotification(
+      id: 6,
+      title: 'Good Evening, $userName!',
+      body: 'Remember to track your evening expenses.',
+      hour: 15,
+      minute: 0,
+    );
+
+    NotificationService.scheduleNotification(
+      id: 7,
+      title: 'Good Evening Reminder, $userName!',
+      body: 'Don’t forget to add any late afternoon expenses.',
+      hour: 17,
+      minute: 0,
+    );
+
+    NotificationService.scheduleNotification(
+      id: 8,
+      title: 'Late Evening Reminder, $userName!',
+      body: 'Check if you have tracked all your expenses today.',
+      hour: 19,
+      minute: 0,
+    );
+
+    NotificationService.scheduleNotification(
+      id: 9,
+      title: 'Night Reminder, $userName!',
+      body: 'Almost time to wrap up your expenses for the day.',
+      hour: 21,
+      minute: 0,
+    );
+
+    NotificationService.scheduleNotification(
+      id: 10,
+      title: 'Good Night, $userName!',
+      body: 'Make sure you have added all your expenses for today.',
+      hour: 23,
+      minute: 0,
+    );
+  }
+
+  Future<void> _checkIfUserExists() async{
+    User? userData = await _settingsService.getUser();
+    setState(() {
+      user = userData;
+    });
+  }
+
+  void welcomeGreeting(){
+    String timeOfDay = _uiService.getTimeOfDay();
+    String userName = user != null ? user!.userName : 'User';
+    MessageWidget.showSnackBar(context: context, message: 'Good $timeOfDay, $userName');
+  }
+
   final List<Widget> _screens = [
     const DailyExpenseScreen(),
     const ExpenseTypeScreen(),

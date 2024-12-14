@@ -1,20 +1,18 @@
-import 'package:expense_log/migrations/hive_migrations.dart';
-import 'package:expense_log/models/expense.dart';
 import 'package:expense_log/models/expense2.dart';
 import 'package:expense_log/models/expense_type.dart';
-import 'package:expense_log/screens/daily_expense_screen.dart';
 import 'package:expense_log/screens/home_screen.dart';
+import 'package:expense_log/services/NotificationService.dart';
 import 'package:expense_log/services/expense_service.dart';
 import 'package:expense_log/services/settings_service.dart';
 import 'package:expense_log/services/ui_service.dart';
 import 'package:expense_log/themes/app_theme.dart';
-import 'package:expense_log/updates/app_update.dart';
-import 'package:expense_log/widgets/app_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 
 Future<void> requestPermissions() async {
   var status = await Permission.storage.status;
@@ -41,6 +39,8 @@ void main() async{
   await Hive.openBox('settingsBox');
 
   // await checkAndRunMigration();
+  tz.initializeTimeZones(); // Initialize timezone
+  await NotificationService.initialize();
 
   runApp(
       MultiProvider(providers: [
@@ -58,6 +58,7 @@ void main() async{
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
 
   @override
   Widget build(BuildContext context) {

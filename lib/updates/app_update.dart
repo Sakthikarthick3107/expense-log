@@ -84,7 +84,7 @@ class AppUpdate{
         }
         else {
           // print('App is up-to-date!');
-          MessageWidget.showSnackBar(context: context, message: 'App is upto date', status: 1);
+          // MessageWidget.showSnackBar(context: context, message: 'App is upto date', status: 1);
 
         }
       }

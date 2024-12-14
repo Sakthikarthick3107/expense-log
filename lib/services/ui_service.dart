@@ -22,6 +22,22 @@ class UiService{
     return pickedDate!;
   }
 
+  String getTimeOfDay(){
+    final now = DateTime.now();
+    final hour = now.hour;
+    if (hour >= 5 && hour < 9) {
+      return "Morning";
+    } else if (hour >= 9 && hour < 12) {
+      return "Early Noon";
+    } else if (hour >= 12 && hour < 17) {
+      return "Afternoon";
+    } else if (hour >= 17 && hour < 20) {
+      return "Evening";
+    } else {
+      return "Night";
+    }
+  }
+
   String displayDay(DateTime selectedDate){
       final now = DateTime.now();
       final today = DateTime(now.year,now.month,now.day);
