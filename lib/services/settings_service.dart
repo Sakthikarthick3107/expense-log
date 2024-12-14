@@ -11,15 +11,16 @@ class SettingsService with ChangeNotifier{
 
     Future<User?> getUser() async{
         String userName = await _settingsBox.get('userName',defaultValue: '');
-        if(userName == ''){
+        String email = await _settingsBox.get('email',defaultValue: '');
+        String? image = await _settingsBox.get('image',defaultValue: '');
+        if(userName == ''|| email =='' || image == ''){
             return null;
         }
-        User user = User(userName: userName);
+        User user = User(userName: userName , email: email , image: image );
         return user;
-
     }
 
-    Future<void> googleSignIn() async{
+    Future<int> googleSignIn() async{
         // print('Servicee g starts');
         final GoogleSignIn _googleSignIn = GoogleSignIn();
         try {
@@ -28,13 +29,34 @@ class SettingsService with ChangeNotifier{
             if (googleUser != null) {
                 _settingsBox.put('userName',googleUser.displayName);
                 _settingsBox.put('email' ,googleUser.email);
+                _settingsBox.put('image',googleUser.photoUrl);
                 print('Signed in as: ${googleUser.displayName}');
                 print('Email: ${googleUser.email}');
+                return 1;
             }
+            return 0;
         } catch (error) {
             print('Google Sign-In error: $error');
+            return 0;
+        }
+        return 0;
+    }
+
+    Future<int> googleSignOut() async {
+        final GoogleSignIn _googleSignIn = GoogleSignIn();
+        try {
+            await _googleSignIn.signOut();
+            _settingsBox.delete('userName');
+            _settingsBox.delete('email');
+            _settingsBox.delete('image');
+            print('User signed out');
+            return 1;
+        } catch (error) {
+            print('Google Sign-Out error: $error');
+            return 0;
         }
     }
+
 
 
     Future<int> getBoxKey(String key) async{

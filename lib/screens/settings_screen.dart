@@ -89,14 +89,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
             if(user == null)
             ListTile(
               onTap: ()async{
-                await _settingsService.googleSignIn();
-                User? userData = await _settingsService.getUser();
-                setState((){
-
-                  setState(() {
-                    user = userData;
-                  });
-                });
+                int loginUser = await _settingsService.googleSignIn();
+                if(loginUser == 1){
+                  _checkIfUserExists();
+                  MessageWidget.showSnackBar(context: context, message: 'Loggedin successfully',status: 1);
+                }
+                else{
+                  MessageWidget.showSnackBar(context: context, message: 'Failed to login',status: 0);
+                }
               },
               title: Text('Signin using Google'),
             )
@@ -311,7 +311,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 )
                     : SizedBox.shrink() ,
-            )
+            ),
+            if(user != null)
+            ListTile(
+              onTap: ()async{
+                  int signOutUser = await _settingsService.googleSignOut();
+                  if(signOutUser == 1){
+                    setState(() {
+                      user = null;
+                    });
+                    MessageWidget.showSnackBar(context: context, message: 'Loggedout successfully' , status: 1);
+                  }
+                  else
+                  MessageWidget.showSnackBar(context: context, message: 'Failed to logout',status: 0);
+              },
+              title: Text('Signout'),
+              subtitle: Text(
+                  '${user!.email}',
+                  style: TextStyle(
+                    fontSize: 14
+                  ),
+              ),
+            ),
           ],
         ),
       ),

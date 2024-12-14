@@ -31,7 +31,7 @@ class UiService{
       return "Early Noon";
     } else if (hour >= 12 && hour < 17) {
       return "Afternoon";
-    } else if (hour >= 17 && hour < 20) {
+    } else if (hour >= 17 && hour < 21) {
       return "Evening";
     } else {
       return "Night";

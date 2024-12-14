@@ -5,7 +5,7 @@ import 'package:expense_log/models/user.dart';
 import 'package:expense_log/screens/daily_expense_screen.dart';
 import 'package:expense_log/screens/expense_type_screen.dart';
 import 'package:expense_log/screens/metrics_screen.dart';
-import 'package:expense_log/services/NotificationService.dart';
+import 'package:expense_log/services/notification_service.dart';
 import 'package:expense_log/services/settings_service.dart';
 import 'package:expense_log/services/ui_service.dart';
 import 'package:expense_log/updates/app_update.dart';
@@ -38,10 +38,10 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _scheduleNotifications();
     _settingsService = Provider.of<SettingsService>(context,listen: false);
     _uiService = Provider.of<UiService>(context,listen: false);
     _checkIfUserExists();
+    _scheduleNotifications();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final appUpdate = AppUpdate();
       appUpdate.checkForUpdates(context);
@@ -182,14 +182,22 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           actions: [
             Container(
-              // padding: EdgeInsets.all(10),
-              margin: EdgeInsets.all(20),
+              padding: EdgeInsets.all(10),
+              // margin: EdgeInsets.all(20),
               child: Text(
                 '$version',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 12
                 ),
+              ),
+            ),
+            if(user?.image != null)
+            Container(
+              padding: EdgeInsets.all(10),
+              child: CircleAvatar(
+                  radius: 20.0,
+                foregroundImage: user!.image != null ?  NetworkImage(user!.image!) : null
               ),
             )
           ],

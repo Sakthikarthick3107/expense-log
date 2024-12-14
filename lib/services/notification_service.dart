@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 
@@ -8,6 +11,7 @@ class NotificationService {
 
   // Initialize the notification plugin
   static Future<void> initialize() async {
+    await _requestNotificationPermission();
     const AndroidInitializationSettings initializationSettingsAndroid =
     AndroidInitializationSettings('@mipmap/ic_launcher');
 
@@ -15,6 +19,26 @@ class NotificationService {
     InitializationSettings(android: initializationSettingsAndroid);
 
     await _notificationsPlugin.initialize(initializationSettings);
+  }
+
+  // Request notification permission for Android
+  static Future<void> _requestNotificationPermission() async {
+    if (Platform.isAndroid) {
+      PermissionStatus status = await Permission.notification.status;
+
+      if (!status.isGranted) {
+        // Permission not granted, request it
+        PermissionStatus permissionStatus = await Permission.notification.request();
+
+        if (permissionStatus.isGranted) {
+          print("Notification permission granted");
+        } else {
+          print("Notification permission denied");
+        }
+      } else {
+        print("Notification permission already granted");
+      }
+    }
   }
 
   // Schedule a notification at a specific time

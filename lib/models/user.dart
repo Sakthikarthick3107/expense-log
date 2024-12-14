@@ -1,5 +1,6 @@
 class User{
   String userName;
   String? email;
-  User({required this.userName , this.email});
+  String? image;
+  User({required this.userName , this.email , this.image});
 }

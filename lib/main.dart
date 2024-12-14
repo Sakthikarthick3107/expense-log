@@ -1,7 +1,7 @@
 import 'package:expense_log/models/expense2.dart';
 import 'package:expense_log/models/expense_type.dart';
 import 'package:expense_log/screens/home_screen.dart';
-import 'package:expense_log/services/NotificationService.dart';
+import 'package:expense_log/services/notification_service.dart';
 import 'package:expense_log/services/expense_service.dart';
 import 'package:expense_log/services/settings_service.dart';
 import 'package:expense_log/services/ui_service.dart';
