@@ -82,6 +82,7 @@ jobs:
   build-windows:
     runs-on: windows-latest
 
+
     steps:
       # Checkout the code
       - uses: actions/checkout@v3
@@ -90,26 +91,44 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.22.3'
+          flutter-version: stable
 
       # Install dependencies for Windows
       - name: Install Dependencies
         run: flutter pub get
 
-#      - name: Extract version from pubspec.yaml
-#        id: extract_version
-#        run: |
-#          VERSION=$(grep '^version: ' pubspec.yaml | sed 's/version: //g')
-#          VERSION_TAG="v${VERSION%%+*}" # Use only the version part, ignoring build number after '+'
-#          echo "VERSION=$VERSION" >> $GITHUB_ENV
-#          echo "VERSION_TAG=$VERSION_TAG" >> $GITHUB_ENV
+      # Extract version from pubspec.yaml
+      - name: Extract version from pubspec.yaml
+        id: extract_version
+        run: |
+          VERSION=$(grep '^version: ' pubspec.yaml | sed 's/version: //g')
+          VERSION_TAG="v${VERSION%%+*}" # Use only the version part, ignoring build number after '+'
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "VERSION_TAG=$VERSION_TAG" >> $GITHUB_ENV
+
       # Build Windows App
       - name: Build Windows App
         run: flutter build windows
 
-      # Upload Windows executable as an artifact
-      - name: Upload Windows Executable
-        uses: actions/upload-artifact@v3
+      # Create GitHub Release (if you want to create a release for the Windows app as well)
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: app-windows.zip
-          path: build/windows/runner/Release/*.exe
+          tag_name: ${{ env.VERSION_TAG }}
+          release_name: Release ${{ env.VERSION_TAG }}
+          draft: false
+          prerelease: false
+
+      # Upload Windows Executable to the Release
+      - name: Upload Windows Executable to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: build/windows/runner/Release/*.exe
+          asset_name: expense_log_windows.exe
+          asset_content_type: application/vnd.microsoft.portable-executable
