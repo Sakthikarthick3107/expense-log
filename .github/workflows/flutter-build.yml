@@ -131,6 +131,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: D:/flutter/expense_log/build/windows/x64/runner/Release/expense_log.exe
+          asset_path: build\windows\x64\runner\Release\expense_log.exe
           asset_name: expense_log_windows.exe
           asset_content_type: application/vnd.microsoft.portable-executable
