@@ -81,7 +81,6 @@ jobs:
 
   build-windows:
     runs-on: windows-latest
-    needs: build-apk
 
     steps:
       # Checkout the code
