@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:expense_log/models/user.dart';
 import 'package:expense_log/services/settings_service.dart';
 import 'package:expense_log/updates/app_update.dart';
@@ -75,19 +77,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar:!Platform.isWindows ? AppBar(
         title: Text(user != null? user!.userName :'Settings',
           style: TextStyle(
             color: Colors.white
           ),
         ),
-      ),
+      ) : null,
       body: Container(
         padding: EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if(user == null)
+            if(user == null && !Platform.isWindows)
             ListTile(
               onTap: ()async{
                 int loginUser = await _settingsService.googleSignIn();

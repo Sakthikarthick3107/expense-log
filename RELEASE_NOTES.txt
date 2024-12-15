@@ -1,0 +1,8 @@
+Version: 1.0.14
+Date : 15-12-2024
+
+New Features:
+ - Included Desktop Application
+ - Implemented  Local Notifications
+Bug Fixes
+ - Implemented warning message before deleting

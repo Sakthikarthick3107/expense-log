@@ -14,6 +14,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Read Release Notes
+        id: notes
+        run: echo "::set-output name=notes::$(cat RELEASE_NOTES.txt)"
+
       # Step 2: Set up Flutter environment
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -50,6 +54,9 @@ jobs:
       # Step 6: Build APK
       - name: Build APK
         run: flutter build apk --release
+
+      - name: Build Desktop (Windows)
+        run: flutter build windows
 
       # Step 7: Upload APK to GitHub Release
       - name: Create GitHub Release

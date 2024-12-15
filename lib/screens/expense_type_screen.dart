@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
+import 'dart:io';
 
 class ExpenseTypeScreen extends StatefulWidget {
   const ExpenseTypeScreen({super.key});
@@ -60,8 +61,8 @@ class _ExpenseTypeScreenState extends State<ExpenseTypeScreen> {
                 return Container(
                   padding: EdgeInsets.all(10),
                   child: GridView.builder(
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: Platform.isWindows ? 8 : 2,
                       crossAxisSpacing: 2,
                       mainAxisSpacing: 4,
                       childAspectRatio: 3

@@ -1,10 +1,11 @@
-
+import 'dart:io';
 import 'package:expense_log/models/expense2.dart';
 import 'package:expense_log/models/expense_type.dart';
 import 'package:expense_log/models/user.dart';
 import 'package:expense_log/screens/daily_expense_screen.dart';
 import 'package:expense_log/screens/expense_type_screen.dart';
 import 'package:expense_log/screens/metrics_screen.dart';
+import 'package:expense_log/screens/settings_screen.dart';
 import 'package:expense_log/services/notification_service.dart';
 import 'package:expense_log/services/settings_service.dart';
 import 'package:expense_log/services/ui_service.dart';
@@ -163,19 +164,22 @@ class _HomeScreenState extends State<HomeScreen> {
     const DailyExpenseScreen(),
     const ExpenseTypeScreen(),
     const MetricsScreen(),
+    const SettingsScreen()
   ];
 
   void _onDrawerItemSelected(int index){
+    if(!Platform.isWindows)
+    Navigator.pop(context);
     setState(() {
       _currentIndex = index;
     });
-    Navigator.pop(context);
+
   }
 
   @override
   Widget build(BuildContext context){
     return Scaffold(
-      drawer: AppDrawer(onSelectScreen: _onDrawerItemSelected),
+      drawer:Platform.isWindows ? null : AppDrawer(onSelectScreen: _onDrawerItemSelected),
         appBar: AppBar(
           title:  Text(
             'expense.log',
@@ -210,7 +214,16 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
           //leading: Text(version),
         ),
-      body: _screens[_currentIndex],
+      body: Platform.isWindows ?
+            Container(
+              child: Row(
+                children: [
+                  AppDrawer(onSelectScreen: _onDrawerItemSelected),
+                  Expanded(child: _screens[_currentIndex])
+                ],
+              ),
+            )
+          :  _screens[_currentIndex],
     );
   }
 }

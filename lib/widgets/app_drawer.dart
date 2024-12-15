@@ -89,8 +89,14 @@ class AppDrawer extends StatelessWidget {
 
                   ListTile(
                 onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsScreen()));
+                  if(!Platform.isWindows){
+                    Navigator.pop(context);
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsScreen()));
+                  }
+                  else{
+                    onSelectScreen(3);
+                  }
+
                   // MessageWidget.showToast(message: 'This feature will be available soon', status: 0);
                 },
                 leading: Icon(

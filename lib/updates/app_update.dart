@@ -153,8 +153,8 @@ class AppUpdate{
               children: [
                 const Text('A new version of the app is available.\nIf you face any difficulties in updating, kindly tap on the Copy link and paste it in your browser or contact developer!'),
                 const SizedBox(height: 4),
-                // const Text('Release Notes:'),
-                // Text(releaseNotes),
+                const Text('Release Notes:'),
+                Text(releaseNotes),
               InkWell(
                 onTap:() {
                   _copyLinkToClipboard(context,downloadUrl);
