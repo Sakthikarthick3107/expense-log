@@ -97,14 +97,16 @@ jobs:
       - name: Install Dependencies
         run: flutter pub get
 
-      # Extract version from pubspec.yaml
+          # Extract version from pubspec.yaml using PowerShell
       - name: Extract version from pubspec.yaml
         id: extract_version
         run: |
-          VERSION=$(grep '^version: ' pubspec.yaml | sed 's/version: //g')
-          VERSION_TAG="v${VERSION%%+*}" # Use only the version part, ignoring build number after '+'
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "VERSION_TAG=$VERSION_TAG" >> $GITHUB_ENV
+              # PowerShell version extraction
+              $version = (Select-String '^version: ' pubspec.yaml).Line -replace '^version: ', ''
+              $version_tag = "v" + $version.Split('+')[0]  # Get version without build number
+              echo "VERSION=$version" >> $env:GITHUB_ENV
+              echo "VERSION_TAG=$version_tag" >> $env:GITHUB_ENV
+      
 
       # Build Windows App
       - name: Build Windows App
