@@ -6,7 +6,7 @@ on:
       - main  # You can change this to your main development branch
 
 jobs:
-  build:
+  build-apk:
     runs-on: ubuntu-latest
 
     steps:
