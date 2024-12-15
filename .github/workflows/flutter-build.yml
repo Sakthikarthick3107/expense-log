@@ -55,9 +55,6 @@ jobs:
       - name: Build APK
         run: flutter build apk --release
 
-      - name: Build Desktop (Windows)
-        run: flutter build windows
-
       # Step 7: Upload APK to GitHub Release
       - name: Create GitHub Release
         id: create_release
@@ -81,3 +78,39 @@ jobs:
           asset_path: build/app/outputs/flutter-apk/app-release.apk
           asset_name: expense_log.apk
           asset_content_type: application/vnd.android.package-archive
+
+  build-windows:
+    runs-on: windows-latest
+    needs: build-apk
+
+    steps:
+      # Checkout the code
+      - uses: actions/checkout@v3
+
+      # Set up Flutter for Windows
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: stable
+
+      # Install dependencies for Windows
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Extract version from pubspec.yaml
+        id: extract_version
+        run: |
+          VERSION=$(grep '^version: ' pubspec.yaml | sed 's/version: //g')
+          VERSION_TAG="v${VERSION%%+*}" # Use only the version part, ignoring build number after '+'
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "VERSION_TAG=$VERSION_TAG" >> $GITHUB_ENV
+      # Build Windows App
+      - name: Build Windows App
+        run: flutter build windows
+
+      # Upload Windows executable as an artifact
+      - name: Upload Windows Executable
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-windows.zip
+          path: build/windows/runner/Release/*.exe
