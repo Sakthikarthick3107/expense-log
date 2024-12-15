@@ -112,17 +112,18 @@ jobs:
       - name: Build Windows App
         run: flutter build windows
 
-#      # Create GitHub Release (if you want to create a release for the Windows app as well)
-#      - name: Create GitHub Release
-#        id: create_release
-#        uses: actions/create-release@v1
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        with:
-#          tag_name: ${{ env.VERSION_TAG }}
-#          release_name: Release ${{ env.VERSION_TAG }}
-#          draft: false
-#          prerelease: false
+          # Create GitHub Release if it doesn't exist
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        if: github.event_name == 'push' && github.event.ref == 'refs/heads/main'  # Only on the first workflow
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.VERSION_TAG }}
+          release_name: Release ${{ env.VERSION_TAG }}
+          draft: false
+          prerelease: false
 
       # Upload Windows Executable to the Release
       - name: Upload Windows Executable to Release
