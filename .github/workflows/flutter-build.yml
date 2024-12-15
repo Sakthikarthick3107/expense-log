@@ -97,13 +97,13 @@ jobs:
       - name: Install Dependencies
         run: flutter pub get
 
-      - name: Extract version from pubspec.yaml
-        id: extract_version
-        run: |
-          VERSION=$(grep '^version: ' pubspec.yaml | sed 's/version: //g')
-          VERSION_TAG="v${VERSION%%+*}" # Use only the version part, ignoring build number after '+'
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "VERSION_TAG=$VERSION_TAG" >> $GITHUB_ENV
+#      - name: Extract version from pubspec.yaml
+#        id: extract_version
+#        run: |
+#          VERSION=$(grep '^version: ' pubspec.yaml | sed 's/version: //g')
+#          VERSION_TAG="v${VERSION%%+*}" # Use only the version part, ignoring build number after '+'
+#          echo "VERSION=$VERSION" >> $GITHUB_ENV
+#          echo "VERSION_TAG=$VERSION_TAG" >> $GITHUB_ENV
       # Build Windows App
       - name: Build Windows App
         run: flutter build windows
