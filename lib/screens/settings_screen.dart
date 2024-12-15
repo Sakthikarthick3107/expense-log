@@ -2,6 +2,7 @@ import 'package:expense_log/models/user.dart';
 import 'package:expense_log/services/settings_service.dart';
 import 'package:expense_log/updates/app_update.dart';
 import 'package:expense_log/widgets/message_widget.dart';
+import 'package:expense_log/widgets/warning_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
@@ -315,15 +316,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
             if(user != null)
             ListTile(
               onTap: ()async{
-                  int signOutUser = await _settingsService.googleSignOut();
-                  if(signOutUser == 1){
-                    setState(() {
-                      user = null;
-                    });
-                    MessageWidget.showSnackBar(context: context, message: 'Loggedout successfully' , status: 1);
-                  }
-                  else
-                  MessageWidget.showSnackBar(context: context, message: 'Failed to logout',status: 0);
+                  await WarningDialog.showWarning(context: context,
+                      title: 'Warning',
+                      message: 'Are you sure to signout?',
+                      onConfirmed: ()async{
+                        int signOutUser = await _settingsService.googleSignOut();
+                        if(signOutUser == 1){
+                          setState(() {
+                            user = null;
+                          });
+                          MessageWidget.showSnackBar(context: context, message: 'Loggedout successfully' , status: 1);
+                        }
+                        else
+                          MessageWidget.showSnackBar(context: context, message: 'Failed to logout',status: 0);
+                      });
+
               },
               title: Text('Signout'),
               subtitle: Text(

@@ -151,9 +151,23 @@ class AppUpdate{
             child: ListBody(
 
               children: [
-                const Text('A new version of the app is available.'),
+                const Text('A new version of the app is available.\nIf you face any difficulties in updating, kindly tap on the Copy link and paste it in your browser or contact developer!'),
                 const SizedBox(height: 4),
-                const Text('Release Notes:'),
+                // const Text('Release Notes:'),
+                // Text(releaseNotes),
+              InkWell(
+                onTap:() {
+                  _copyLinkToClipboard(context,downloadUrl);
+                  Navigator.pop(context);
+                }, // Call the launch function when tapped
+                child:  Text(
+                  'Copy link',
+                  style: TextStyle(
+                    color: Colors.blue,
+                    decoration: TextDecoration.underline, // Make it look like a link
+                  ),
+                ),
+              ),
                 const SizedBox(height: 10),
                 Text(releaseNotes),
               ],
@@ -176,6 +190,11 @@ class AppUpdate{
         );
       },
     );
+  }
+
+  Future<void> _copyLinkToClipboard(BuildContext context , String url) async {
+    await Clipboard.setData(ClipboardData(text: url));
+    MessageWidget.showSnackBar(context: context, message: 'Link copied to clipboard!');
   }
 
   Future<void> _launchUrl(String url) async {

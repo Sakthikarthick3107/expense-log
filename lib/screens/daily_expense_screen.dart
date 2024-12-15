@@ -3,11 +3,14 @@
 import 'package:expense_log/models/expense.dart';
 import 'package:expense_log/models/expense2.dart';
 import 'package:expense_log/models/expense_type.dart';
+import 'package:expense_log/screens/expense_type_screen.dart';
+import 'package:expense_log/screens/home_screen.dart';
 import 'package:expense_log/services/expense_service.dart';
 import 'package:expense_log/services/settings_service.dart';
 import 'package:expense_log/services/ui_service.dart';
 import 'package:expense_log/widgets/expense_form.dart';
 import 'package:expense_log/widgets/message_widget.dart';
+import 'package:expense_log/widgets/warning_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:lottie/lottie.dart';
@@ -186,13 +189,26 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
 
                               ),
                                 onPressed: (){
-                                  _expenseService.deleteExpense(deleteList);
-                                    setState(() {
-
-                                      deleteList.clear();
-                                      totalExpense = _expenseService.selectedDayTotalExpense(_selectedDateNotifier.value);
-                                      _metricsData = _expenseService.getMetrics('This month','By type');
-                                    });
+                                  WarningDialog.showWarning(context: context,
+                                      title: 'Warning',
+                                      message: 'Are you sure to delete selected ${deleteList.length} expenses?',
+                                      onConfirmed: (){
+                                        _expenseService.deleteExpense(deleteList);
+                                        setState(() {
+                                          deleteList.clear();
+                                          totalExpense = _expenseService.selectedDayTotalExpense(_selectedDateNotifier.value);
+                                          _metricsData = _expenseService.getMetrics('This month','By type');
+                                        });
+                                      },
+                                      onCancelled: (){
+                                        setState(() {
+                                          deleteList.clear();
+                                          totalExpense = _expenseService.selectedDayTotalExpense(_selectedDateNotifier.value);
+                                          _metricsData = _expenseService.getMetrics('This month','By type');
+                                        });
+                                        Navigator.pop(context);
+                                      }
+                                      );
                                 },
                                 child: Text(
                                   'Delete (${deleteList.length})',
@@ -327,18 +343,25 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
         child: FloatingActionButton(
           tooltip: 'Create new expense',
           onPressed: ()async{
-            final result =await showDialog<bool>(
-                context: context,
-                builder: (context) =>ExpenseForm(
-                  expenseDate: _selectedDateNotifier.value
-                )
-            );
-            if(result == true){
-              setState(() {
-                totalExpense = _expenseService.selectedDayTotalExpense(_selectedDateNotifier.value);
-                _metricsData = _expenseService.getMetrics('This month','By type');
-              });
+            final getTypes = _expenseService.getExpenseTypes();
+            if(getTypes.isNotEmpty){
+              final result =await showDialog<bool>(
+                  context: context,
+                  builder: (context) =>ExpenseForm(
+                      expenseDate: _selectedDateNotifier.value
+                  )
+              );
+              if(result == true){
+                setState(() {
+                  totalExpense = _expenseService.selectedDayTotalExpense(_selectedDateNotifier.value);
+                  _metricsData = _expenseService.getMetrics('This month','By type');
+                });
 
+              }
+            }
+            else{
+              Navigator.push(context, MaterialPageRoute(builder: (context) => HomeScreen(initialIndex: 1,)));
+              MessageWidget.showSnackBar(context: context, message: 'Create your expense type for adding your expense and keep track of it');
             }
 
           },

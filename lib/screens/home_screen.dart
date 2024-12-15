@@ -10,6 +10,7 @@ import 'package:expense_log/services/settings_service.dart';
 import 'package:expense_log/services/ui_service.dart';
 import 'package:expense_log/updates/app_update.dart';
 import 'package:expense_log/widgets/app_drawer.dart';
+import 'package:expense_log/widgets/avatar_widget.dart';
 import 'package:expense_log/widgets/message_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
@@ -19,7 +20,8 @@ import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final int initialIndex;
+  const HomeScreen({super.key, this.initialIndex = 0});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -38,6 +40,9 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    setState(() {
+      _currentIndex = widget.initialIndex;
+    });
     _settingsService = Provider.of<SettingsService>(context,listen: false);
     _uiService = Provider.of<UiService>(context,listen: false);
     _checkIfUserExists();
@@ -57,8 +62,9 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void _scheduleNotifications() {
-    String userName = user != null ? user!.userName : 'User';
+  Future<void> _scheduleNotifications() async{
+    final _settingsBox = Hive.box('settingsBox');
+    String userName = await _settingsBox.get('userName',defaultValue: 'User');
     NotificationService.scheduleNotification(
       id: 1,
       title: 'Good Morning, $userName!',
@@ -181,6 +187,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
           ),
           actions: [
+            if(user == null)
             Container(
               padding: EdgeInsets.all(10),
               // margin: EdgeInsets.all(20),
@@ -192,13 +199,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            if(user?.image != null)
+            if(user != null)
             Container(
-              padding: EdgeInsets.all(10),
-              child: CircleAvatar(
-                  radius: 20.0,
-                foregroundImage: user!.image != null ?  NetworkImage(user!.image!) : null
-              ),
+              padding: EdgeInsets.all(6),
+              child: AvatarWidget(
+                imageUrl: user!.image,
+                userName: user!.userName,
+              )
             )
           ],
           //leading: Text(version),
