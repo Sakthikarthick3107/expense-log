@@ -79,6 +79,10 @@ jobs:
           asset_name: expense_log.apk
           asset_content_type: application/vnd.android.package-archive
 
+      - name: Output Upload URL
+        run: echo "UPLOAD_URL=${{ steps.create_release.outputs.upload_url }}" >> $GITHUB_ENV
+
+
   build-windows:
     runs-on: windows-latest
     needs: build-apk
@@ -112,42 +116,13 @@ jobs:
       - name: Build Windows App
         run: flutter build windows
 
-      # Check if release already exists before creating it
-      - name: Check if release exists
-        id: check_release
-        shell: pwsh
-        run: |
-          $response = Invoke-RestMethod -Headers @{ Authorization = "token $env:GITHUB_TOKEN" } `
-            -Uri "https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ env.VERSION_TAG }}" `
-            -Method Get -ErrorAction SilentlyContinue
-          if ($response -eq $null) {
-            Write-Host "Release does not exist, creating a new release"
-            echo "CREATE_RELEASE=true" | Out-File -FilePath $env:GITHUB_ENV -Append
-          } else {
-            Write-Host "Release already exists"
-            echo "CREATE_RELEASE=false" | Out-File -FilePath $env:GITHUB_ENV -Append
-          }
-
-      # Create GitHub Release (only if it doesn't exist)
-      - name: Create GitHub Release
-        if: env.CREATE_RELEASE == 'true'
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ env.VERSION_TAG }}
-          release_name: Release ${{ env.VERSION_TAG }}
-          draft: false
-          prerelease: false
-
       # Upload Windows Executable to the Release
       - name: Upload Windows Executable to Release
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          upload_url: ${{ env.UPLOAD_URL }}
           asset_path: build\windows\x64\runner\Release\expense_log.exe
           asset_name: expense_log_windows.exe
           asset_content_type: application/vnd.microsoft.portable-executable
