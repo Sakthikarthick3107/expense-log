@@ -69,7 +69,46 @@ class ExpenseService{
        return expenseOfTheDate.fold(0.0 , (total,expense) => total +expense.price);
     }
 
-    Map<String,double> getMetrics(String duration , String metricBy){
+    List<String> expenseTypesOfSelectedDuration(String duration){
+        final expenseTypes = getExpenseTypes();
+        final expenses = getExpenses();
+        DateTime now = DateTime.now();
+        DateTime startDate = DateTime(now.year,now.month,now.day);
+        DateTime endDate = now;
+        List<String> usedTypes = [];
+        switch(duration){
+            case 'This week':
+                startDate = startDate.subtract(Duration(days: startDate.weekday % 7));
+                endDate = startDate.add(Duration(days: 6));
+                break;
+            case 'Last week':
+                startDate = startDate.subtract(Duration(days: (startDate.weekday + 7) % 7 + 7));
+                endDate = startDate.add(Duration(days: 6));
+                break;
+            case 'This month':
+                startDate = DateTime(now.year , now.month ,1);
+                endDate = DateTime(now.year, now.month + 1, 0);
+                break;
+            case 'Last month':
+                startDate = DateTime(now.year , now.month - 1 ,1);
+                endDate = DateTime(now.year, now.month, 0);
+                break;
+        }
+
+        for (var expenseType in expenseTypes) {
+            double total = expenses.where((expense) =>
+            expense.expenseType.id == expenseType.id &&
+                !expense.date.isBefore(startDate) &&
+                expense.date.isBefore(endDate.add(Duration(days: 1))))
+                .fold(0.0, (sum, expense) => sum + expense.price);
+            if (total != 0) {
+                usedTypes.add(expenseType.name);
+            }
+        }
+        return usedTypes;
+    }
+
+    Map<String,double> getMetrics(String duration , String metricBy , List<String> unselectedTypes){
         final expenseTypes = getExpenseTypes();
         final expenses = getExpenses();
         Map<String, double> metricData = {'Total': 0.0};
@@ -102,7 +141,8 @@ class ExpenseService{
                 double total = expenses.where((expense) =>
                 expense.expenseType.id == expenseType.id &&
                     !expense.date.isBefore(startDate) &&
-                    expense.date.isBefore(endDate.add(Duration(days: 1))))
+                    expense.date.isBefore(endDate.add(Duration(days: 1))) &&
+                    !unselectedTypes.contains(expenseType.name))
                     .fold(0.0, (sum, expense) => sum + expense.price);
 
                 if (total != 0) {
@@ -116,7 +156,7 @@ class ExpenseService{
             UiService uiService = UiService();
             Map<DateTime, double> tempMetricsData = {};
             double overallTotal = 0.0;
-            for (var expense in expenses.where((exp) => !exp.date.isBefore(startDate) && exp.date.isBefore(endDate.add(Duration(days: 1))))) {
+            for (var expense in expenses.where((exp) => !unselectedTypes.contains(exp.expenseType.name) && !exp.date.isBefore(startDate) && exp.date.isBefore(endDate.add(Duration(days: 1))))) {
                 DateTime day = DateTime(expense.date.year , expense.date.month,expense.date.day) ;
                 tempMetricsData[day] = (tempMetricsData[day] ?? 0.0) + expense.price;
                 overallTotal += expense.price;
@@ -139,7 +179,7 @@ class ExpenseService{
 
     }
 
-    Map<Map<String, double>,List< Map<String, double>>> getMetrics2(String duration , String metricBy){
+    Map<Map<String, double>,List< Map<String, double>>> getMetrics2(String duration , String metricBy , List<String> unselectedTypes){
         final expenseTypes = getExpenseTypes();
         final expenses = getExpenses();
         UiService uiService = UiService();
@@ -175,7 +215,9 @@ class ExpenseService{
                 var filterWithType = expenses.where((expense) =>
                     expense.expenseType.id == expenseType.id &&
                     !expense.date.isBefore(startDate) &&
-                    expense.date.isBefore(endDate.add(Duration(days: 1))));
+                    expense.date.isBefore(endDate.add(Duration(days: 1))) &&
+                        !unselectedTypes.contains(expenseType.name)
+                );
 
                 double total = filterWithType.fold(0.0, (sum, expense) => sum + expense.price);
 
@@ -213,7 +255,7 @@ class ExpenseService{
             Map<DateTime, double> primaryTempMetricsData = {};
             double overallTotal = 0.0;
 
-            var filterWithDayLimit = expenses.where((exp) => !exp.date.isBefore(startDate) && exp.date.isBefore(endDate.add(Duration(days: 1))));
+            var filterWithDayLimit = expenses.where((exp) => !unselectedTypes.contains(exp.expenseType.name) && !exp.date.isBefore(startDate) && exp.date.isBefore(endDate.add(Duration(days: 1))));
 
             for (var expense in filterWithDayLimit) {
                 DateTime day = DateTime(expense.date.year , expense.date.month,expense.date.day) ;

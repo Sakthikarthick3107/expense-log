@@ -20,6 +20,8 @@ class _MetricsScreenState extends State<MetricsScreen> {
   final ValueNotifier<String> _selectedDurationNotifier = ValueNotifier<String>('This week');
   final ValueNotifier<String> _selectedMetricBy = ValueNotifier<String>('By type');
   late Map<String,double> _metricsData = {};
+  late List<String> _expenseTypesOfDuration;
+  late List<String> _unSelectedTypes = [];
   late Map<Map<String, double>,List< Map<String, double>>> _metricsData2 = {};
 
   String? _selectedKey ;
@@ -28,16 +30,75 @@ class _MetricsScreenState extends State<MetricsScreen> {
   void initState(){
     super.initState();
     _expenseService = Provider.of<ExpenseService>(context , listen: false);
-    _metricsData = _expenseService.getMetrics(_selectedDurationNotifier.value , _selectedMetricBy.value);
-    _metricsData2 = _expenseService.getMetrics2(_selectedDurationNotifier.value , _selectedMetricBy.value);
+    _expenseTypesOfDuration = _expenseService.expenseTypesOfSelectedDuration(_selectedDurationNotifier.value);
+    _metricsData = _expenseService.getMetrics(_selectedDurationNotifier.value , _selectedMetricBy.value ,_unSelectedTypes);
+    _metricsData2 = _expenseService.getMetrics2(_selectedDurationNotifier.value , _selectedMetricBy.value , _unSelectedTypes);
     _selectedDurationNotifier.addListener((){
-          _metricsData = _expenseService.getMetrics(_selectedDurationNotifier.value,_selectedMetricBy.value);
-          _metricsData2 = _expenseService.getMetrics2(_selectedDurationNotifier.value , _selectedMetricBy.value);
+        _expenseTypesOfDuration = _expenseService.expenseTypesOfSelectedDuration(_selectedDurationNotifier.value);
+          _metricsData = _expenseService.getMetrics(_selectedDurationNotifier.value,_selectedMetricBy.value , _unSelectedTypes);
+          _metricsData2 = _expenseService.getMetrics2(_selectedDurationNotifier.value , _selectedMetricBy.value , _unSelectedTypes);
     });
     _selectedMetricBy.addListener((){
-        _metricsData = _expenseService.getMetrics(_selectedDurationNotifier.value,_selectedMetricBy.value);
-        _metricsData2 = _expenseService.getMetrics2(_selectedDurationNotifier.value , _selectedMetricBy.value);
+        _metricsData = _expenseService.getMetrics(_selectedDurationNotifier.value,_selectedMetricBy.value , _unSelectedTypes);
+        _metricsData2 = _expenseService.getMetrics2(_selectedDurationNotifier.value , _selectedMetricBy.value,_unSelectedTypes);
     });
+  }
+
+  void _showMultiSelectDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx , setStateDialog) {
+            return AlertDialog(
+              shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+              title: Text("Select/Unselect"),
+              content: SingleChildScrollView(
+                child: ListBody(
+                  children: _expenseTypesOfDuration.map((item) {
+                    bool isUnchecked = !_unSelectedTypes.contains(item);
+                    return CheckboxListTile(
+                      title: Text(item),
+                      value: isUnchecked,
+                      onChanged: (isChecked) {
+                        setStateDialog(() {
+                          if (isChecked == true) {
+                            _unSelectedTypes.remove(item);
+                          } else {
+                            _unSelectedTypes.add(item);
+                          }
+                        });
+                      },
+                    );
+                  }).toList(),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    setState(() {
+                      _metricsData = _expenseService.getMetrics(
+                        _selectedDurationNotifier.value,
+                        _selectedMetricBy.value,
+                        _unSelectedTypes,
+                      );
+                      _metricsData2 = _expenseService.getMetrics2(
+                        _selectedDurationNotifier.value,
+                        _selectedMetricBy.value,
+                        _unSelectedTypes,
+                      );
+                    });
+                  },
+                  child: Text("OK"),
+                ),
+              ],
+            );
+
+          }
+        );
+      },
+    );
   }
 
 
@@ -57,43 +118,43 @@ class _MetricsScreenState extends State<MetricsScreen> {
                 ),
               ),
             ),
-             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children:[
-                DropdownButton<String>(
-                  value: _selectedMetricBy.value,
-
-                  onChanged: (String? newValue){
-                    setState(() {
-                      _selectedMetricBy.value = newValue!;
-                    });
-                  },
-                  items: metricsBy.map((String value){
-                    return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value , style : TextStyle(fontSize:20))
-                    );
-
-                  }).toList(),
-                ),
-                DropdownButton<String>(
-                      value: _selectedDurationNotifier.value,
-
-                      onChanged: (String? newValue){
-                          setState(() {
-                            _selectedDurationNotifier.value = newValue!;
-                          });
-                      },
-                      items: metricsDuration.map((String value){
-                        return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value , style : TextStyle(fontSize:20))
-                        );
-
-                      }).toList(),
-                )
-              ]
-            ),
+            //  Row(
+            //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            //   children:[
+            //     DropdownButton<String>(
+            //       value: _selectedMetricBy.value,
+            //
+            //       onChanged: (String? newValue){
+            //         setState(() {
+            //           _selectedMetricBy.value = newValue!;
+            //         });
+            //       },
+            //       items: metricsBy.map((String value){
+            //         return DropdownMenuItem<String>(
+            //             value: value,
+            //             child: Text(value , style : TextStyle(fontSize:14))
+            //         );
+            //
+            //       }).toList(),
+            //     ),
+            //     DropdownButton<String>(
+            //           value: _selectedDurationNotifier.value,
+            //
+            //           onChanged: (String? newValue){
+            //               setState(() {
+            //                 _selectedDurationNotifier.value = newValue!;
+            //               });
+            //           },
+            //           items: metricsDuration.map((String value){
+            //             return DropdownMenuItem<String>(
+            //                 value: value,
+            //                 child: Text(value , style : TextStyle(fontSize:14))
+            //             );
+            //
+            //           }).toList(),
+            //     )
+            //   ]
+            // ),
             Expanded(
                 child: ValueListenableBuilder(
                     valueListenable: Hive.box<Expense2>('expense2Box').listenable(),
@@ -194,6 +255,50 @@ class _MetricsScreenState extends State<MetricsScreen> {
 
             )
           ]
+        ),
+      ),
+      bottomNavigationBar: Container(
+        padding: EdgeInsets.symmetric(horizontal: 20 , vertical: 10),
+        color: Colors.deepOrange,
+        child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children:[
+              DropdownButton<String>(
+                value: _selectedMetricBy.value,
+
+                onChanged: (String? newValue){
+                  setState(() {
+                    _selectedMetricBy.value = newValue!;
+                  });
+                },
+                items: metricsBy.map((String value){
+                  return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value,style: TextStyle(fontSize: 16))
+                  );
+
+                }).toList(),
+              ),
+              DropdownButton<String>(
+                value: _selectedDurationNotifier.value,
+
+                onChanged: (String? newValue){
+                  setState(() {
+                    _selectedDurationNotifier.value = newValue!;
+                  });
+                },
+                items: metricsDuration.map((String value){
+                  return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value,style: TextStyle(fontSize: 16),)
+                  );
+
+                }).toList(),
+              ),
+              TextButton(onPressed: (){
+                _showMultiSelectDialog(context);
+              }, child: Text('Filter Types'))
+            ]
         ),
       ),
     );

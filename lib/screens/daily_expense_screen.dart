@@ -40,7 +40,7 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
       _expenseService = Provider.of<ExpenseService>(context,listen: false);
       _settingsService = Provider.of<SettingsService>(context,listen: false);
       totalExpense = _expenseService.selectedDayTotalExpense(_selectedDateNotifier.value);
-      _metricsData = _expenseService.getMetrics('This month','By type');
+      _metricsData = _expenseService.getMetrics('This month','By type',[]);
       _selectedDateNotifier.addListener((){
         setState(() {
           totalExpense = _expenseService.selectedDayTotalExpense(_selectedDateNotifier.value);
@@ -197,14 +197,14 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
                                         setState(() {
                                           deleteList.clear();
                                           totalExpense = _expenseService.selectedDayTotalExpense(_selectedDateNotifier.value);
-                                          _metricsData = _expenseService.getMetrics('This month','By type');
+                                          _metricsData = _expenseService.getMetrics('This month','By type',[]);
                                         });
                                       },
                                       onCancelled: (){
                                         setState(() {
                                           deleteList.clear();
                                           totalExpense = _expenseService.selectedDayTotalExpense(_selectedDateNotifier.value);
-                                          _metricsData = _expenseService.getMetrics('This month','By type');
+                                          _metricsData = _expenseService.getMetrics('This month','By type',[]);
                                         });
                                         Navigator.pop(context);
                                       }
@@ -295,7 +295,7 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
                                         if(result == true){
                                           setState(() {
                                             totalExpense = _expenseService.selectedDayTotalExpense(_selectedDateNotifier.value);
-                                            _metricsData = _expenseService.getMetrics('This month','By type');
+                                            _metricsData = _expenseService.getMetrics('This month','By type' ,[]);
                                           });
                                         }
                                     }
@@ -354,7 +354,7 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
               if(result == true){
                 setState(() {
                   totalExpense = _expenseService.selectedDayTotalExpense(_selectedDateNotifier.value);
-                  _metricsData = _expenseService.getMetrics('This month','By type');
+                  _metricsData = _expenseService.getMetrics('This month','By type',[]);
                 });
 
               }

@@ -6,7 +6,8 @@ buildscript {
 
     dependencies {
         // Add the Android Gradle Plugin here
-        classpath "com.android.tools.build:gradle:8.0.2"
+            classpath "com.android.tools.build:gradle:8.1.1"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.10"
         classpath 'com.google.gms:google-services:4.4.2'
     }
 }
@@ -22,8 +23,6 @@ allprojects {
 rootProject.buildDir = "../build"
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
-}
-subprojects {
     project.evaluationDependsOn(":app")
 }
 

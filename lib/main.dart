@@ -6,7 +6,9 @@ import 'package:expense_log/services/expense_service.dart';
 import 'package:expense_log/services/settings_service.dart';
 import 'package:expense_log/services/ui_service.dart';
 import 'package:expense_log/themes/app_theme.dart';
+import 'package:expense_log/widgets/message_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -65,10 +67,11 @@ class MyApp extends StatelessWidget {
       return Consumer<SettingsService>(
           builder: (context,settingsService,child){
             return MaterialApp(
+              builder: EasyLoading.init(),
               title: 'ExpenseLog',
               debugShowCheckedModeBanner: false,
               theme: appTheme(settingsService.isDarkTheme()),
-
+              scaffoldMessengerKey: MessageWidget.scaffoldMessengerKey,
               home:  const Scaffold(
                 body: HomeScreen(),
               ),

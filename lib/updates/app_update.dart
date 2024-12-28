@@ -1,64 +1,101 @@
 import 'dart:convert';
-
+import 'dart:io';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:expense_log/widgets/message_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_app_installer/flutter_app_installer.dart';
-import 'package:install_plugin/install_plugin.dart';
+// import 'package:flutter_app_installer/flutter_app_installer.dart';
+// import 'package:install_plugin/install_plugin.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
+// import 'package:restart_app/restart_app.dart';
+// import 'package:apk_installer/apk_installer.dart';
 
 class AppUpdate{
   final String owner = 'Sakthikarthick3107';
   final String repo = 'expense-log';
   String downloadProgress = '-1';
 
-  Future<void> downloadAndInstallApk(String downloadUrl) async {
-    final dio = Dio();
-    final appDir = await getExternalStorageDirectory();
-    final apkPath = '${appDir?.path}/Download/expense_log.apk';
-
-
+  Future<void> downloadAndInstallApk(BuildContext context, String downloadUrl) async {
     try {
+      // Request permission to access storage
+      PermissionStatus status = await Permission.storage.request();
+      if (!status.isGranted) {
+        MessageWidget.showSnackBar(context: context,
+            message: 'Storage permission is required',
+            status: 0);
+        return;
+      }
+
+      // Prepare to download the APK
+      final dio = Dio();
+      final appDir = await getExternalStorageDirectory();
+      if (appDir == null) {
+        MessageWidget.showSnackBar(context: context, message: 'Could not get storage directory', status: 0);
+        return;
+      }
+      final apkPath = '${appDir.path}/expense_log_${DateTime.now().millisecondsSinceEpoch}.apk'; // Unique file name
+
+      // Download APK
       await dio.download(
-        downloadUrl,
-        apkPath,
-        onReceiveProgress: (received, total) {
-          if (total != -1) {
-            downloadProgress = "${(received / total * 100).toStringAsFixed(0)}%";
-            print("Download Progress: ${(received / total * 100).toStringAsFixed(0)}%");
-          }
-        },
-      );
-      print("APK Downloaded at: $apkPath");
-      installApk(apkPath);
+          downloadUrl, apkPath, onReceiveProgress: (received, total) {
+        if (total != -1) {
+          double progress = ((received / total )* 100);
+          print('Downloading ${progress}');
+          EasyLoading.showProgress(progress / 100, status: 'Downloading: ${progress.toStringAsFixed(0)}%');
+          // MessageWidget.showSnackBar(context: context,
+          //     message: 'Downloading: ${progress.toStringAsFixed(2)}%',
+          //     status: 1);
+        }
+      });
+      EasyLoading.dismiss();
+      // Check if the APK is downloaded successfully
+      final file = File(apkPath);
+      if (!file.existsSync()) {
+        MessageWidget.showSnackBar(context: context, message: 'Failed to download APK.', status: 0);
+        return;
+      }
+
+      // APK download completed, proceed with installation
+      bool installSuccess = await installApk(apkPath);
+
+      // Check if installation was successful
+      if (installSuccess) {
+        MessageWidget.showSnackBar(context: context,
+            message: 'Update installed successfully!',
+            status: 1);
+
+        // // Close the app and restart it
+        // SystemNavigator.pop();
+        await Future.delayed(
+            Duration(seconds: 2)); // Wait a bit before restarting
+        // Restart.restartApp(); // Restart the app
+      } else {
+        MessageWidget.showSnackBar(
+            context: context, message: 'APK installation failed.', status: 0);
+      }
     } catch (e) {
-      print("Failed to download APK: $e");
+      MessageWidget.showSnackBar(context: context,
+          message: 'Failed to download or install APK: $e',
+          status: 0);
+      print(e);
     }
   }
 
-  Future<void> installApk(String apkPath) async {
+  Future<bool> installApk(String apkPath) async {
+    const platform = MethodChannel('com.expenseapp.expense_log/install');
     try {
-      // Request storage permissions before proceeding with APK installation
-      final PermissionStatus status = await Permission.storage.request();
-
-      // Check if permission is granted
-      if (status.isGranted) {
-        final FlutterAppInstaller flutterAppInstaller = FlutterAppInstaller();
-        await flutterAppInstaller.installApk(filePath: apkPath);
-        print('APK installed successfully');
-      } else {
-        print('Storage permission is denied');
-      }
-    } catch (e) {
-      print("Failed to install APK: $e");
-    } finally {
-      SystemNavigator.pop();
+      // Calling the native method to install the APK and waiting for the result
+      final bool success = await platform.invokeMethod('installApk', {'apkPath': apkPath});
+      return success;  // If the result is true, installation succeeded
+    } on PlatformException catch (e) {
+      print("Failed to install APK: ${e.message}");
+      return false;  // If an error occurs, return false
     }
   }
 
@@ -181,8 +218,8 @@ class AppUpdate{
             TextButton(
               onPressed: () async{
                 Navigator.pop(context,true);
-                await _launchUrl(downloadUrl);
-                // downloadAndInstallApk(downloadUrl);
+                // await _launchUrl(downloadUrl);
+                downloadAndInstallApk(context , downloadUrl);
               },
               child: Text('Update'),
             ),

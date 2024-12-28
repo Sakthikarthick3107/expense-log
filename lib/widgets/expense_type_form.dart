@@ -40,8 +40,6 @@ class _ExpenseTypeFormState extends State<ExpenseTypeForm> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-
-      shape:const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       title: Text( widget.type == null ? 'New Type':'Edit Type'),
       content: Form(
         key: _formKey,

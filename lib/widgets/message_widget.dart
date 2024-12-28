@@ -8,7 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class MessageWidget{
-
+  static final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
+  GlobalKey<ScaffoldMessengerState>();
 
   static void showToast({
       required String message,
@@ -56,6 +57,6 @@ class MessageWidget{
           duration: duration,
           behavior: behavior,
       );
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      scaffoldMessengerKey.currentState?.showSnackBar(snackBar);
   }
 }

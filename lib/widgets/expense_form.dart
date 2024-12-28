@@ -57,7 +57,7 @@ class _ExpenseFormState extends State<ExpenseForm> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+
       title: Text(widget.expense != null ? 'Edit ${widget.expense?.name}' : 'New Expense'),
       content: Form(
         key: _formKey,

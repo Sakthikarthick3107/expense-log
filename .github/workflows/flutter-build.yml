@@ -83,46 +83,46 @@ jobs:
         run: echo "UPLOAD_URL=${{ steps.create_release.outputs.upload_url }}" >> $GITHUB_ENV
 
 
-  build-windows:
-    runs-on: windows-latest
-    needs: build-apk
-
-    steps:
-      # Checkout the code
-      - uses: actions/checkout@v3
-
-      # Set up Flutter for Windows
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.22.3'
-
-      # Install dependencies for Windows
-      - name: Install Dependencies
-        run: flutter pub get
-
-          # Extract version from pubspec.yaml using PowerShell
-      - name: Extract version from pubspec.yaml
-        id: extract_version
-        run: |
-              # PowerShell version extraction
-              $version = (Select-String '^version: ' pubspec.yaml).Line -replace '^version: ', ''
-              $version_tag = "v" + $version.Split('+')[0]  # Get version without build number
-              echo "VERSION=$version" >> $env:GITHUB_ENV
-              echo "VERSION_TAG=$version_tag" >> $env:GITHUB_ENV
-      
-
-      # Build Windows App
-      - name: Build Windows App
-        run: flutter build windows
-
-      # Upload Windows Executable to the Release
-      - name: Upload Windows Executable to Release
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ env.UPLOAD_URL }}
-          asset_path: build\windows\x64\runner\Release\expense_log.exe
-          asset_name: expense_log_windows.exe
-          asset_content_type: application/vnd.microsoft.portable-executable
+#  build-windows:
+#    runs-on: windows-latest
+#    needs: build-apk
+#
+#    steps:
+#      # Checkout the code
+#      - uses: actions/checkout@v3
+#
+#      # Set up Flutter for Windows
+#      - name: Set up Flutter
+#        uses: subosito/flutter-action@v2
+#        with:
+#          flutter-version: '3.22.3'
+#
+#      # Install dependencies for Windows
+#      - name: Install Dependencies
+#        run: flutter pub get
+#
+#          # Extract version from pubspec.yaml using PowerShell
+#      - name: Extract version from pubspec.yaml
+#        id: extract_version
+#        run: |
+#              # PowerShell version extraction
+#              $version = (Select-String '^version: ' pubspec.yaml).Line -replace '^version: ', ''
+#              $version_tag = "v" + $version.Split('+')[0]  # Get version without build number
+#              echo "VERSION=$version" >> $env:GITHUB_ENV
+#              echo "VERSION_TAG=$version_tag" >> $env:GITHUB_ENV
+#
+#
+#      # Build Windows App
+#      - name: Build Windows App
+#        run: flutter build windows
+#
+#      # Upload Windows Executable to the Release
+#      - name: Upload Windows Executable to Release
+#        uses: actions/upload-release-asset@v1
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          upload_url: ${{ env.UPLOAD_URL }}
+#          asset_path: build\windows\x64\runner\Release\expense_log.exe
+#          asset_name: expense_log_windows.exe
+#          asset_content_type: application/vnd.microsoft.portable-executable
