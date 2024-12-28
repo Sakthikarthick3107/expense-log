@@ -29,7 +29,9 @@ class AppUpdate{
         MessageWidget.showSnackBar(context: context,
             message: 'Storage permission is required',
             status: 0);
-        return;
+        openAppSettings();
+
+
       }
 
       // Prepare to download the APK
