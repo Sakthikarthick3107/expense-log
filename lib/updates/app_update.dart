@@ -24,15 +24,15 @@ class AppUpdate{
   Future<void> downloadAndInstallApk(BuildContext context, String downloadUrl) async {
     try {
       // Request permission to access storage
-      PermissionStatus status = await Permission.storage.request();
-      if (!status.isGranted) {
-        MessageWidget.showSnackBar(context: context,
-            message: 'Storage permission is required',
-            status: 0);
-        openAppSettings();
-
-
-      }
+      // PermissionStatus status = await Permission.storage.request();
+      // if (!status.isGranted) {
+      //   MessageWidget.showSnackBar(context: context,
+      //       message: 'Storage permission is required',
+      //       status: 0);
+      //   openAppSettings();
+      //   return;
+      //
+      // }
 
       // Prepare to download the APK
       final dio = Dio();
