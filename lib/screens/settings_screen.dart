@@ -247,7 +247,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _copyLinkToClipboard(context);
                 });
               },
-              title: Text('Share with friends'),
+              title: Text('Share App'),
             ),
             ListTile(
               onTap: (){
