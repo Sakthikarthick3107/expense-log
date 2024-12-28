@@ -1,5 +1,6 @@
-Version: 1.0.14
-Date : 15-12-2024
+Version: 1.0.15
+Date : 28 -12-2024
 
 New Features:
- - Metrics Filter with Expense Types
+ - Update inside the app
+ - Share app with your friends

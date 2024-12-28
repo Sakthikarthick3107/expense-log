@@ -1,10 +1,11 @@
 import 'dart:convert';
-
+import 'dart:io';
 import 'package:expense_log/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class SettingsService with ChangeNotifier{
     final _settingsBox = Hive.box('settingsBox');
@@ -74,6 +75,22 @@ class SettingsService with ChangeNotifier{
     Future<void> setTheme(bool isDark) async{
         await _settingsBox.put('isDarkTheme',isDark);
         notifyListeners();
+    }
+
+    Future<String> downloadUrl() async{
+        final url = Uri.parse('https://api.github.com/repos/Sakthikarthick3107/expense-log/releases/latest');
+        try {
+            final response = await http.get(url);
+            if (response.statusCode == 200) {
+                final jsonData = jsonDecode(response.body);
+                final downloadUrl = jsonData['assets'][0]['browser_download_url'];
+                return downloadUrl;
+            }
+        }
+        catch(e){
+            print(e);
+        }
+        return '';
     }
 
     Future<int?> fetchDownloadCount() async {

@@ -114,6 +114,7 @@ class AppUpdate{
 
         final releaseNotes = jsonData['body'] ?? 'No release notes provided.';
         final downloadUrl = jsonData['assets'][0]['browser_download_url'];
+
         // print('Url downlpad - $downloadUrl');
         if (isNewVersion(latestVersion, currentVersion)) {
           // print('New version available: $latestVersion');

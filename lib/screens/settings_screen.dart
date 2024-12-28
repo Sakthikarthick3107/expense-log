@@ -6,6 +6,7 @@ import 'package:expense_log/updates/app_update.dart';
 import 'package:expense_log/widgets/message_widget.dart';
 import 'package:expense_log/widgets/warning_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -39,6 +40,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() {
       downloads = count;
     });
+  }
+
+  Future<void> _copyLinkToClipboard(BuildContext context) async {
+    String getDownloadLink = await _settingsService.downloadUrl();
+    if(getDownloadLink.length > 0){
+      await Clipboard.setData(ClipboardData(text: getDownloadLink));
+      MessageWidget.showSnackBar(context: context, message: 'Link copied to clipboard!',status:1);
+    }
+    else{
+      MessageWidget.showSnackBar(context: context, message: 'Issue in getting link',status:0);
+    }
+
   }
 
   Future<void> _fetchVersion() async {
@@ -227,6 +240,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     )
                 )
                   : SizedBox.shrink(),
+            ),
+            ListTile(
+              onTap: (){
+                setState(() {
+                  _copyLinkToClipboard(context);
+                });
+              },
+              title: Text('Share with friends'),
             ),
             ListTile(
               onTap: (){
