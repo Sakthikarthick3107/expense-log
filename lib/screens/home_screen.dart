@@ -145,13 +145,6 @@ class _HomeScreenState extends State<HomeScreen> {
       hour: 23,
       minute: 0,
     );
-    // NotificationService.scheduleNotification(
-    //   id: 999,
-    //   title: 'Test Notification',
-    //   body: 'This is a test notification',
-    //   hour: DateTime.now().hour,
-    //   minute: DateTime.now().minute + 1,
-    // );
 
   }
 

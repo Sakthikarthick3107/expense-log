@@ -67,10 +67,9 @@ class NotificationService {
       body,
       _scheduleDailyTime(hour, minute),
       platformChannelSpecifics,
-      androidAllowWhileIdle: true,
       uiLocalNotificationDateInterpretation:
       UILocalNotificationDateInterpretation.absoluteTime,
-      matchDateTimeComponents: DateTimeComponents.time,
+      matchDateTimeComponents: DateTimeComponents.time, androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
     );
   }
 
