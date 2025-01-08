@@ -51,7 +51,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     else{
       MessageWidget.showSnackBar(context: context, message: 'Issue in getting link',status:0);
     }
-
   }
 
   Future<void> _fetchVersion() async {

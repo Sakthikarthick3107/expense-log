@@ -42,6 +42,7 @@ void main() async{
 
   // await checkAndRunMigration();
   tz.initializeTimeZones(); // Initialize timezone
+  tz.setLocalLocation(tz.getLocation('Asia/Kolkata'));
   await NotificationService.initialize();
 
   runApp(
