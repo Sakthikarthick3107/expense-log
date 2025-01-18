@@ -185,7 +185,7 @@ class AppUpdate{
             child: ListBody(
 
               children: [
-                Text('A new version - $latestVersion is available.\nIf you face any difficulties in updating, kindly tap on the Copy link and paste it in your browser or contact developer!'),
+                Text('A new version  $latestVersion is available.\nIf you face any difficulties in updating, kindly tap on the Copy link and paste it in your browser or contact developer!'),
                 const SizedBox(height: 4),
                 const Text('Release Notes:'),
                 Text(releaseNotes),
