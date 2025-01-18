@@ -64,7 +64,7 @@ class ExpenseService{
                     created: DateTime.now(),
                     updated: null,
                 );
-                // createExpense(newExpense);
+                createExpense(newExpense);
                 // print(newExpense);
             }
 
