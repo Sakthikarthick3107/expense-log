@@ -350,6 +350,10 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
                   if(copyFromDate != null){
                     int createCopiedExpenses = await _expenseService.copyAndSaveExpenses(copyFromDate: copyFromDate , pasteToDate:  _selectedDateNotifier.value);
                     if(createCopiedExpenses == 1){
+                      setState(() {
+                        totalExpense = _expenseService.selectedDayTotalExpense(_selectedDateNotifier.value);
+                        _metricsData = _expenseService.getMetrics('This month','By type',[]);
+                      });
                       MessageWidget.showSnackBar(context: context, message: 'Copied successfully' , status: createCopiedExpenses);
                     }
                     else{
