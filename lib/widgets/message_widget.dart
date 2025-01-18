@@ -41,19 +41,26 @@ class MessageWidget{
     int? status,
     SnackBarBehavior behavior = SnackBarBehavior.floating,
     Duration duration = const Duration(seconds: 4),
-    Color textColor = Colors.white,
+
     double fontSize = 16.0
   }){
-    Color? backgroundColor = status == 1 ? Colors.green : status == 0 ? Colors.red : null;
+    Icon? statusIcon = status == 1 ? Icon(Icons.sentiment_satisfied_alt_outlined , color: Colors.green,) :
+                      status == 0 ? Icon(Icons.sms_failed_outlined , color: Colors.red,) :
+                      status == -1 ? Icon(Icons.info , color: Colors.deepOrangeAccent,) :null;
       final snackBar = SnackBar(
-          content: Text(
-              message,
-            style: TextStyle(
-              color: textColor,
-              fontSize: fontSize
-            ),
+          content: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                  message,
+                style: TextStyle(
+                  fontSize: fontSize
+                ),
+              ),
+              if(statusIcon != null)
+                statusIcon,
+            ],
           ),
-          backgroundColor: backgroundColor,
           duration: duration,
           behavior: behavior,
       );

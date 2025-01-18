@@ -54,7 +54,10 @@ class ExpenseService{
         try {
             // print(getExpenses());
             List<Expense2> getExpensesOfTheSelectedDate = getExpensesOfTheDay(copyFromDate);
-            print('Selected expenses: $getExpensesOfTheSelectedDate');
+            if(getExpensesOfTheSelectedDate.length == 0){
+                return -1;
+            }
+            // print('Selected expenses: $getExpensesOfTheSelectedDate');
             SettingsService settingsService = SettingsService();
 
             for (Expense2 exp in getExpensesOfTheSelectedDate) {

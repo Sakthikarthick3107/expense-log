@@ -1,6 +1,7 @@
 import 'package:expense_log/models/expense2.dart';
 import 'package:expense_log/services/expense_service.dart';
 import 'package:expense_log/services/settings_service.dart';
+import 'package:expense_log/services/ui_service.dart';
 import 'package:expense_log/widgets/message_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -30,12 +31,24 @@ class _ExpenseFormState extends State<ExpenseForm> {
 
   late ExpenseService _expenseService;
   late SettingsService _settingsService;
+  late UiService  _uiService;
 
   @override
   void initState(){
     super.initState();
     _expenseService = Provider.of<ExpenseService>(context , listen: false);
     _settingsService = Provider.of<SettingsService>(context,listen: false);
+    _uiService = Provider.of<UiService>(context,listen: false);
+    _nameController.addListener((){
+      setState(() {
+
+      });
+    });
+    _priceController.addListener((){
+      setState(() {
+
+      });
+    });
 
     if(widget.expense != null){
       _nameController.text = widget.expense!.name;
@@ -83,6 +96,9 @@ class _ExpenseFormState extends State<ExpenseForm> {
                 if (value == null || value.isEmpty) {
                   return 'Price is mandatory';
                 }
+                else if(double.tryParse(value)! <= 0){
+                  return 'Price must be greater than zero';
+                }
                 return null;
               },
             ),
@@ -114,13 +130,36 @@ class _ExpenseFormState extends State<ExpenseForm> {
         ),
       ),
       actions: [
-        // Cancel Button
+        if(widget.expense != null &&
+            ( widget.expense?.name == _nameController.text &&
+                widget.expense?.price ==  double.tryParse(_priceController.text) &&
+                widget.expense?.expenseType.id == selectedExpenseTypeId
+            ) )
+          Column(
+            // mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Created - ${_uiService.displayDay(widget.expense!.created)}'),
+              if(widget.expense?.updated != null)
+              Text('Updated - ${_uiService.displayDay(widget.expense!.updated!)}')
+            ],
+          ),
+        if(
+            ( widget.expense?.name != _nameController.text ||
+                widget.expense?.price !=  double.tryParse(_priceController.text) ||
+                widget.expense?.expenseType.id != selectedExpenseTypeId
+            ) )
         TextButton(
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancel'),
         ),
-
+        if(
+            ( widget.expense?.name != _nameController.text ||
+                widget.expense?.price !=  double.tryParse(_priceController.text) ||
+                widget.expense?.expenseType.id != selectedExpenseTypeId
+            ) )
         ElevatedButton(
+
           onPressed: () async {
             if (_formKey.currentState?.validate() ?? false) {
               final name = _nameController.text;

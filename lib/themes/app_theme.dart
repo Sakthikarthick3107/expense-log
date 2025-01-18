@@ -144,7 +144,10 @@ ThemeData appTheme(bool isDarkTheme) {
     ),
 
     snackBarTheme: SnackBarThemeData(
-      backgroundColor: Colors.deepOrange,
+      backgroundColor: isDarkTheme ? Colors.black12 :Colors.white,
+      contentTextStyle: TextStyle(
+        color: isDarkTheme ? Colors.white :Colors.black
+      )
     ),
 
     dropdownMenuTheme: DropdownMenuThemeData(

@@ -160,7 +160,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void welcomeGreeting(){
     String timeOfDay = _uiService.getTimeOfDay();
     String userName = user != null ? user!.userName : 'User';
-    MessageWidget.showSnackBar(context: context, message: 'Good $timeOfDay, $userName');
+    MessageWidget.showSnackBar(context: context, message: 'Good $timeOfDay, $userName' , status: -1);
   }
 
   final List<Widget> _screens = [

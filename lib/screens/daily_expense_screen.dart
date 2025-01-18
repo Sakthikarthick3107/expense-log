@@ -346,20 +346,39 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
             FloatingActionButton(
               tooltip: 'Copy',
                 onPressed: () async {
-                  DateTime? copyFromDate = await _uiService.selectDate(context,last: DateTime.now(),current: _selectedDateNotifier.value);
-                  if(copyFromDate != null){
-                    int createCopiedExpenses = await _expenseService.copyAndSaveExpenses(copyFromDate: copyFromDate , pasteToDate:  _selectedDateNotifier.value);
-                    if(createCopiedExpenses == 1){
-                      setState(() {
-                        totalExpense = _expenseService.selectedDayTotalExpense(_selectedDateNotifier.value);
-                        _metricsData = _expenseService.getMetrics('This month','By type',[]);
-                      });
-                      MessageWidget.showSnackBar(context: context, message: 'Copied successfully' , status: createCopiedExpenses);
-                    }
-                    else{
-                      MessageWidget.showSnackBar(context: context, message: 'Error when copying expenses',status: createCopiedExpenses);
-                    }
-                  }
+                  DateTime? copyFromDate = await _uiService.selectDate(
+                      context,last: DateTime.now(),
+                      current: _selectedDateNotifier.value,
+                      title: 'Select a date to copy expenses'
+                  );
+                  WarningDialog.showWarning(
+                      context: context,
+                      title: 'Confirm',
+                      message: 'Are you '
+                          'sure to copy expenses of '
+                          '${_uiService.displayDay(_selectedDateNotifier.value)} '
+                          'to ${_uiService.displayDay(copyFromDate)}',
+                      onConfirmed: () async {
+
+                        if(copyFromDate != null){
+                          int createCopiedExpenses = await _expenseService.copyAndSaveExpenses(copyFromDate: copyFromDate , pasteToDate:  _selectedDateNotifier.value);
+                          if(createCopiedExpenses == 1){
+                            setState(() {
+                              totalExpense = _expenseService.selectedDayTotalExpense(_selectedDateNotifier.value);
+                              _metricsData = _expenseService.getMetrics('This month','By type',[]);
+                            });
+                            MessageWidget.showSnackBar(context: context, message: 'Copied successfully' , status: createCopiedExpenses);
+                          }
+                          else if(createCopiedExpenses == -1){
+                            MessageWidget.showSnackBar(context: context, message: 'No expenses in the selected date!',status: createCopiedExpenses);
+                          }
+                          else{
+                            MessageWidget.showSnackBar(context: context, message: 'Error when copying expenses',status: createCopiedExpenses);
+                          }
+                        }
+                      }
+                  );
+
 
                 },
                 child: const Icon(
