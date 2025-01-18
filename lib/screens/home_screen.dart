@@ -13,7 +13,9 @@ import 'package:expense_log/updates/app_update.dart';
 import 'package:expense_log/widgets/app_drawer.dart';
 import 'package:expense_log/widgets/avatar_widget.dart';
 import 'package:expense_log/widgets/message_widget.dart';
+import 'package:expense_log/widgets/warning_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hive/hive.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
@@ -179,53 +181,74 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context){
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      drawer:Platform.isWindows ? null : AppDrawer(onSelectScreen: _onDrawerItemSelected),
-        appBar: AppBar(
-          title:  Text(
-            'expense.log',
-            style:const TextStyle(
-                fontSize: 22,
-                color: Colors.white,
-                fontWeight: FontWeight.bold
-            ),
+    return WillPopScope(
+      onWillPop: ()async{
+        if (_currentIndex != 0) {
+          setState(() {
+            _currentIndex = 0;
+          });
+          return false;
+        }
+        bool willExit = false;
+        await WarningDialog.showWarning(
+          context: context,
+          message: 'Are you sure to exit app?',
+          onConfirmed: () {
+            willExit =  true;
+            SystemNavigator.pop(animated: true);
+          }
 
-          ),
-          actions: [
-            if(user == null)
-            Container(
-              padding: EdgeInsets.all(10),
-              // margin: EdgeInsets.all(20),
-              child: Text(
-                '$version',
-                style: TextStyle(
+        );
+        return willExit;
+      },
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        drawer:Platform.isWindows ? null : AppDrawer(onSelectScreen: _onDrawerItemSelected),
+          appBar: AppBar(
+            title:  Text(
+              'expense.log',
+              style:const TextStyle(
+                  fontSize: 22,
                   color: Colors.white,
-                  fontSize: 12
+                  fontWeight: FontWeight.bold
+              ),
+      
+            ),
+            actions: [
+              if(user == null)
+              Container(
+                padding: EdgeInsets.all(10),
+                // margin: EdgeInsets.all(20),
+                child: Text(
+                  '$version',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 12
+                  ),
                 ),
               ),
-            ),
-            if(user != null)
-            Container(
-              padding: EdgeInsets.all(6),
-              child: AvatarWidget(
-                imageUrl: user!.image,
-                userName: user!.userName,
+              if(user != null)
+              Container(
+                padding: EdgeInsets.all(6),
+                child: AvatarWidget(
+                  imageUrl: user!.image,
+                  userName: user!.userName,
+                )
               )
-            )
-          ],
-          //leading: Text(version),
-        ),
-      body: Platform.isWindows ?
-            Container(
-              child: Row(
-                children: [
-                  AppDrawer(onSelectScreen: _onDrawerItemSelected),
-                  Expanded(child: _screens[_currentIndex])
-                ],
-              ),
-            )
-          :  _screens[_currentIndex],
+            ],
+            //leading: Text(version),
+          ),
+        body: Platform.isWindows ?
+              Container(
+                child: Row(
+                  children: [
+                    AppDrawer(onSelectScreen: _onDrawerItemSelected),
+                    Expanded(child: _screens[_currentIndex])
+                  ],
+                ),
+              )
+            :  _screens[_currentIndex],
+      ),
     );
   }
 }
