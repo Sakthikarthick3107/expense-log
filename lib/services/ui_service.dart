@@ -11,15 +11,28 @@ import 'package:intl/intl.dart';
 class UiService{
 
 
-  Future<DateTime> selectDate(BuildContext context,{DateTime? last}) async{
+  Future<DateTime> selectDate(BuildContext context,{DateTime? last  , DateTime? current}) async{
     final DateTime? pickedDate = await showDatePicker(
         context: context,
         firstDate: DateTime(1990),
         lastDate: last != null ? last :  DateTime(2200),
-        initialDate: DateTime.now(),
+        initialDate: current != null ? current : DateTime.now(),
 
     );
     return pickedDate!;
+  }
+
+  Future<DateTimeRange> selectedDuration(BuildContext context , {DateTimeRange? lastSelectedRange}) async{
+    final DateTime now = DateTime.now();
+    final DateTimeRange? selectRange = await showDateRangePicker(
+        context: context,
+        initialEntryMode: DatePickerEntryMode.input,
+        firstDate: DateTime(1990),
+        lastDate: now,
+      initialDateRange: lastSelectedRange ?? DateTimeRange(start: now.subtract(const Duration(days: 7)), end: now)
+    );
+
+    return selectRange!;
   }
 
   String getTimeOfDay(){

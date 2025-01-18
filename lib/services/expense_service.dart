@@ -4,6 +4,7 @@ import 'package:expense_log/models/expense_type.dart';
 import 'package:expense_log/services/settings_service.dart';
 import 'package:expense_log/services/ui_service.dart';
 import 'package:flutter/material.dart';
+import 'package:googleapis/cloudsearch/v1.dart';
 import 'package:hive/hive.dart';
 
 class ExpenseService{
@@ -49,6 +50,32 @@ class ExpenseService{
         return 1;
     }
 
+    Future<int> copyAndSaveExpenses({required DateTime copyFromDate, required DateTime pasteToDate}) async {
+        try {
+            // print(getExpenses());
+            List<Expense2> getExpensesOfTheSelectedDate = getExpensesOfTheDay(copyFromDate);
+            print('Selected expenses: $getExpensesOfTheSelectedDate');
+            SettingsService settingsService = SettingsService();
+
+            for (Expense2 exp in getExpensesOfTheSelectedDate) {
+                Expense2 newExpense = exp.copyWith(
+                    id: await settingsService.getBoxKey('expenseId'),
+                    date: pasteToDate,
+                    created: DateTime.now(),
+                    updated: null,
+                );
+                // createExpense(newExpense);
+                // print(newExpense);
+            }
+
+            return 1;
+        } catch (e) {
+            print('Error copying expenses: $e');
+            return 0;
+        }
+    }
+
+
     void deleteExpense(Map<int,Expense2> expenses) => {
         expenses.forEach((id,expense){
             _expenseBox2.delete(expense.id);
@@ -69,7 +96,7 @@ class ExpenseService{
        return expenseOfTheDate.fold(0.0 , (total,expense) => total +expense.price);
     }
 
-    List<String> expenseTypesOfSelectedDuration(String duration){
+    List<String> expenseTypesOfSelectedDuration(String duration, {DateTimeRange? customDateRange}){
         final expenseTypes = getExpenseTypes();
         final expenses = getExpenses();
         DateTime now = DateTime.now();
@@ -92,6 +119,10 @@ class ExpenseService{
             case 'Last month':
                 startDate = DateTime(now.year , now.month - 1 ,1);
                 endDate = DateTime(now.year, now.month, 0);
+                break;
+            default:
+                startDate = customDateRange!.start;
+                endDate = customDateRange.end;
                 break;
         }
 
@@ -179,35 +210,40 @@ class ExpenseService{
 
     }
 
-    Map<Map<String, double>,List< Map<String, double>>> getMetrics2(String duration , String metricBy , List<String> unselectedTypes){
+    Map<Map<String, double>,List< Map<String, double>>> getMetrics2(String duration , String metricBy , List<String> unselectedTypes , {DateTimeRange? customDateRange}){
         final expenseTypes = getExpenseTypes();
         final expenses = getExpenses();
         UiService uiService = UiService();
         Map<Map<String, double>,List< Map<String, double>>> fullMetrics = {};
         fullMetrics[{'Total': 0.0}] = [];
-
         DateTime now = DateTime.now();
         DateTime startDate = DateTime(now.year,now.month,now.day);
         DateTime endDate = now;
 
-        switch(duration){
-            case 'This week':
-                startDate = startDate.subtract(Duration(days: startDate.weekday % 7));
-                endDate = startDate.add(Duration(days: 6));
-                break;
-            case 'Last week':
-                startDate = startDate.subtract(Duration(days: (startDate.weekday + 7) % 7 + 7));
-                endDate = startDate.add(Duration(days: 6));
-                break;
-            case 'This month':
-                startDate = DateTime(now.year , now.month ,1);
-                endDate = DateTime(now.year, now.month + 1, 0);
-                break;
-            case 'Last month':
-                startDate = DateTime(now.year , now.month - 1 ,1);
-                endDate = DateTime(now.year, now.month, 0);
-                break;
-        }
+            switch(duration){
+                case 'This week':
+                    startDate = startDate.subtract(Duration(days: startDate.weekday % 7));
+                    endDate = startDate.add(Duration(days: 6));
+                    break;
+                case 'Last week':
+                    startDate = startDate.subtract(Duration(days: (startDate.weekday + 7) % 7 + 7));
+                    endDate = startDate.add(Duration(days: 6));
+                    break;
+                case 'This month':
+                    startDate = DateTime(now.year , now.month ,1);
+                    endDate = DateTime(now.year, now.month + 1, 0);
+                    break;
+                case 'Last month':
+                    startDate = DateTime(now.year , now.month - 1 ,1);
+                    endDate = DateTime(now.year, now.month, 0);
+                    break;
+                default:
+                    startDate = customDateRange!.start;
+                    endDate = customDateRange.end;
+                    break;
+            }
+
+        // print('Start Date ${startDate}');
 
         if (metricBy == 'By type') {
 

@@ -133,7 +133,7 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
                       builder: (context,selectedDate,_){
                           return TextButton(
                               onPressed: ()async{
-                                DateTime pickDate =await _uiService.selectDate(context , last: DateTime.now());
+                                DateTime pickDate =await _uiService.selectDate(context , last: DateTime.now() , current: _selectedDateNotifier.value);
                                 setState(() {
                                   _selectedDateNotifier.value = pickDate;
                                 });
@@ -340,35 +340,60 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
         ),
       floatingActionButton: Container(
         margin: EdgeInsets.symmetric(vertical: 50,horizontal: 30),
-        child: FloatingActionButton(
-          tooltip: 'Create new expense',
-          onPressed: ()async{
-            final getTypes = _expenseService.getExpenseTypes();
-            if(getTypes.isNotEmpty){
-              final result =await showDialog<bool>(
-                  context: context,
-                  builder: (context) =>ExpenseForm(
-                      expenseDate: _selectedDateNotifier.value
-                  )
-              );
-              if(result == true){
-                setState(() {
-                  totalExpense = _expenseService.selectedDayTotalExpense(_selectedDateNotifier.value);
-                  _metricsData = _expenseService.getMetrics('This month','By type',[]);
-                });
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            FloatingActionButton(
+              tooltip: 'Copy',
+                onPressed: () async {
+                  DateTime? copyFromDate = await _uiService.selectDate(context,last: DateTime.now(),current: _selectedDateNotifier.value);
+                  if(copyFromDate != null){
+                    int createCopiedExpenses = await _expenseService.copyAndSaveExpenses(copyFromDate: copyFromDate , pasteToDate:  _selectedDateNotifier.value);
+                    if(createCopiedExpenses == 1){
+                      MessageWidget.showSnackBar(context: context, message: 'Copied successfully' , status: createCopiedExpenses);
+                    }
+                    else{
+                      MessageWidget.showSnackBar(context: context, message: 'Error when copying expenses',status: createCopiedExpenses);
+                    }
+                  }
 
-              }
-            }
-            else{
-              Navigator.push(context, MaterialPageRoute(builder: (context) => HomeScreen(initialIndex: 1,)));
-              MessageWidget.showSnackBar(context: context, message: 'Create your expense type for adding your expense and keep track of it');
-            }
+                },
+                child: const Icon(
+                  Icons.copy
+                ),
+            ),
+            SizedBox(width: 10,),
+            FloatingActionButton(
+              tooltip: 'Create',
+              onPressed: ()async{
+                final getTypes = _expenseService.getExpenseTypes();
+                if(getTypes.isNotEmpty){
+                  final result =await showDialog<bool>(
+                      context: context,
+                      builder: (context) =>ExpenseForm(
+                          expenseDate: _selectedDateNotifier.value
+                      )
+                  );
+                  if(result == true){
+                    setState(() {
+                      totalExpense = _expenseService.selectedDayTotalExpense(_selectedDateNotifier.value);
+                      _metricsData = _expenseService.getMetrics('This month','By type',[]);
+                    });
 
-          },
-          child: const Icon(
-              Icons.add,
-            size: 30,
-          ),
+                  }
+                }
+                else{
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => HomeScreen(initialIndex: 1,)));
+                  MessageWidget.showSnackBar(context: context, message: 'Create your expense type for adding your expense and keep track of it');
+                }
+
+              },
+              child: const Icon(
+                  Icons.add,
+                size: 30,
+              ),
+            ),
+          ],
         ),
       ),
     );

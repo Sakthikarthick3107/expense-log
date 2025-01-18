@@ -158,8 +158,19 @@ ThemeData appTheme(bool isDarkTheme) {
       backgroundColor: isDarkTheme ? Color(0xFF333333) : Color(0xFFF0F8FF),
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
     ),
+
     datePickerTheme: DatePickerThemeData(
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+      rangePickerSurfaceTintColor: isDarkTheme ? Color(0xFF333333) : Color(0xFFF0F8FF),
+      rangePickerHeaderBackgroundColor: isDarkTheme ? Color(0xFF333333) : Color(0xFFF0F8FF),
+      headerHelpStyle:TextStyle(
+        color: isDarkTheme ? Color(0xFFF0F8FF) : Color(0xFF333333)
+      ) ,
+      rangePickerHeaderHelpStyle: TextStyle(
+          color: isDarkTheme ? Color(0xFFF0F8FF) : Color(0xFF333333)
+      ) ,
+
+      rangePickerHeaderForegroundColor: isDarkTheme ? Color(0xFFF0F8FF) : Color(0xFF333333),
       backgroundColor: isDarkTheme ? Color(0xFF333333) : Color(0xFFF0F8FF),
         headerForegroundColor: isDarkTheme ? Colors.white : Colors.black,
         headerHeadlineStyle: TextStyle(
@@ -167,6 +178,7 @@ ThemeData appTheme(bool isDarkTheme) {
           fontSize: 20,
           fontWeight: FontWeight.bold,
         ),
+
       weekdayStyle: TextStyle(
         color: isDarkTheme ? Colors.white : Colors.black,
         fontSize: 16,
@@ -182,33 +194,33 @@ ThemeData appTheme(bool isDarkTheme) {
       dayForegroundColor: WidgetStateProperty.all(isDarkTheme ? Colors.white : Colors.black),
       dayBackgroundColor: MaterialStateProperty.resolveWith((states) {
         if (states.contains(MaterialState.selected)) {
-          return Colors.orange;  // Selected date background color
+          return Colors.orange;
         }
-        return Colors.transparent;  // Default background
+        return Colors.transparent;
       }),
       // Today customization
       todayForegroundColor: WidgetStateProperty.all(Colors.white),
-      todayBackgroundColor: WidgetStateProperty.all(Colors.deepOrange),  // Highlight today's date
+      todayBackgroundColor: WidgetStateProperty.all(Colors.deepOrange),
       todayBorder: BorderSide(
         color: Colors.red,
         width: 2.0,
       ),
 
-      // Year text style
+
       yearStyle: TextStyle(
-        color: isDarkTheme ? Colors.white : Colors.black,  // Color for the year
+        color: isDarkTheme ? Colors.white : Colors.black,
       ),
       yearForegroundColor: WidgetStateProperty.all(isDarkTheme ? Colors.white : Colors.black),
 
-      // Range Picker customizations (if applicable)
-      rangePickerBackgroundColor: Colors.blueGrey,
+
+      rangePickerBackgroundColor: isDarkTheme ? Color(0xFF333333) : Color(0xFFF0F8FF),
       rangeSelectionBackgroundColor: Colors.deepOrange.withOpacity(0.5),
       rangeSelectionOverlayColor: WidgetStateProperty.all(Colors.red.withOpacity(0.3)),
 
-      // Divider color
+
       dividerColor: isDarkTheme ? Colors.white : Colors.black,
 
-      // Button customization
+
       cancelButtonStyle: ButtonStyle(
         foregroundColor: MaterialStateProperty.all(Colors.red),
       ),

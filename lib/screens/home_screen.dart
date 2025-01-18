@@ -180,6 +180,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context){
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       drawer:Platform.isWindows ? null : AppDrawer(onSelectScreen: _onDrawerItemSelected),
         appBar: AppBar(
           title:  Text(

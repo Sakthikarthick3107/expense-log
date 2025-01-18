@@ -2,6 +2,7 @@
 import 'package:expense_log/models/expense2.dart';
 import 'package:expense_log/models/expense_type.dart';
 import 'package:expense_log/services/expense_service.dart';
+import 'package:expense_log/services/ui_service.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:provider/provider.dart';
@@ -15,11 +16,13 @@ class MetricsScreen extends StatefulWidget {
 
 class _MetricsScreenState extends State<MetricsScreen> {
   late ExpenseService _expenseService;
-  final List<String>  metricsDuration = ['This week','Last week','This month' , 'Last month'];
+  late UiService _uiService;
+  final List<String>  metricsDuration = ['This week','Last week','This month' , 'Last month' , 'Custom'];
   final List<String> metricsBy = ['By type' , 'By day'];
   final ValueNotifier<String> _selectedDurationNotifier = ValueNotifier<String>('This week');
   final ValueNotifier<String> _selectedMetricBy = ValueNotifier<String>('By type');
   late Map<String,double> _metricsData = {};
+  DateTimeRange? selectedDateRange;
   late List<String> _expenseTypesOfDuration;
   late List<String> _unSelectedTypes = [];
   late Map<Map<String, double>,List< Map<String, double>>> _metricsData2 = {};
@@ -30,22 +33,24 @@ class _MetricsScreenState extends State<MetricsScreen> {
   void initState(){
     super.initState();
     _expenseService = Provider.of<ExpenseService>(context , listen: false);
-    _expenseTypesOfDuration = _expenseService.expenseTypesOfSelectedDuration(_selectedDurationNotifier.value);
+    _uiService = Provider.of<UiService>(context , listen: false);
+    _expenseTypesOfDuration = _expenseService.expenseTypesOfSelectedDuration(_selectedDurationNotifier.value,customDateRange: selectedDateRange);
     _metricsData = _expenseService.getMetrics(_selectedDurationNotifier.value , _selectedMetricBy.value ,_unSelectedTypes);
-    _metricsData2 = _expenseService.getMetrics2(_selectedDurationNotifier.value , _selectedMetricBy.value , _unSelectedTypes);
+    _metricsData2 = _expenseService.getMetrics2(_selectedDurationNotifier.value , _selectedMetricBy.value , _unSelectedTypes , customDateRange: selectedDateRange);
     _selectedDurationNotifier.addListener((){
-        _expenseTypesOfDuration = _expenseService.expenseTypesOfSelectedDuration(_selectedDurationNotifier.value);
+        _expenseTypesOfDuration = _expenseService.expenseTypesOfSelectedDuration(_selectedDurationNotifier.value,customDateRange: selectedDateRange);
           _metricsData = _expenseService.getMetrics(_selectedDurationNotifier.value,_selectedMetricBy.value , _unSelectedTypes);
-          _metricsData2 = _expenseService.getMetrics2(_selectedDurationNotifier.value , _selectedMetricBy.value , _unSelectedTypes);
+          _metricsData2 = _expenseService.getMetrics2(_selectedDurationNotifier.value , _selectedMetricBy.value , _unSelectedTypes, customDateRange: selectedDateRange);
     });
     _selectedMetricBy.addListener((){
         _metricsData = _expenseService.getMetrics(_selectedDurationNotifier.value,_selectedMetricBy.value , _unSelectedTypes);
-        _metricsData2 = _expenseService.getMetrics2(_selectedDurationNotifier.value , _selectedMetricBy.value,_unSelectedTypes);
+        _metricsData2 = _expenseService.getMetrics2(_selectedDurationNotifier.value , _selectedMetricBy.value,_unSelectedTypes, customDateRange: selectedDateRange);
     });
   }
 
   void _showMultiSelectDialog(BuildContext context) {
     showDialog(
+      barrierDismissible: false,
       context: context,
       builder: (ctx) {
         return StatefulBuilder(
@@ -87,6 +92,7 @@ class _MetricsScreenState extends State<MetricsScreen> {
                         _selectedDurationNotifier.value,
                         _selectedMetricBy.value,
                         _unSelectedTypes,
+                          customDateRange: selectedDateRange
                       );
                     });
                   },
@@ -105,6 +111,7 @@ class _MetricsScreenState extends State<MetricsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: Container(
         padding:const EdgeInsets.all(20),
         child: Column(
@@ -260,45 +267,77 @@ class _MetricsScreenState extends State<MetricsScreen> {
       bottomNavigationBar: Container(
         padding: EdgeInsets.symmetric(horizontal: 20 , vertical: 10),
         color: Colors.deepOrange,
-        child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children:[
-              DropdownButton<String>(
-                value: _selectedMetricBy.value,
+        child: SizedBox(
+          height: selectedDateRange != null ? 80 : 50,
+          child: Column(
+            children: [
+              if(selectedDateRange != null)
+                Text('${_uiService.displayDay(selectedDateRange!.start)} - ${_uiService.displayDay(selectedDateRange!.end)}'
+                ,style: TextStyle(
+                    color: Colors.white
+                  ),
+                ),
+              Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children:[
+                    DropdownButton<String>(
+                      value: _selectedMetricBy.value,
+                      onChanged: (String? newValue){
+                        setState(() {
+                          _selectedMetricBy.value = newValue!;
+                        });
+                      },
+                      items: metricsBy.map((String value){
+                        return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value,style: TextStyle(fontSize: 16))
+                        );
 
-                onChanged: (String? newValue){
-                  setState(() {
-                    _selectedMetricBy.value = newValue!;
-                  });
-                },
-                items: metricsBy.map((String value){
-                  return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value,style: TextStyle(fontSize: 16))
-                  );
+                      }).toList(),
+                    ),
+                    DropdownButton<String>(
+                      value: _selectedDurationNotifier.value,
 
-                }).toList(),
+                      onChanged: (String? newValue) async {
+                         if(newValue == 'Custom'){
+                            DateTimeRange? getRange = await _uiService.selectedDuration(context , lastSelectedRange: selectedDateRange);
+                            if(getRange != selectedDateRange && getRange != null){
+                              setState(() {
+                                selectedDateRange = getRange;
+                                // print(selectedDateRange);
+                                _selectedDurationNotifier.value = '';
+                                _selectedDurationNotifier.value = 'Custom';
+                              });
+                            }
+
+                        }
+                        else if(newValue != 'Custom'){
+                          setState(() {
+                            selectedDateRange = null;
+                            _selectedDurationNotifier.value = newValue!;
+                          });
+                        }
+
+
+                      },
+                      items: metricsDuration.map((String value){
+                        return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value,style: TextStyle(fontSize: 16),)
+                        );
+
+                      }).toList(),
+                    ),
+                    TextButton(onPressed: (){
+                      _showMultiSelectDialog(context);
+                    }, child: Text('Filter Types',style: TextStyle(
+                        color: Colors.white
+                    ),),
+                    )
+                  ]
               ),
-              DropdownButton<String>(
-                value: _selectedDurationNotifier.value,
-
-                onChanged: (String? newValue){
-                  setState(() {
-                    _selectedDurationNotifier.value = newValue!;
-                  });
-                },
-                items: metricsDuration.map((String value){
-                  return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value,style: TextStyle(fontSize: 16),)
-                  );
-
-                }).toList(),
-              ),
-              TextButton(onPressed: (){
-                _showMultiSelectDialog(context);
-              }, child: Text('Filter Types'))
-            ]
+            ],
+          ),
         ),
       ),
     );

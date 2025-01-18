@@ -73,6 +73,7 @@ class MyApp extends StatelessWidget {
               theme: appTheme(settingsService.isDarkTheme()),
               scaffoldMessengerKey: MessageWidget.scaffoldMessengerKey,
               home:  const Scaffold(
+                resizeToAvoidBottomInset: false,
                 body: HomeScreen(),
               ),
             );

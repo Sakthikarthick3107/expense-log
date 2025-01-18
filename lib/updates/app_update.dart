@@ -63,20 +63,15 @@ class AppUpdate{
         return;
       }
 
-      // APK download completed, proceed with installation
       bool installSuccess = await installApk(apkPath);
 
-      // Check if installation was successful
       if (installSuccess) {
         MessageWidget.showSnackBar(context: context,
             message: 'Update installed successfully!',
             status: 1);
 
-        // // Close the app and restart it
-        // SystemNavigator.pop();
         await Future.delayed(
-            Duration(seconds: 2)); // Wait a bit before restarting
-        // Restart.restartApp(); // Restart the app
+            Duration(seconds: 2));
       } else {
         MessageWidget.showSnackBar(
             context: context, message: 'APK installation failed.', status: 0);
@@ -92,12 +87,11 @@ class AppUpdate{
   Future<bool> installApk(String apkPath) async {
     const platform = MethodChannel('com.expenseapp.expense_log/install');
     try {
-      // Calling the native method to install the APK and waiting for the result
       final bool success = await platform.invokeMethod('installApk', {'apkPath': apkPath});
-      return success;  // If the result is true, installation succeeded
+      return success;
     } on PlatformException catch (e) {
       print("Failed to install APK: ${e.message}");
-      return false;  // If an error occurs, return false
+      return false;
     }
   }
 
@@ -120,7 +114,7 @@ class AppUpdate{
         // print('Url downlpad - $downloadUrl');
         if (isNewVersion(latestVersion, currentVersion)) {
           // print('New version available: $latestVersion');
-          showUpdateDialog(context, downloadUrl, releaseNotes);
+          showUpdateDialog(context, downloadUrl, releaseNotes , latestVersion);
         }
         else {
           // print('App is up-to-date!');
@@ -180,7 +174,7 @@ class AppUpdate{
     return version.split(RegExp(r'[.+]')).map(int.parse).toList();
   }
 
-  void showUpdateDialog(BuildContext context, String downloadUrl, String releaseNotes) {
+  void showUpdateDialog(BuildContext context, String downloadUrl, String releaseNotes , String latestVersion) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -191,7 +185,7 @@ class AppUpdate{
             child: ListBody(
 
               children: [
-                const Text('A new version of the app is available.\nIf you face any difficulties in updating, kindly tap on the Copy link and paste it in your browser or contact developer!'),
+                Text('A new version - $latestVersion is available.\nIf you face any difficulties in updating, kindly tap on the Copy link and paste it in your browser or contact developer!'),
                 const SizedBox(height: 4),
                 const Text('Release Notes:'),
                 Text(releaseNotes),
