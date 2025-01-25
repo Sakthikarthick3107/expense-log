@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:expense_log/models/expense2.dart';
 import 'package:expense_log/models/expense_type.dart';
 import 'package:expense_log/models/user.dart';
+import 'package:expense_log/screens/collections_screen.dart';
 import 'package:expense_log/screens/daily_expense_screen.dart';
 import 'package:expense_log/screens/expense_type_screen.dart';
 import 'package:expense_log/screens/metrics_screen.dart';
@@ -167,6 +168,7 @@ class _HomeScreenState extends State<HomeScreen> {
     const DailyExpenseScreen(),
     const ExpenseTypeScreen(),
     const MetricsScreen(),
+    const CollectionsScreen(),
     const SettingsScreen()
   ];
 

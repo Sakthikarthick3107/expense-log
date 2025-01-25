@@ -356,8 +356,8 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
                       title: 'Confirm',
                       message: 'Are you '
                           'sure to copy expenses of '
-                          '${_uiService.displayDay(_selectedDateNotifier.value)} '
-                          'to ${_uiService.displayDay(copyFromDate)}',
+                          '${_uiService.displayDay(copyFromDate)} '
+                          'to ${_uiService.displayDay(_selectedDateNotifier.value)}',
                       onConfirmed: () async {
 
                         if(copyFromDate != null){

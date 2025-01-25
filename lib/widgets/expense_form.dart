@@ -12,11 +12,13 @@ class ExpenseForm extends StatefulWidget {
 
   final DateTime expenseDate;
   final Expense2? expense;
+  final bool? isFromCollection;
 
   const ExpenseForm({
     super.key,
     required this.expenseDate,
-    this.expense
+    this.expense,
+    this.isFromCollection
   });
 
   @override
@@ -95,9 +97,6 @@ class _ExpenseFormState extends State<ExpenseForm> {
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Price is mandatory';
-                }
-                else if(double.tryParse(value)! <= 0){
-                  return 'Price must be greater than zero';
                 }
                 return null;
               },
@@ -180,15 +179,21 @@ class _ExpenseFormState extends State<ExpenseForm> {
                 updated: widget.expense != null ? DateTime.now() : null,
               );
 
-
-              int result = _expenseService.createExpense(exp);
-              if(result == 1){
-                Navigator.pop(context,true);
-                MessageWidget.showSnackBar(
-                    context: context,
-                    message: ' ${widget.expense ==null ? 'Created' : 'Edited' } expense ${exp.name}',
-                    status: result);
+              if (widget.isFromCollection == true) {
+                exp.id = -1;
+                Navigator.pop(context, exp);
               }
+              else{
+                int result = _expenseService.createExpense(exp);
+                if(result == 1){
+                  Navigator.pop(context,true);
+                  MessageWidget.showSnackBar(
+                      context: context,
+                      message: ' ${widget.expense ==null ? 'Created' : 'Edited' } expense ${exp.name}',
+                      status: result);
+                }
+              }
+
 
             }
           },

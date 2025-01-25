@@ -83,6 +83,17 @@ class AppDrawer extends StatelessWidget {
                             color: Theme.of(context).iconTheme.color
                         ),
                         title: Text('Metrics'),
+                      ),
+                      ListTile(
+                        onTap: () {
+                          onSelectScreen(3);
+
+                        },
+                        leading: Icon(
+                            Icons.save,
+                            color: Theme.of(context).iconTheme.color
+                        ),
+                        title: Text('Collections'),
                       )
                     ],
                   ),

@@ -10,6 +10,8 @@ import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart';
+
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -241,10 +243,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   : SizedBox.shrink(),
             ),
             ListTile(
-              onTap: (){
-                setState(() {
-                  _copyLinkToClipboard(context);
-                });
+              onTap: () async {
+                // setState(() {
+                //   _copyLinkToClipboard(context);
+                // });
+                String getDownloadLink = await _settingsService.downloadUrl();
+                Share.share(getDownloadLink);
               },
               title: Text('Share App'),
             ),
