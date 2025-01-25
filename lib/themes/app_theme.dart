@@ -82,6 +82,8 @@ ThemeData appTheme(bool isDarkTheme) {
         color: isDarkTheme ? Colors.white60 : Colors.black54,
       ),
     ),
+
+
     colorScheme: ColorScheme.fromSeed(
       seedColor: Colors.red,
       // primary: Colors.deepOrange,

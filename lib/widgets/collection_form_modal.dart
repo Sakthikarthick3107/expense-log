@@ -50,10 +50,12 @@ class _CollectionFormModalState extends State<CollectionFormModal> {
   @override
   Widget build(BuildContext context) {
     return FractionallySizedBox(
+
       heightFactor: 0.9,
       child: Form(
         key: _formKey,
         child: Container(
+
           padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -63,7 +65,7 @@ class _CollectionFormModalState extends State<CollectionFormModal> {
                  children: [
                    Text(
                     '${widget.collection != null ? 'Edit' : 'New'} Collection',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold , color: Colors.black),
                                  ),
                    if(widget.collection != null)
                      IconButton(onPressed: (){
@@ -86,6 +88,7 @@ class _CollectionFormModalState extends State<CollectionFormModal> {
                 decoration: const InputDecoration(
                   labelText: 'Collection Name',
                 ),
+                style: TextStyle(color: Colors.black),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Name is mandatory';
@@ -98,6 +101,13 @@ class _CollectionFormModalState extends State<CollectionFormModal> {
                 decoration: const InputDecoration(
                   labelText: 'Description',
                 ),
+                style: TextStyle(color: Colors.black),
+                  validator: (value) {
+                    if (addedExpenseNotifier.value.isEmpty) {
+                      return 'Add expense to the collection';
+                    }
+                    return null;
+                  }
 
               ),
               const SizedBox(height: 20),
@@ -107,7 +117,7 @@ class _CollectionFormModalState extends State<CollectionFormModal> {
                   builder: (context, addedExpenses, _) {
                     if (addedExpenses.isEmpty) {
                       return const Center(
-                        child: Text('No expenses added yet.'),
+                        child: Text('No expenses added yet.',style: TextStyle(color: Colors.black),),
                       );
                     }
                     return ListView.builder(
@@ -116,8 +126,8 @@ class _CollectionFormModalState extends State<CollectionFormModal> {
                         final exp = addedExpenses[index];
                         return ListTile(
                           title: Text(
-                              '${exp.name} - ${exp.price.toStringAsFixed(2)}'),
-                          subtitle: Text('Type: ${exp.expenseType.name}'),
+                              '${exp.name} - ${exp.price.toStringAsFixed(2)}',style: TextStyle(color: Colors.black),),
+                          subtitle: Text('Type: ${exp.expenseType.name}',style: TextStyle(color: Colors.black),),
                           trailing: IconButton(
                             onPressed: () {
                               addedExpenseNotifier.value =
@@ -149,17 +159,14 @@ class _CollectionFormModalState extends State<CollectionFormModal> {
                           List.from(addedExpenseNotifier.value..add(addExpense));
                     }
                   },
-                  child: const Text('Add Expense'),
+                  child: const Text('Add Expense',style: TextStyle(color: Colors.black),),
                 ),
               ),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () async {
-                    if (addedExpenseNotifier.value.isEmpty) {
-                      MessageWidget.showSnackBar(
-                          context: context, message: 'Add expense in your collection');
-                    } else if (_formKey.currentState?.validate() ?? false) {
+                     if (_formKey.currentState?.validate() ?? false) {
                       final name = _nameController.text;
                       final description  = _descriptionController.text;
                       final expenseList = addedExpenseNotifier.value.toList();
