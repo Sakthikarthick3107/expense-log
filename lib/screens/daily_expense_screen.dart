@@ -5,16 +5,20 @@ import 'package:expense_log/models/expense2.dart';
 import 'package:expense_log/models/expense_type.dart';
 import 'package:expense_log/screens/expense_type_screen.dart';
 import 'package:expense_log/screens/home_screen.dart';
+import 'package:expense_log/services/collection_service.dart';
 import 'package:expense_log/services/expense_service.dart';
 import 'package:expense_log/services/settings_service.dart';
 import 'package:expense_log/services/ui_service.dart';
 import 'package:expense_log/widgets/expense_form.dart';
 import 'package:expense_log/widgets/message_widget.dart';
+import 'package:expense_log/widgets/view_collection_modal.dart';
 import 'package:expense_log/widgets/warning_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
+
+import '../models/collection.dart';
 
 class DailyExpenseScreen extends StatefulWidget {
   const DailyExpenseScreen({super.key});
@@ -26,7 +30,9 @@ class DailyExpenseScreen extends StatefulWidget {
 class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
   late UiService _uiService;
   late ExpenseService _expenseService;
+  late CollectionService _collectionService;
   late SettingsService _settingsService;
+  late List<Collection> availableCollections;
   String? expenseType;
   final ValueNotifier<DateTime> _selectedDateNotifier = ValueNotifier<DateTime>(DateTime.now());
   double totalExpense = 0.0;
@@ -39,6 +45,11 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
       _uiService = Provider.of<UiService>(context , listen: false);
       _expenseService = Provider.of<ExpenseService>(context,listen: false);
       _settingsService = Provider.of<SettingsService>(context,listen: false);
+      _collectionService = Provider.of<CollectionService>(context,listen: false);
+      setState(() {
+        availableCollections = _collectionService.getCollections();
+        print(availableCollections);
+      });
       totalExpense = _expenseService.selectedDayTotalExpense(_selectedDateNotifier.value);
       _metricsData = _expenseService.getMetrics('This month','By type',[]);
       _selectedDateNotifier.addListener((){
@@ -340,9 +351,32 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
         ),
       floatingActionButton: Container(
         margin: EdgeInsets.symmetric(vertical: 50,horizontal: 30),
-        child: Row(
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
+            if(availableCollections.isNotEmpty)
+            FloatingActionButton(
+              onPressed: (){
+                showModalBottomSheet(
+                    isScrollControlled: true,
+                    showDragHandle: true,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                    ),
+                    context: context,
+                    builder: (context){
+                        return  ViewCollectionModal(collections: availableCollections,expenseDate: _selectedDateNotifier.value,);
+                    }
+                );
+                setState(() {
+                  totalExpense = _expenseService.selectedDayTotalExpense(_selectedDateNotifier.value);
+                  _metricsData = _expenseService.getMetrics('This month','By type',[]);
+                });
+              },
+              child: Icon(Icons.collections_bookmark_rounded),
+              tooltip: 'Load from Collection',
+            ),
+            SizedBox(height: 10,),
             FloatingActionButton(
               tooltip: 'Copy',
                 onPressed: () async {
@@ -385,7 +419,7 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
                   Icons.copy
                 ),
             ),
-            SizedBox(width: 10,),
+            SizedBox(height: 10,),
             FloatingActionButton(
               tooltip: 'Create',
               onPressed: ()async{

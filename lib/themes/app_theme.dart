@@ -83,6 +83,13 @@ ThemeData appTheme(bool isDarkTheme) {
       ),
     ),
 
+    floatingActionButtonTheme: FloatingActionButtonThemeData(
+      shape: const CircleBorder(),
+      sizeConstraints: BoxConstraints.tightFor(
+        width: 45,
+        height: 45,
+      ),
+    ),
 
     colorScheme: ColorScheme.fromSeed(
       seedColor: Colors.red,

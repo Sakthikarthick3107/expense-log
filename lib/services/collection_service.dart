@@ -14,9 +14,6 @@ class CollectionService{
 
   }
 
-  void clear(){
-    _collectionBox.clear();
-  }
 
   int createCollection(Collection collection){
     final checkIfExist = _collectionBox.get(collection.id);

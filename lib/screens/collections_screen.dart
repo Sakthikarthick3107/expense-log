@@ -71,7 +71,8 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
                     showModalBottomSheet(
                       isScrollControlled: true,
                       showDragHandle: true,
-
+                      barrierColor: Colors.black,
+                      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                       shape: const RoundedRectangleBorder(
                         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                       ),

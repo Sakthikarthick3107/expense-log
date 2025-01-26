@@ -45,6 +45,7 @@ void main() async{
   await Hive.openBox('settingsBox');
   await Hive.openBox<Collection>('collectionBox');
 
+
   // await checkAndRunMigration();
   tz.initializeTimeZones(); // Initialize timezone
   await NotificationService.initialize();
