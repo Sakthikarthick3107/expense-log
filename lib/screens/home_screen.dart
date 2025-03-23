@@ -7,9 +7,11 @@ import 'package:expense_log/screens/daily_expense_screen.dart';
 import 'package:expense_log/screens/expense_type_screen.dart';
 import 'package:expense_log/screens/metrics_screen.dart';
 import 'package:expense_log/screens/settings_screen.dart';
+import 'package:expense_log/screens/upi_logs.dart';
 import 'package:expense_log/services/notification_service.dart';
 import 'package:expense_log/services/settings_service.dart';
 import 'package:expense_log/services/ui_service.dart';
+import 'package:expense_log/services/upi_service.dart';
 import 'package:expense_log/updates/app_update.dart';
 import 'package:expense_log/widgets/app_drawer.dart';
 import 'package:expense_log/widgets/avatar_widget.dart';
@@ -19,6 +21,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hive/hive.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -39,12 +42,17 @@ class _HomeScreenState extends State<HomeScreen> {
   late SettingsService _settingsService;
   late UiService _uiService;
   late List<Widget> orderScreens = [];
+  static const platform = MethodChannel('com.expenseapp.expense_log/install');
+  late UpiService _upiService;
 
 
 
   @override
   void initState() {
     super.initState();
+    _requestPermissions();
+    _listenForSms();
+
     setState(() {
       _currentIndex = widget.initialIndex;
     });
@@ -59,7 +67,25 @@ class _HomeScreenState extends State<HomeScreen> {
       reorderScreens();
     });
     _fetchVersion();
+    _upiService = Provider.of<UpiService>(context , listen: false);
+  }
 
+
+  Future<void> _requestPermissions() async {
+    var status = await Permission.sms.status;
+    if (!status.isGranted) {
+      await Permission.sms.request();
+    }
+  }
+
+  Future<void> _listenForSms() async {
+    platform.setMethodCallHandler((call) async {
+      if (call.method == "onSmsReceived") {
+        String message = call.arguments;
+        _upiService.createLog(message);
+        print("📩 SMS Received in Flutter: $message");
+      }
+    });
   }
 
 
@@ -70,6 +96,7 @@ class _HomeScreenState extends State<HomeScreen> {
     const ExpenseTypeScreen(),
     const MetricsScreen(),
     const CollectionsScreen(),
+    const UpiLogs(),
     const SettingsScreen()
   ];
 

@@ -1,4 +1,5 @@
 import 'package:expense_log/models/expense2.dart';
+import 'package:expense_log/models/upi.dart';
 import 'package:expense_log/models/expense_type.dart';
 import 'package:expense_log/screens/home_screen.dart';
 import 'package:expense_log/services/collection_service.dart';
@@ -6,6 +7,7 @@ import 'package:expense_log/services/notification_service.dart';
 import 'package:expense_log/services/expense_service.dart';
 import 'package:expense_log/services/settings_service.dart';
 import 'package:expense_log/services/ui_service.dart';
+import 'package:expense_log/services/upi_service.dart';
 import 'package:expense_log/themes/app_theme.dart';
 import 'package:expense_log/widgets/message_widget.dart';
 import 'package:flutter/material.dart';
@@ -28,6 +30,8 @@ Future<void> requestPermissions() async {
 }
 
 
+
+
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -38,12 +42,14 @@ void main() async{
   Hive.registerAdapter(ExpenseTypeAdapter());
   Hive.registerAdapter(Expense2Adapter());
   Hive.registerAdapter(CollectionAdapter());
+  Hive.registerAdapter(UpiLogAdapter());
 
   // await Hive.openBox<Expense>('expenseBox');
   await Hive.openBox<Expense2>('expense2Box');
   await Hive.openBox<ExpenseType>('expenseTypeBox');
   await Hive.openBox('settingsBox');
   await Hive.openBox<Collection>('collectionBox');
+  await Hive.openBox<UpiLog>('upiLogBox');
 
 
   // await checkAndRunMigration();
@@ -55,7 +61,8 @@ void main() async{
              ChangeNotifierProvider(create: (_)=>SettingsService()),
               Provider(create: (_)=>ExpenseService()),
               Provider(create: (_) => UiService()),
-              Provider(create: (_) => CollectionService(),)
+              Provider(create: (_) => CollectionService(),),
+              Provider(create: (_) => UpiService())
               // ProxyProvider2<ExpenseService,SettingsService,UiService>(
               //     update: (_,expenseService,settingsService,__)=> UiService(expenseService, settingsService)
               // )

@@ -128,11 +128,11 @@ class SettingsService with ChangeNotifier{
 
     List<String> getScreenOrder({bool getDefault = false}){
 
-        var defaultOrder = ["Expenses", "Types", "Metrics", "Collections"];
+        var defaultOrder = ["Expenses", "Types", "Metrics", "Collections" , "UPI Logs"];
         if(getDefault){
             return defaultOrder;
         }
-        var screenOrders = _settingsBox.get('screenOrder') != null && _settingsBox.get('screenOrder').length == 4 ?
+        var screenOrders = _settingsBox.get('screenOrder') != null && _settingsBox.get('screenOrder').length == 5 ?
                             _settingsBox.get('screenOrder') : defaultOrder;
         return screenOrders;
     }
