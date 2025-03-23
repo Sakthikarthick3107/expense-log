@@ -175,7 +175,7 @@ class ExpenseService {
   }
 
   Map<String, double> getMetrics(String duration, String metricBy,
-      List<String> unselectedTypes) {
+      List<String> unselectedTypes , {DateTimeRange? customDateRange}) {
     final expenseTypes = getExpenseTypes();
     final expenses = getExpenses();
     Map<String, double> metricData = {'Total': 0.0};
@@ -200,6 +200,10 @@ class ExpenseService {
       case 'Last month':
         startDate = DateTime(now.year, now.month - 1, 1);
         endDate = DateTime(now.year, now.month, 0);
+        break;
+      default:
+        startDate = customDateRange!.start;
+        endDate = customDateRange.end;
         break;
     }
 

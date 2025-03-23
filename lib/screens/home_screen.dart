@@ -264,6 +264,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: AvatarWidget(
                   imageUrl: user!.image,
                   userName: user!.userName,
+                  onTap: (){
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsScreen()));
+                  },
                 )
               )
             ],
