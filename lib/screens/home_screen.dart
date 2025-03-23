@@ -38,6 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
   User? user;
   late SettingsService _settingsService;
   late UiService _uiService;
+  late List<Widget> orderScreens = [];
 
 
 
@@ -55,16 +56,50 @@ class _HomeScreenState extends State<HomeScreen> {
       final appUpdate = AppUpdate();
       appUpdate.checkForUpdates(context);
       welcomeGreeting();
+      reorderScreens();
     });
     _fetchVersion();
 
   }
+
+
+
+
+  final List<Widget> _screens = [
+    const DailyExpenseScreen(),
+    const ExpenseTypeScreen(),
+    const MetricsScreen(),
+    const CollectionsScreen(),
+    const SettingsScreen()
+  ];
+
+  Future<void> reorderScreens() async{
+    List<String> savedOrder = await _settingsService.getScreenOrder();
+    List<String> defaultOrder = await _settingsService.getScreenOrder(getDefault: true);
+    List<Widget> orderedScreens = [];
+
+    for (String screen in savedOrder) {
+      int index = defaultOrder.indexOf(screen);
+      if (index != -1) {
+          orderedScreens.add(_screens[index]);
+
+      }
+    }
+      orderedScreens.add(_screens.last);
+
+    setState(() {
+      orderScreens = orderedScreens;
+    });
+  }
+
   Future<void> _fetchVersion() async {
     final packageInfo = await PackageInfo.fromPlatform();
     setState(() {
       version = packageInfo.version;
     });
   }
+
+
 
   Future<void> _scheduleNotifications() async{
     final _settingsBox = Hive.box('settingsBox');
@@ -164,13 +199,7 @@ class _HomeScreenState extends State<HomeScreen> {
     MessageWidget.showSnackBar(context: context, message: 'Good $timeOfDay, $userName' , status: -1);
   }
 
-  final List<Widget> _screens = [
-    const DailyExpenseScreen(),
-    const ExpenseTypeScreen(),
-    const MetricsScreen(),
-    const CollectionsScreen(),
-    const SettingsScreen()
-  ];
+
 
   void _onDrawerItemSelected(int index){
     if(!Platform.isWindows)
@@ -245,11 +274,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Row(
                   children: [
                     AppDrawer(onSelectScreen: _onDrawerItemSelected),
-                    Expanded(child: _screens[_currentIndex])
+                    Expanded(child: orderScreens[_currentIndex])
                   ],
                 ),
               )
-            :  _screens[_currentIndex],
+            :  orderScreens[_currentIndex],
       ),
     );
   }

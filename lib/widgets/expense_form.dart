@@ -39,7 +39,7 @@ class _ExpenseFormState extends State<ExpenseForm> {
   void initState(){
     super.initState();
     _expenseService = Provider.of<ExpenseService>(context , listen: false);
-    _settingsService = Provider.of<SettingsService>(context,listen: false);
+    _settingsService =Provider.of<SettingsService>(context , listen : false);
     _uiService = Provider.of<UiService>(context,listen: false);
     _nameController.addListener((){
       setState(() {

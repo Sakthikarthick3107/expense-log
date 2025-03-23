@@ -125,4 +125,26 @@ class SettingsService with ChangeNotifier{
         }
         return null;
     }
+
+    List<String> getScreenOrder({bool getDefault = false}){
+        notifyListeners();
+        var defaultOrder = ["Expenses", "Types", "Metrics", "Collections"];
+        if(getDefault){
+            return defaultOrder;
+        }
+        var screenOrders = _settingsBox.get('screenOrder') != null && _settingsBox.get('screenOrder').length == 4 ?
+                            _settingsBox.get('screenOrder') : defaultOrder;
+        return screenOrders;
+    }
+
+    Future<void> saveScreenOrder(List<String> updatedOrder) async{
+        try{
+            await _settingsBox.put('screenOrder' , updatedOrder);
+            print('Saved',);
+        }
+        catch(e){
+            print('Error while saving order');
+        }
+        notifyListeners();
+    }
 }

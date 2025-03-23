@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:expense_log/models/user.dart';
@@ -11,6 +12,9 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
+
+import '../main.dart';
+import '../widgets/screen_order_popup.dart';
 
 
 class SettingsScreen extends StatefulWidget {
@@ -87,6 +91,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await launchUrl(emailUri);
     }
   }
+
+  void showReorderPopup(BuildContext context, List<String> screens, Function(List<String>) onSave) {
+    showDialog(
+      context: context,
+      builder: (context) => ScreenOrderPopup(screens: screens, onSave: onSave),
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -241,6 +253,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     )
                 )
                   : SizedBox.shrink(),
+            ),
+            ListTile(
+              onTap: (){
+                List<String> screens = _settingsService.getScreenOrder();
+
+                showReorderPopup(context, screens, (newOrder) async {
+                  print("Updated Order: $newOrder");
+                  await _settingsService.saveScreenOrder(newOrder);
+                  MessageWidget.showSnackBar(context: context, message: 'Closing application for reorder settings');
+                  Future.delayed(Duration(seconds: 4), () {
+                    exit(0);
+                  });
+                });
+              },
+              title: Text('Change Screen Order'),
             ),
             ListTile(
               onTap: () async {
