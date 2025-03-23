@@ -93,7 +93,7 @@ ThemeData appTheme(bool isDarkTheme) {
 
     colorScheme: ColorScheme.fromSeed(
       seedColor: Colors.red,
-      // primary: Colors.deepOrange,
+      primary: Colors.deepOrange,
       // secondary: Colors.deepOrange,
       surface: isDarkTheme ? Color(0xFF212121) :  Color(0xFFF0F8FF),
       background: isDarkTheme ? Color(0xFF212121) :  Color(0xFFF0F8FF),
@@ -240,6 +240,8 @@ ThemeData appTheme(bool isDarkTheme) {
         foregroundColor: MaterialStateProperty.all(Colors.green),
       ),
     ),
+
+
     useMaterial3: true,
   );
 }

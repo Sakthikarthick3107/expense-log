@@ -127,7 +127,7 @@ class SettingsService with ChangeNotifier{
     }
 
     List<String> getScreenOrder({bool getDefault = false}){
-        notifyListeners();
+
         var defaultOrder = ["Expenses", "Types", "Metrics", "Collections"];
         if(getDefault){
             return defaultOrder;

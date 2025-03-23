@@ -3,6 +3,8 @@ import 'package:expense_log/models/expense2.dart';
 import 'package:expense_log/models/expense_type.dart';
 import 'package:expense_log/services/expense_service.dart';
 import 'package:expense_log/services/ui_service.dart';
+import 'package:expense_log/widgets/expense_bar_chart.dart';
+import 'package:expense_log/widgets/static_line_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:provider/provider.dart';
@@ -125,7 +127,8 @@ class _MetricsScreenState extends State<MetricsScreen> {
                 ),
               ),
             ),
-            //  Row(
+
+            // Row(
             //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
             //   children:[
             //     DropdownButton<String>(
@@ -197,63 +200,73 @@ class _MetricsScreenState extends State<MetricsScreen> {
                             }
 
                             return ListView(
-                              children: primaryMetric.where((metric )=> metric.keys.first != 'Total').map((metric){
-                                final key = metric.keys.first;
-                                final value = metric[key] ?? 0.0;
-                                final secondaryMetrics = _metricsData2[metric];
-                                return Column(
-                                  children :[
-                                  ListTile(
-                                    onTap: (){
-                                      setState(() {
-                                        _selectedKey = _selectedKey == key ? null : key;
-                                        // print(_selectedKey);
-                                      });
-                                    },
-                                    title: Text(key, style: TextStyle(fontSize: 18),),
-                                    trailing: Text(
-                                      '₹${value.toStringAsFixed(2)}',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight:  FontWeight.normal
-                                        ),
-                                    ),
+                              children:[
+                                Container(
+                                  padding: EdgeInsets.all(16),
+                                  child: SizedBox(
+                                    height: 300,
+                                    child: ExpenseBarChart(expenseData: Map.from(_metricsData)..remove('Total')),
                                   ),
-                                    AnimatedSize(
-                                        duration: const Duration(milliseconds: 200),
-                                        curve: Curves.easeInOut,
-                                        child: _selectedKey == key && secondaryMetrics != null ?
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 30),
-                                          child: Column(
-                                            children: secondaryMetrics.map((secondary) {
-                                              final secondaryMetricName = secondary.keys.first;
-                                              final secondaryMetricValue = secondary[secondaryMetricName] ?? 0.0;
-                                              return Row(
-                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                children: [
-                                                  Text(
-                                                    secondaryMetricName,
-                                                    style: TextStyle(fontSize: 14,color: Colors.grey[700],),
-                                                  ),
-                                                  Text(
-                                                    '₹${secondaryMetricValue.toStringAsFixed(2)}',
-                                                    style: TextStyle(
-                                                      fontSize: 14,
-                                                      color: Colors.grey[700],
-                                                    ),
-                                                  )
-                                                ],
-                                              );
-                                            }).toList(),
+                                ),
+                                ...primaryMetric.where((metric )=> metric.keys.first != 'Total').map((metric){
+                                  final key = metric.keys.first;
+                                  final value = metric[key] ?? 0.0;
+                                  final secondaryMetrics = _metricsData2[metric];
+                                  return Column(
+                                      children :[
+                                        ListTile(
+                                          onTap: (){
+                                            setState(() {
+                                              _selectedKey = _selectedKey == key ? null : key;
+                                              // print(_selectedKey);
+                                            });
+                                          },
+                                          title: Text(key, style: TextStyle(fontSize: 18),),
+                                          trailing: Text(
+                                            '₹${value.toStringAsFixed(2)}',
+                                            style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight:  FontWeight.normal
+                                            ),
                                           ),
-                                        )
-                                            : SizedBox.shrink()
-                                    ),
+                                        ),
+                                        AnimatedSize(
+                                            duration: const Duration(milliseconds: 200),
+                                            curve: Curves.easeInOut,
+                                            child: _selectedKey == key && secondaryMetrics != null ?
+                                            Padding(
+                                              padding: const EdgeInsets.symmetric(horizontal: 30),
+                                              child: Column(
+                                                children: secondaryMetrics.map((secondary) {
+                                                  final secondaryMetricName = secondary.keys.first;
+                                                  final secondaryMetricValue = secondary[secondaryMetricName] ?? 0.0;
+                                                  return Row(
+                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                    children: [
+                                                      Text(
+                                                        secondaryMetricName,
+                                                        style: TextStyle(fontSize: 14,color: Colors.grey[700],),
+                                                      ),
+                                                      Text(
+                                                        '₹${secondaryMetricValue.toStringAsFixed(2)}',
+                                                        style: TextStyle(
+                                                          fontSize: 14,
+                                                          color: Colors.grey[700],
+                                                        ),
+                                                      )
+                                                    ],
+                                                  );
+                                                }).toList(),
+                                              ),
+                                            )
+                                                : SizedBox.shrink()
+                                        ),
 
-                                ]
-                                );
-                              }).toList(),
+                                      ]
+                                  );
+                                }).toList(),
+                              ]
+
                             );
 
 
