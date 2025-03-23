@@ -82,7 +82,7 @@ class _AppDrawerState extends State<AppDrawer> {
                 return ListTile(
                   onTap: () => widget.onSelectScreen(index),
                   title: Text(item),
-                  leading: Icon(screenIcons[item]),
+                  leading: Icon(screenIcons[item], color: Theme.of(context).iconTheme.color,),
                 );
               }).toList(),
             ),
