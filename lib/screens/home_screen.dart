@@ -51,7 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _requestPermissions();
-    _listenForSms();
+    // _listenForSms();
 
     setState(() {
       _currentIndex = widget.initialIndex;
@@ -78,16 +78,16 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> _listenForSms() async {
-    platform.setMethodCallHandler((call) async {
-      UpiService upiService = UpiService();
-      if (call.method == "onSmsReceived") {
-        String message = call.arguments;
-        upiService.createLog(message);
-        print("📩 SMS Received in Flutter: $message");
-      }
-    });
-  }
+  // Future<void> _listenForSms() async {
+  //   platform.setMethodCallHandler((call) async {
+  //     UpiService upiService = UpiService();
+  //     if (call.method == "onSmsReceived") {
+  //       String message = call.arguments;
+  //       upiService.createLog(message);
+  //       print("📩 SMS Received in Flutter: $message");
+  //     }
+  //   });
+  // }
 
 
 

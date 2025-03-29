@@ -1,14 +1,25 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:expense_log/models/collection.dart';
+import 'package:expense_log/models/expense_type.dart';
 import 'package:expense_log/models/user.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:googleapis/drive/v3.dart' as drive;
+
+import '../models/expense2.dart';
 
 class SettingsService with ChangeNotifier{
     final _settingsBox = Hive.box('settingsBox');
+
+    final GoogleSignIn _googleSignIn = GoogleSignIn(
+        scopes: ['https://www.googleapis.com/auth/drive.file'],
+    );
 
     Future<User?> getUser() async{
         String userName = await _settingsBox.get('userName',defaultValue: '');
@@ -42,6 +53,127 @@ class SettingsService with ChangeNotifier{
         }
         return 0;
     }
+    Future<String> getOrCreateFolder(drive.DriveApi driveApi, String folderName) async {
+        var response = await driveApi.files.list(q: "mimeType='application/vnd.google-apps.folder' and name='$folderName'");
+        if (response.files!.isNotEmpty) {
+            return response.files!.first.id!; // Folder already exists
+        }
+
+        var folderMetadata = drive.File()
+            ..name = folderName
+            ..mimeType = "application/vnd.google-apps.folder";
+
+        var folder = await driveApi.files.create(folderMetadata);
+        return folder.id!;
+    }
+
+    Future<int> backupHiveToGoogleDrive() async {
+        try {
+            final account = await _googleSignIn.signIn();
+            if (account == null) return 0; // Sign-in failed
+
+            final authHeaders = await account.authHeaders;
+            final authenticateClient = GoogleAuthClient(authHeaders);
+            // final authenticateClient = http.Client();
+            final driveApi = drive.DriveApi(authenticateClient);
+
+            // Convert Hive data to JSON
+            final directory = await getApplicationDocumentsDirectory();
+            final backupFile = File('${directory.path}/hive_backup.json');
+
+            final expense2Box = Hive.box<Expense2>('expense2Box');
+            final expenseTypeBox = Hive.box<ExpenseType>('expenseTypeBox');
+            final collectionBox = Hive.box<Collection>('collectionBox');
+            final settingsBox = Hive.box('settingsBox');
+
+            Map<String, dynamic> backupData = {
+                "Expense2": expense2Box.values.map((e) => e.toJson()).toList(),
+                "ExpenseType": expenseTypeBox.values.map((e) => e.toJson()).toList(),
+                "Collection": collectionBox.values.map((e) => e.toJson()).toList(),
+                "Settings": settingsBox.toMap(), // If it's a simple map, no conversion needed
+            };
+
+            await backupFile.writeAsString(jsonEncode(backupData));
+
+            // Upload to Google Drive
+            var media = drive.Media(backupFile.openRead(), backupFile.lengthSync());
+            var driveFile = drive.File()..name = "expense_log_${DateTime.now().millisecondsSinceEpoch}.json";
+
+            var uploadedFile = await driveApi.files.create(driveFile, uploadMedia: media);
+
+            return uploadedFile.id != null ? 1 : 0; // Return 1 if successful, 0 if failed
+        } catch (e) {
+            print("Backup Error: $e");
+            return 0; // Return 0 on error
+        }
+    }
+
+    Future<int> pickBackupFileAndRestore() async {
+        FilePickerResult? result = await FilePicker.platform.pickFiles(
+            type: FileType.custom,
+            allowedExtensions: ['json'], // Allow only JSON files
+        );
+
+        if (result != null) {
+            File file = File(result.files.single.path!);
+
+            try {
+                String jsonString = await file.readAsString();
+                Map<String, dynamic> backupData = jsonDecode(jsonString);
+
+                // Open all required Hive boxes
+                var expense2Box = Hive.box<Expense2>('expense2Box');
+                var expenseTypeBox = Hive.box<ExpenseType>('expenseTypeBox');
+                var collectionBox = Hive.box<Collection>('collectionBox');
+                var settingsBox = Hive.box('settingsBox');
+
+                // Clear existing data before restoring
+                expense2Box.clear();
+                expenseTypeBox.clear();
+                collectionBox.clear();
+                settingsBox.clear();
+
+                // Restore Expense2
+                if (backupData.containsKey("Expense2")) {
+                    for (var entry in backupData["Expense2"]) {
+                        expense2Box.put(Expense2.fromJson(entry).id,Expense2.fromJson(entry));
+                    }
+                }
+
+                // Restore ExpenseType
+                if (backupData.containsKey("ExpenseType")) {
+                    for (var entry in backupData["ExpenseType"]) {
+                        expenseTypeBox.put(ExpenseType.fromJson(entry).id,ExpenseType.fromJson(entry));
+                    }
+                }
+
+                // Restore Collection
+                if (backupData.containsKey("Collection")) {
+                    for (var entry in backupData["Collection"]) {
+                        collectionBox.put(Collection.fromJson(entry).id,Collection.fromJson(entry));
+                    }
+                }
+
+                // Restore Settings (assuming it is stored as a map)
+                if (backupData.containsKey("Settings")) {
+                    settingsBox.putAll(backupData["Settings"]);
+                }
+
+                print("✅ Backup restored successfully!");
+                return 1;
+            } catch (e) {
+                print("❌ Restore Error: $e");
+                return 0;
+            }
+        } else {
+            print("⚠️ No file selected");
+            return 0;
+        }
+        return 0;
+    }
+
+
+
 
     Future<int> googleSignOut() async {
         final GoogleSignIn _googleSignIn = GoogleSignIn();
@@ -126,15 +258,21 @@ class SettingsService with ChangeNotifier{
         return null;
     }
 
-    List<String> getScreenOrder({bool getDefault = false}){
+    List<String> getScreenOrder({bool getDefault = false}) {
+        var defaultOrder = ["Expenses", "Types", "Metrics", "Collections", "UPI Logs"];
 
-        var defaultOrder = ["Expenses", "Types", "Metrics", "Collections" , "UPI Logs"];
-        if(getDefault){
+        if (getDefault) {
             return defaultOrder;
         }
-        var screenOrders = _settingsBox.get('screenOrder') != null && _settingsBox.get('screenOrder').length == 5 ?
-                            _settingsBox.get('screenOrder') : defaultOrder;
-        return screenOrders;
+
+        var screenOrders = _settingsBox.get('screenOrder');
+
+        if (screenOrders != null && screenOrders is List) {
+            // Fix: Ensure all items are Strings
+            return screenOrders.map((e) => e.toString()).toList();
+        }
+
+        return defaultOrder;
     }
 
     Future<void> saveScreenOrder(List<String> updatedOrder) async{
@@ -146,5 +284,18 @@ class SettingsService with ChangeNotifier{
             print('Error while saving order');
         }
         notifyListeners();
+    }
+}
+
+class GoogleAuthClient extends http.BaseClient {
+    final Map<String, String> _headers;  // Stores authentication headers
+    final http.Client _client = http.Client();  // Creates a standard HTTP client
+
+    GoogleAuthClient(this._headers);  // Constructor receives headers
+
+    @override
+    Future<http.StreamedResponse> send(http.BaseRequest request) {
+        return _client.send(request..headers.addAll(_headers));
+        // Adds authentication headers to every request
     }
 }

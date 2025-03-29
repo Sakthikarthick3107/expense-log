@@ -11,7 +11,13 @@ class ExpenseService {
   final _expenseTypeBox = Hive.box<ExpenseType>('expenseTypeBox');
   final _expenseBox2 = Hive.box<Expense2>('expense2Box');
 
-  List<ExpenseType> getExpenseTypes() => _expenseTypeBox.values.toList();
+  List<ExpenseType> getExpenseTypes() {
+    List<ExpenseType> expenseTypes = List.from(_expenseTypeBox.values);
+    expenseTypes.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    return expenseTypes;
+  }
+
+
 
   List<Expense2> getExpenses() => _expenseBox2.values.toList();
 

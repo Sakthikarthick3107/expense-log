@@ -280,6 +280,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
               title: Text('Share App'),
             ),
             ListTile(
+              onTap: () async {
+                int setBackup = await _settingsService.backupHiveToGoogleDrive();
+                if(setBackup == 1){
+                  MessageWidget.showSnackBar(context: context, message: 'Backup successfully',status: 1);
+                }
+                else{
+                  MessageWidget.showSnackBar(context: context, message: 'Backup failed',status: 0);
+                }
+              },
+              title: Text('Drive Backup'),
+            ),
+            ListTile(
+              onTap: () async {
+                int setRestore = await _settingsService.pickBackupFileAndRestore();
+                if(setRestore == 1){
+                  MessageWidget.showSnackBar(context: context, message: 'Restored successfully - Closing application',status: 1);
+                  setState(() {}); // Rebuilds the widget
+                  SystemNavigator.pop(animated: true);
+                }
+                else{
+                  MessageWidget.showSnackBar(context: context, message: 'Restore failed',status: 0);
+                }
+              },
+              title: Text('Restore'),
+            ),
+            ListTile(
               onTap: (){
                 setState(() {
                   settingIndex = settingIndex ==4 ? 0 : 4;

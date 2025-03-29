@@ -69,4 +69,16 @@ class Expense2{
 
     };
   }
+
+  factory Expense2.fromJson(Map<String, dynamic> json) {
+    return Expense2(
+      id: json['id'],
+      name: json['name'],
+      price: (json['price'] as num).toDouble(),
+      expenseType: ExpenseType.fromJson(json['expenseType']),
+      date: DateTime.parse(json['date']),
+      created: DateTime.parse(json['created']),
+      updated: json['updated'] != null ? DateTime.parse(json['updated']) : null,
+    );
+  }
 }

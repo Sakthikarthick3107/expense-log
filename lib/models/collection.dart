@@ -32,5 +32,26 @@ class Collection{
     this.updated
       });
 
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "name": name,
+    "description": description,
+    "expenseList": expenseList.map((e) => e.toJson()).toList(), // Convert each Expense2 object to JSON
+    "created": created.toIso8601String(),
+    "updated": updated?.toIso8601String(),
+  };
+
+  factory Collection.fromJson(Map<String, dynamic> json) {
+    return Collection(
+      id: json['id'],
+      name: json['name'],
+      description: json['description'],
+      expenseList: (json['expenseList'] as List)
+          .map((e) => Expense2.fromJson(e))
+          .toList(),
+      created: DateTime.parse(json['created']),
+      updated: json['updated'] != null ? DateTime.parse(json['updated']) : null,
+    );
+  }
 
 }
