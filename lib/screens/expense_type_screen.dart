@@ -19,88 +19,96 @@ class ExpenseTypeScreen extends StatefulWidget {
 class _ExpenseTypeScreenState extends State<ExpenseTypeScreen> {
   late ExpenseService _expenseService;
   late UiService _uiService;
+  late SettingsService _settingsService;
 
   @override
   void initState(){
     super.initState();
     _expenseService = Provider.of<ExpenseService>(context,listen: false);
     _uiService = Provider.of<UiService>(context,listen: false);
+    _settingsService = Provider.of<SettingsService>(context,listen: false);
   }
+
+
 
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: ValueListenableBuilder(
-              valueListenable: Hive.box<ExpenseType>('expenseTypeBox').listenable(),
-              builder: (context, Box<dynamic> box, _) {
-                final expTypes = _expenseService.getExpenseTypes();
-                if (expTypes.isEmpty) {
-                  return  Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Lottie.asset(
-                        'assets/add-note.json',
-                        width: 200,
-                        height: 200,
-                      ),
-                     const Text(
-                        'Tap + icon to create a relevant expense type for your expenses',
-                        style: TextStyle(
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  );
-                }
-                return Container(
-                  padding: EdgeInsets.all(10),
-                  child: GridView.builder(
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: Platform.isWindows ? 8 : 2,
-                      crossAxisSpacing: 2,
-                      mainAxisSpacing: 4,
-                      childAspectRatio: 3
+      body: Consumer<SettingsService>(
+        builder: (context,settingsService , child){
+         return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: ValueListenableBuilder(
+                  valueListenable: Hive.box<ExpenseType>('expenseTypeBox').listenable(),
+                  builder: (context, Box<dynamic> box, _) {
+                    final expTypes = _expenseService.getExpenseTypes();
+                    if (expTypes.isEmpty) {
+                      return  Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Lottie.asset(
+                            'assets/add-note.json',
+                            width: 200,
+                            height: 200,
+                          ),
+                          const Text(
+                            'Tap + icon to create a relevant expense type for your expenses',
+                            style: TextStyle(
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      );
+                    }
+                    return Container(
+                      padding: EdgeInsets.all(10),
+                      child: GridView.builder(
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: Platform.isWindows ? 8 : 2,
+                            crossAxisSpacing: 2,
+                            mainAxisSpacing: 4,
+                            childAspectRatio: 3
 
-                    ),
-                    itemCount: expTypes.length,
-                    itemBuilder: (context, index) {
-                      final expType = expTypes[index];
-                      return GestureDetector(
-                        onTap: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) => ExpenseTypeForm(
-                              type: expType,
+                        ),
+                        itemCount: expTypes.length,
+                        itemBuilder: (context, index) {
+                          final expType = expTypes[index];
+                          return GestureDetector(
+                            onTap: () {
+                              showDialog(
+                                context: context,
+                                builder: (context) => ExpenseTypeForm(
+                                  type: expType,
+                                ),
+                              );
+                            },
+                            child: Card(
+                              elevation: settingsService.getElevation() ? 8: 0,
+                              color: settingsService.getElevation() ? Theme.of(context).cardColor : Colors.transparent,
+
+                              child: Center(
+                                child: Text(
+                                  expType.name,
+                                  style: const TextStyle(fontSize: 16),
+                                ),
+                              ),
                             ),
                           );
                         },
-                        child: Card(
-                          elevation: 8,
-                          // surfaceTintColor: Color(0xFFF0F8FF),
-                          // color: Color(0xFFF0F8FF),
+                      ),
+                    );
 
-                          child: Center(
-                            child: Text(
-                              expType.name,
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                );
+                  },
+                ),
+              ),
+            ],
+          );
+        }
 
-              },
-            ),
-          ),
-        ],
       ),
       floatingActionButton: Container(
         margin: EdgeInsets.symmetric(vertical: 50,horizontal: 30),

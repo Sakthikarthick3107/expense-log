@@ -105,215 +105,105 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       appBar:!Platform.isWindows ? AppBar(
         title: Text(user != null? user!.userName :'Settings',
-          style: TextStyle(
-            color: Colors.white
-          ),
+
         ),
       ) : null,
       body: Container(
         padding: EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if(user == null && !Platform.isWindows)
-            ListTile(
-              onTap: ()async{
-                int loginUser = await _settingsService.googleSignIn();
-                if(loginUser == 1){
-                  _checkIfUserExists();
-                  MessageWidget.showSnackBar(context: context, message: 'Loggedin successfully',status: 1);
-                }
-                else{
-                  MessageWidget.showSnackBar(context: context, message: 'Failed to login',status: 0);
-                }
-              },
-              title: Text('Signin using Google'),
-            )
-           ,
-            ListTile(
-              onTap: (){
-                setState(() {
-                  settingIndex = settingIndex == 1 ? 0 : 1;
-                });
-              },
-              title: Text('About'),
-            ),
-            AnimatedSize(
-              duration: const Duration(milliseconds: 200),
-              curve: Curves.easeInOut,
-              child : settingIndex == 1 ?
-              Consumer<SettingsService>(
-                  builder: (context,settingsService , child){
-                    return Container(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 0),
-                      child: Column(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('General'),
+              ListTile(
+                onTap: (){
+                  setState(() {
+                    settingIndex = settingIndex == 1 ? 0 : 1;
+                  });
+                },
+                title: Text('About'),
+              ),
+              AnimatedSize(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeInOut,
+                child : settingIndex == 1 ?
+                Consumer<SettingsService>(
+                    builder: (context,settingsService , child){
+                      return Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 0),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('Downloads'),
+                                Text(downloads.toString())
+          
+                              ],
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('Version'),
+                                Text(version)
+                              ],
+                            )
+                          ],
+                        ),
+                      );
+                    })
+                    : SizedBox.shrink()
+              ),
+              ListTile(
+                onTap: (){
+                  setState(() {
+                    settingIndex = settingIndex ==3 ? 0 : 3;
+                  });
+                  final appUpdate = AppUpdate();
+                  appUpdate.checkForUpdates(context);
+                },
+                title: Text('Updates'),
+              ),
+              AnimatedSize(
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeInOut,
+                  child: settingIndex == 3 ?
+                  Container(
+                      padding :EdgeInsets.symmetric(horizontal: 40, vertical: 0),
+                      child : Column(
                         children: [
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('Downloads'),
-                              Text(downloads.toString())
-
-                            ],
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text('Version'),
+                              Text('Current Version'),
                               Text(version)
                             ],
                           )
                         ],
-                      ),
-                    );
-                  })
-                  : SizedBox.shrink()
-            ),
-
-            ListTile(
-              onTap: (){
-                setState(() {
-                  settingIndex = settingIndex == 2 ? 0 : 2;
-                });
-              },
-              title: Text('Theme'),
-            ),
-            AnimatedSize(
-                duration: const Duration(milliseconds: 200),
-                curve: Curves.easeInOut,
-                child: settingIndex == 2 ?
-                Consumer<SettingsService>(
-                  builder: (context , settingsService,child){
-
-                    return Container(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 40, vertical: 0),
-                      child: Column(
-                        children: [
-                          ListTile(
-                              onTap:(){
-                                _settingsService.setTheme(false);
-                              },
-                              leading: Icon(
-                                  !settingsService.isDarkTheme()
-                                      ? Icons.check_box
-                                      : Icons.check_box_outline_blank
-                              ),
-                              title: Text(
-                                  'Light', style: TextStyle(fontSize: 18))
-                          ),
-                          ListTile(
-                              onTap:(){
-                                _settingsService.setTheme(true);
-                              },
-                              leading: Icon(
-                                  settingsService.isDarkTheme() ?Icons
-                                      .check_box : Icons.check_box_outline_blank
-                              ),
-                              title: Text(
-                                  'Dark', style: TextStyle(fontSize: 18))
-                          )
-                        ],
-                      ),
-
-                    );
-
-                  },
-
-                ) :
-                SizedBox.shrink(),
-            ),
-            ListTile(
-              onTap: (){
-                setState(() {
-                  settingIndex = settingIndex ==3 ? 0 : 3;
-                });
-                final appUpdate = AppUpdate();
-                appUpdate.checkForUpdates(context);
-              },
-              title: Text('Updates'),
-            ),
-            AnimatedSize(
-                duration: const Duration(milliseconds: 200),
-                curve: Curves.easeInOut,
-                child: settingIndex == 3 ?
-                Container(
-                    padding :EdgeInsets.symmetric(horizontal: 40, vertical: 0),
-                    child : Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('Current Version'),
-                            Text(version)
-                          ],
-                        )
-                      ],
-                    )
-                )
-                  : SizedBox.shrink(),
-            ),
-            ListTile(
-              onTap: (){
-                List<String> screens = _settingsService.getScreenOrder();
-
-                showReorderPopup(context, screens, (newOrder) async {
-                  print("Updated Order: $newOrder");
-                  await _settingsService.saveScreenOrder(newOrder);
-                  MessageWidget.showSnackBar(context: context, message: 'Closing application for reorder settings');
-                  Future.delayed(Duration(seconds: 4), () {
-                    exit(0);
+                      )
+                  )
+                    : SizedBox.shrink(),
+              ),
+              ListTile(
+                onTap: () async {
+                  // setState(() {
+                  //   _copyLinkToClipboard(context);
+                  // });
+                  String getDownloadLink = await _settingsService.downloadUrl();
+                  Share.share(getDownloadLink);
+                },
+                title: Text('Share App'),
+              ),
+              ListTile(
+                onTap: (){
+                  setState(() {
+                    settingIndex = settingIndex ==4 ? 0 : 4;
                   });
-                });
-              },
-              title: Text('Change Screen Order'),
-            ),
-            ListTile(
-              onTap: () async {
-                // setState(() {
-                //   _copyLinkToClipboard(context);
-                // });
-                String getDownloadLink = await _settingsService.downloadUrl();
-                Share.share(getDownloadLink);
-              },
-              title: Text('Share App'),
-            ),
-            ListTile(
-              onTap: () async {
-                int setBackup = await _settingsService.backupHiveToGoogleDrive();
-                if(setBackup == 1){
-                  MessageWidget.showSnackBar(context: context, message: 'Backup successfully',status: 1);
-                }
-                else{
-                  MessageWidget.showSnackBar(context: context, message: 'Backup failed',status: 0);
-                }
-              },
-              title: Text('Drive Backup'),
-            ),
-            ListTile(
-              onTap: () async {
-                int setRestore = await _settingsService.pickBackupFileAndRestore();
-                if(setRestore == 1){
-                  MessageWidget.showSnackBar(context: context, message: 'Restored successfully - Closing application',status: 1);
-                  setState(() {}); // Rebuilds the widget
-                  SystemNavigator.pop(animated: true);
-                }
-                else{
-                  MessageWidget.showSnackBar(context: context, message: 'Restore failed',status: 0);
-                }
-              },
-              title: Text('Restore'),
-            ),
-            ListTile(
-              onTap: (){
-                setState(() {
-                  settingIndex = settingIndex ==4 ? 0 : 4;
-                });
-              },
-              title: Text('Developer Info'),
-            ),
-            AnimatedSize(
+                },
+                title: Text('Developer Info'),
+              ),
+              AnimatedSize(
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeInOut,
                 child: settingIndex == 4 ?
@@ -391,35 +281,163 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 )
                     : SizedBox.shrink() ,
-            ),
-            if(user != null)
-            ListTile(
-              onTap: ()async{
-                  await WarningDialog.showWarning(context: context,
-                      title: 'Warning',
-                      message: 'Are you sure to signout?',
-                      onConfirmed: ()async{
-                        int signOutUser = await _settingsService.googleSignOut();
-                        if(signOutUser == 1){
-                          setState(() {
-                            user = null;
-                          });
-                          MessageWidget.showSnackBar(context: context, message: 'Loggedout successfully' , status: 1);
-                        }
-                        else
-                          MessageWidget.showSnackBar(context: context, message: 'Failed to logout',status: 0);
-                      });
-
-              },
-              title: Text('Signout'),
-              subtitle: Text(
-                  '${user!.email}',
-                  style: TextStyle(
-                    fontSize: 14
-                  ),
               ),
-            ),
-          ],
+
+              if(user == null && !Platform.isWindows)
+                ListTile(
+                  onTap: ()async{
+                    int loginUser = await _settingsService.googleSignIn();
+                    if(loginUser == 1){
+                      _checkIfUserExists();
+                      MessageWidget.showSnackBar(context: context, message: 'Loggedin successfully',status: 1);
+                    }
+                    else{
+                      MessageWidget.showSnackBar(context: context, message: 'Failed to login',status: 0);
+                    }
+                  },
+                  title: Text('Signin using Google'),
+                ),
+
+              if(user != null)
+                ListTile(
+                  onTap: ()async{
+                    await WarningDialog.showWarning(context: context,
+                        title: 'Warning',
+                        message: 'Are you sure to signout?',
+                        onConfirmed: ()async{
+                          int signOutUser = await _settingsService.googleSignOut();
+                          if(signOutUser == 1){
+                            setState(() {
+                              user = null;
+                            });
+                            MessageWidget.showSnackBar(context: context, message: 'Loggedout successfully' , status: 1);
+                          }
+                          else
+                            MessageWidget.showSnackBar(context: context, message: 'Failed to logout',status: 0);
+                        });
+
+                  },
+                  title: Text('Signout'),
+                  subtitle: Text(
+                    '${user!.email}',
+                    style: TextStyle(
+                        fontSize: 14
+                    ),
+                  ),
+                ),
+              Text('Display'),
+              ListTile(
+                title: Text(_settingsService.isDarkTheme() ? 'Dark' : 'Light'),
+                trailing: Switch(
+                  value: _settingsService.isDarkTheme(),
+                  onChanged: (value) {
+                    _settingsService.setTheme(value);
+                  },
+                ),
+                onTap: () {
+                  final current = _settingsService.isDarkTheme();
+                  _settingsService.setTheme(!current);
+                },
+              ),
+              ListTile(
+                title: Text('List Elevation'),
+                trailing: Switch(
+                  value: _settingsService.getElevation(),
+                  onChanged: (value) {
+                    _settingsService.enableElevation(value);
+                  },
+                ),
+                onTap: () {
+
+                },
+              ),
+              ListTile(
+                title: const Text('Load Metrics'),
+                subtitle: const Text('Prefer which duration expenses loads in Metrics by default',style: TextStyle(fontSize: 10),),
+                trailing: DropdownButton<String>(
+                  value: _settingsService.landingMetric(),
+                  onChanged: (String? newValue) {
+                    if (newValue != null) {
+                      _settingsService.setLandingMetric(newValue);
+                    }
+                  },
+                  items: ['This week', 'Last week', 'This month' , 'Last month'].map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value , style: TextStyle(fontSize: 15),),
+                    );
+                  }).toList(),
+                ),
+                onTap: () {},
+              ),
+
+              ListTile(
+                title: const Text('Metrics Chart'),
+                subtitle: const Text('Set your preference chart for metrics visualization',style: TextStyle(fontSize: 10),),
+                trailing: DropdownButton<String>(
+                  value: _settingsService.getMetricChart(),
+                  onChanged: (String? newValue) {
+                    if (newValue != null) {
+                      _settingsService.setMetricChart(newValue);
+                    }
+                  },
+                  items: ['Bar Chart', 'Pie Chart'].map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value , style: TextStyle(fontSize: 15),),
+                    );
+                  }).toList(),
+                ),
+                onTap: () {}, // Optional: you can leave it empty
+              ),
+
+              ListTile(
+                onTap: (){
+                  List<String> screens = _settingsService.getScreenOrder();
+          
+                  showReorderPopup(context, screens, (newOrder) async {
+                    print("Updated Order: $newOrder");
+                    await _settingsService.saveScreenOrder(newOrder);
+                    MessageWidget.showSnackBar(context: context, message: 'Closing application for reorder settings');
+                    Future.delayed(Duration(seconds: 4), () {
+                      exit(0);
+                    });
+                  });
+                },
+                title: Text('Customize Navigation'),
+              ),
+
+              Text('Data'),
+              ListTile(
+                onTap: () async {
+                  int setBackup = await _settingsService.backupHiveToGoogleDrive();
+                  if(setBackup == 1){
+                    MessageWidget.showSnackBar(context: context, message: 'Backup successfully',status: 1);
+                  }
+                  else{
+                    MessageWidget.showSnackBar(context: context, message: 'Backup failed',status: 0);
+                  }
+                },
+                title: Text('Backup Data'),
+              ),
+
+              ListTile(
+                onTap: () async {
+                  int setRestore = await _settingsService.pickBackupFileAndRestore();
+                  if(setRestore == 1){
+                    MessageWidget.showSnackBar(context: context, message: 'Restored successfully - Closing application',status: 1);
+                    setState(() {}); // Rebuilds the widget
+                    SystemNavigator.pop(animated: true);
+                  }
+                  else{
+                    MessageWidget.showSnackBar(context: context, message: 'Restore failed',status: 0);
+                  }
+                },
+                title: Text('Restore'),
+              )
+
+            ],
+          ),
         ),
       ),
     );;

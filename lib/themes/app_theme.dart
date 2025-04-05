@@ -2,6 +2,12 @@ import 'dart:ffi';
 
 import 'package:flutter/material.dart';
 
+Color _parseHexColor(String hex) {
+  hex = hex.replaceAll('#', '');
+  if (hex.length == 6) hex = 'FF$hex';
+  return Color(int.parse(hex, radix: 16));
+}
+
 ThemeData appTheme(bool isDarkTheme) {
   return ThemeData(
     fontFamily: 'Poppins',
@@ -85,28 +91,38 @@ ThemeData appTheme(bool isDarkTheme) {
 
     floatingActionButtonTheme: FloatingActionButtonThemeData(
       shape: const CircleBorder(),
+      foregroundColor: Colors.white,
+      backgroundColor: isDarkTheme? Color(0xFFFF5722).withOpacity(0.4) : Color(0xFFFF5722).withOpacity(0.8),
       sizeConstraints: BoxConstraints.tightFor(
-        width: 45,
-        height: 45,
+        width: 50,
+        height: 50,
       ),
     ),
 
     colorScheme: ColorScheme.fromSeed(
-      seedColor: Colors.red,
-      primary: Colors.deepOrange,
+      seedColor: Color(0xFFFF5722),
+      primary: Color(0xFFFF5722),
       // secondary: Colors.deepOrange,
-      surface: isDarkTheme ? Color(0xFF212121) :  Color(0xFFF0F8FF),
-      background: isDarkTheme ? Color(0xFF212121) :  Color(0xFFF0F8FF),
+      surface: isDarkTheme ? Color(0xFF202124) :  Color(0xFFF0F8FF),
+      background: isDarkTheme ? Color(0xFF202124) :  Color(0xFFF0F8FF),
 
     ),
-    appBarTheme: const AppBarTheme(
-
-        backgroundColor: Colors.deepOrange
+    appBarTheme:  AppBarTheme(
+        surfaceTintColor: Colors.transparent,
+        shadowColor: Colors.transparent,
+        backgroundColor:isDarkTheme ? Color(0xFFFF5722).withOpacity(0.4) : Color(0xFFFF5722).withOpacity(0.8),
+        titleTextStyle: TextStyle(
+          color: isDarkTheme ? Colors.white : Colors.black,
+          fontSize: 20
+        ),
+        iconTheme: IconThemeData(
+          color: isDarkTheme ? Colors.white : Colors.black,
+        )
     ),
 
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.deepOrange,
+          backgroundColor: isDarkTheme? Color(0xFFFF5722).withOpacity(0.4) : Color(0xFFFF5722).withOpacity(0.8),
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(5)
@@ -123,7 +139,7 @@ ThemeData appTheme(bool isDarkTheme) {
 
     listTileTheme:  ListTileThemeData(
         titleTextStyle: TextStyle(
-            fontSize: 20,
+            fontSize: 18,
             color: isDarkTheme ? Colors.white : Colors.black,
             fontFamily: 'Poppins'
         ),
@@ -137,8 +153,10 @@ ThemeData appTheme(bool isDarkTheme) {
           fontSize: 18,
           color: isDarkTheme ? Colors.white : Colors.black
         ),
-        tileColor: Colors.transparent
+        tileColor: Colors.transparent,
+
     ),
+
 
     cardTheme: CardTheme(
       surfaceTintColor: isDarkTheme ?  Color(0xFF0000000) : Color(0xFFF0F8FF),

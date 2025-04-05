@@ -267,8 +267,6 @@ class _HomeScreenState extends State<HomeScreen> {
             title:  Text(
               'expense.log',
               style:const TextStyle(
-                  fontSize: 22,
-                  color: Colors.white,
                   fontWeight: FontWeight.bold
               ),
       

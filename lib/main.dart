@@ -11,6 +11,7 @@ import 'package:expense_log/services/upi_service.dart';
 import 'package:expense_log/themes/app_theme.dart';
 import 'package:expense_log/widgets/message_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
@@ -34,7 +35,7 @@ Future<void> requestPermissions() async {
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
-
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   await requestPermissions();
 
   await Hive.initFlutter();
@@ -81,16 +82,24 @@ class MyApp extends StatelessWidget {
       return Consumer<SettingsService>(
           builder: (context,settingsService,child){
             return MaterialApp(
-              builder: EasyLoading.init(),
-              title: 'ExpenseLog',
-              debugShowCheckedModeBanner: false,
-              theme: appTheme(settingsService.isDarkTheme()),
-              scaffoldMessengerKey: MessageWidget.scaffoldMessengerKey,
-              home:  const Scaffold(
-                resizeToAvoidBottomInset: false,
-                body: HomeScreen(),
-              ),
-            );
+                builder: EasyLoading.init(),
+                title: 'ExpenseLog',
+                debugShowCheckedModeBanner: false,
+                theme: appTheme(settingsService.isDarkTheme()),
+                scaffoldMessengerKey: MessageWidget.scaffoldMessengerKey,
+                home:  AnnotatedRegion<SystemUiOverlayStyle>(
+                  value: SystemUiOverlayStyle(
+                    statusBarColor: appTheme(settingsService.isDarkTheme()).primaryColor,
+                    statusBarIconBrightness: settingsService.isDarkTheme() ? Brightness.light : Brightness.dark,
+                    statusBarBrightness: settingsService.isDarkTheme() ? Brightness.dark : Brightness.light,
+                  ),
+                  child: const Scaffold(
+                    resizeToAvoidBottomInset: false,
+                    body: HomeScreen(),
+                  ),
+                ),
+              );
+
           });
 
   }

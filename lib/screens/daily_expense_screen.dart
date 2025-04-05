@@ -271,71 +271,77 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
                           children: expenseOfTheDate.map((expOfDay){
                             return  Container(
                               padding:  const EdgeInsets.symmetric(horizontal: 10.0),
+                              margin: const EdgeInsets.only(bottom: 10),
                               decoration:const BoxDecoration(
                                 borderRadius: BorderRadius.all(Radius.circular(20))
                               ),
-                              child: ListTile(
-                                  // tileColor: deleteList.isNotEmpty && deleteList.containsKey(expOfDay.id) ? Colors.grey : Colors.transparent,
-                                  leading:deleteList.isNotEmpty ? Icon(
-                                      deleteList.containsKey(expOfDay.id) ?
-                                          Icons.check_box
-                                          :
-                                    Icons.check_box_outline_blank,
-                                    color: deleteList.containsKey(expOfDay.id) ? Colors.green : Colors.grey,
-                                  ):null ,
-                                onTap: ()async{
-
-                                    if(deleteList.isNotEmpty){
+                              child: Material(
+                                elevation: _settingsService.getElevation() ?  4 : 0,
+                                borderRadius: BorderRadius.circular(10),
+                                color: Theme.of(context).cardColor,
+                                child: ListTile(
+                                    // tileColor: deleteList.isNotEmpty && deleteList.containsKey(expOfDay.id) ? Colors.grey : Colors.transparent,
+                                    leading:deleteList.isNotEmpty ? Icon(
+                                        deleteList.containsKey(expOfDay.id) ?
+                                            Icons.check_box
+                                            :
+                                      Icons.check_box_outline_blank,
+                                      color: deleteList.containsKey(expOfDay.id) ? Colors.green : Colors.grey,
+                                    ):null ,
+                                  onTap: ()async{
+                                
+                                      if(deleteList.isNotEmpty){
+                                        setState(() {
+                                          if(deleteList.containsKey(expOfDay.id)){
+                                            deleteList.remove(expOfDay.id);
+                                          }
+                                          else{
+                                            deleteList[expOfDay.id] = expOfDay;
+                                          }
+                                        });
+                                      }
+                                      else{
+                                          final result = await showDialog<bool>(
+                                              context: context,
+                                              builder: (context) =>ExpenseForm(
+                                                  expenseDate: _selectedDateNotifier.value,
+                                                  expense: expOfDay,
+                                              )
+                                          );
+                                          if(result == true){
+                                            setState(() {
+                                              totalExpense = _expenseService.selectedDayTotalExpense(_selectedDateNotifier.value);
+                                              _metricsData = _expenseService.getMetrics('This month','By type' ,[]);
+                                            });
+                                          }
+                                      }
+                                    },
+                                    onLongPress: (){
                                       setState(() {
-                                        if(deleteList.containsKey(expOfDay.id)){
-                                          deleteList.remove(expOfDay.id);
-                                        }
-                                        else{
+                                        if (!deleteList.containsKey(expOfDay.id)) {
                                           deleteList[expOfDay.id] = expOfDay;
                                         }
                                       });
-                                    }
-                                    else{
-                                        final result = await showDialog<bool>(
-                                            context: context,
-                                            builder: (context) =>ExpenseForm(
-                                                expenseDate: _selectedDateNotifier.value,
-                                                expense: expOfDay,
-                                            )
-                                        );
-                                        if(result == true){
-                                          setState(() {
-                                            totalExpense = _expenseService.selectedDayTotalExpense(_selectedDateNotifier.value);
-                                            _metricsData = _expenseService.getMetrics('This month','By type' ,[]);
-                                          });
-                                        }
-                                    }
-                                  },
-                                  onLongPress: (){
-                                    setState(() {
-                                      if (!deleteList.containsKey(expOfDay.id)) {
-                                        deleteList[expOfDay.id] = expOfDay;
-                                      }
-                                    });
-                                  },
-                                  title: Text(
-                                      expOfDay.name,
-                                      style:const TextStyle(
-                                        fontSize: 20
-                                      ),
-                                  ),
-                                  subtitle: Text(
-                                    expOfDay.expenseType.name,
-                                    style: TextStyle(
-                                      fontSize: 12
+                                    },
+                                    title: Text(
+                                        expOfDay.name,
+                                        style:const TextStyle(
+                                          fontSize: 20
+                                        ),
                                     ),
-                                  ),
-                                  trailing: Text(
-                                      expOfDay.price.toString(),
-                                      style:const TextStyle(
-                                        fontSize: 18
+                                    subtitle: Text(
+                                      expOfDay.expenseType.name,
+                                      style: TextStyle(
+                                        fontSize: 12
                                       ),
-                                  ),
+                                    ),
+                                    trailing: Text(
+                                        expOfDay.price.toString(),
+                                        style:const TextStyle(
+                                          fontSize: 18
+                                        ),
+                                    ),
+                                ),
                               ),
                             );
                           }).toList(),

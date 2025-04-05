@@ -16,6 +16,11 @@ import '../models/expense2.dart';
 
 class SettingsService with ChangeNotifier{
     final _settingsBox = Hive.box('settingsBox');
+    Map<String, dynamic> _config = {};
+    Map<String,String> _themeData = {};
+
+    Map<String, dynamic> get config => _config;
+    Map<String,String> get themeData => _themeData;
 
     final GoogleSignIn _googleSignIn = GoogleSignIn(
         scopes: ['https://www.googleapis.com/auth/drive.file'],
@@ -285,6 +290,112 @@ class SettingsService with ChangeNotifier{
         }
         notifyListeners();
     }
+
+        // Future<void> loadExpenseLogTenantSettings() async{
+        //     const String pat = 'LNksrAoBSUBug7bDytktALHKjphhGb5xZA';
+        //     const String org = 'sakthikarthick3107';
+        //     const String project = 'Sakthikarthick3107';
+        //     const String repo = 'my_data_store';
+        //     const String filePath = '/app-configs/expense_log_config.json';
+        //
+        //     final uri = Uri.https(
+        //         'dev.azure.com',
+        //         '/$org/$project/_apis/git/repositories/$repo/items',
+        //         {
+        //             'path': filePath,
+        //             'includeContent': 'true',
+        //             'api-version': '7.1-preview.1',
+        //             r'$format': 'text',
+        //         },
+        //     );
+        //
+        //     final response = await http.get(
+        //             uri,
+        //             headers: {
+        //                 'Authorization': 'Basic ${base64Encode(utf8.encode(':$pat'))}',
+        //                 'Accept': 'application/json'
+        //             },
+        //         );
+        //     // debugPrint('Status: ${response.statusCode}');
+        //     // debugPrint('Body: ${response.body}');
+        //         if (response.statusCode == 200) {
+        //             _config = jsonDecode(response.body);
+        //             // Primary color
+        //             String tenantPrimary = _config['theme']['primary'];
+        //             if (tenantPrimary != null) {
+        //                 await _settingsBox.put('primary', tenantPrimary);
+        //             }
+        //             else {
+        //                 String storedPrimary = _settingsBox.get('primary');
+        //                 if (storedPrimary == null) {
+        //                     storedPrimary = '#FF5722';
+        //                     await _settingsBox.put('primary', storedPrimary);
+        //                 }
+        //             }
+        //             _themeData.putIfAbsent('primary', () => _settingsBox.get('primary', defaultValue: '#FF5722'));
+        //
+        //             // bool tenantElevation = _config['ui']['elevation'];
+        //             // if(tenantElevation != null){
+        //             //     await _settingsBox.put('elevation' , tenantElevation.toString());
+        //             // }
+        //             // else{
+        //             //     bool storedElevation = _settingsBox.get('elevation');
+        //             //     if (storedElevation == null) {
+        //             //         storedElevation = false;
+        //             //         await _settingsBox.put('elevation', storedElevation.toString());
+        //             //     }
+        //             // }
+        //             // _themeData.putIfAbsent('elevation', () => _settingsBox.get('elevation', defaultValue: 'false'));
+        //             notifyListeners();
+        //         } else {
+        //             _themeData.putIfAbsent('primary', () => _settingsBox.get('primary', defaultValue: '#FF5722'));
+        //             // _themeData.putIfAbsent('elevation', () => _settingsBox.get('elevation', defaultValue: 'false'));
+        //             // throw Exception('Failed to fetch JSON: ${response.statusCode}');
+        //         }
+        // }
+
+
+        Future<bool> enableElevation(bool isEnable) async{
+            await _settingsBox.put('elevation', isEnable);
+            notifyListeners();
+            return true;
+        }
+
+    bool getElevation() {
+        final dynamic storedValue = _settingsBox.get('elevation');
+
+        if (storedValue is bool) {
+            return storedValue;
+        } else if (storedValue is String) {
+            _settingsBox.put('elevation', storedValue.toLowerCase() == 'true');
+            return storedValue.toLowerCase() == 'true' ;
+        }
+        return false;
+    }
+
+    String landingMetric(){
+        String landingMetric = _settingsBox.get('landingMetric',defaultValue: 'This week');
+        return landingMetric;
+    }
+
+    Future<bool> setLandingMetric(String duration) async{
+        await _settingsBox.put('landingMetric' , duration);
+        notifyListeners();
+        return true;
+    }
+
+    String getMetricChart(){
+        String metricChart = _settingsBox.get('metricChart',defaultValue: 'Bar Chart');
+        return metricChart;
+    }
+
+    Future<bool> setMetricChart(String chart) async{
+        await _settingsBox.put('metricChart' , chart);
+        notifyListeners();
+        return true;
+    }
+
+
 }
 
 class GoogleAuthClient extends http.BaseClient {
