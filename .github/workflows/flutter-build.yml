@@ -82,55 +82,55 @@ jobs:
       - name: Output Upload URL
         run: echo "UPLOAD_URL=${{ steps.create_release.outputs.upload_url }}" >> $GITHUB_ENV
 
-    build-ios:
-      name: Build iOS
-      runs-on: macos-latest
-      needs: build-apk  # Optional: Only if you want APK to build first
+  build-ios:
+    name: Build iOS
+    runs-on: macos-latest
+    needs: build-apk  # Optional: Only if you want APK to build first
 
-      steps:
-        - name: Checkout code
-          uses: actions/checkout@v2
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-        - name: Set up Flutter
-          uses: subosito/flutter-action@v2
-          with:
-            flutter-version: '3.22.3'
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.3'
 
-        - name: Install CocoaPods
-          run: |
-            sudo gem install cocoapods
-            pod repo update
+      - name: Install CocoaPods
+        run: |
+          sudo gem install cocoapods
+          pod repo update
 
-        - name: Install dependencies
-          run: flutter pub get
+      - name: Install dependencies
+        run: flutter pub get
 
-        - name: Install iOS dependencies
-          run: |
-            cd ios
-            pod install
-            cd ..
+      - name: Install iOS dependencies
+        run: |
+          cd ios
+          pod install
+          cd ..
 
-        - name: Build iOS App
-          run: flutter build ios --release --no-codesign
+      - name: Build iOS App
+        run: flutter build ios --release --no-codesign
 
-        # Optional: Upload IPA or .app to release (if you archive manually)
-        - name: Archive and Export IPA
-          run: |
-            mkdir Payload
-            cp -r build/ios/iphoneos/Runner.app Payload/
-            cd Payload
-            zip -r ../Runner.ipa .
-            cd ..
+      # Optional: Upload IPA or .app to release (if you archive manually)
+      - name: Archive and Export IPA
+        run: |
+          mkdir Payload
+          cp -r build/ios/iphoneos/Runner.app Payload/
+          cd Payload
+          zip -r ../Runner.ipa .
+          cd ..
 
-        - name: Upload IPA to Release
-          uses: actions/upload-release-asset@v1
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          with:
-            upload_url: ${{ steps.create_release.outputs.upload_url }}
-            asset_path: Runner.ipa
-            asset_name: expense_log_ios.ipa
-            asset_content_type: application/octet-stream
+      - name: Upload IPA to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: Runner.ipa
+          asset_name: expense_log_ios.ipa
+          asset_content_type: application/octet-stream
 
 #  build-windows:
 #    runs-on: windows-latest
