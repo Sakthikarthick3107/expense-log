@@ -263,10 +263,12 @@ class _HomeScreenState extends State<HomeScreen> {
         );
         return willExit;
       },
-      child: Scaffold(
-        resizeToAvoidBottomInset: false,
-        drawer:Platform.isWindows ? null : AppDrawer(onSelectScreen: _onDrawerItemSelected),
-          appBar:  AppBar(
+      child: Consumer<SettingsService>(
+        builder: (context,settingsService,child){
+          return Scaffold(
+            resizeToAvoidBottomInset: false,
+            drawer:Platform.isWindows ? null : AppDrawer(onSelectScreen: _onDrawerItemSelected),
+            appBar:  AppBar(
               title:  Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -275,28 +277,28 @@ class _HomeScreenState extends State<HomeScreen> {
                     'expense.log',
                     style:const TextStyle(
                         fontWeight: FontWeight.bold,
-                      fontSize: 22
+                        fontSize: 22
                     ),
-            
-                  ),
-               // SizedBox(height: 5,),
-               if(orderScreens[_currentIndex].runtimeType == DailyExpenseScreen)
-               Text(
-                   'This month : ₹ ${_expenseService.getMetrics('This month','By type',[])['Total']?.toStringAsFixed(2)}',
-                 style: TextStyle(
-                   fontSize: 12
-                 ),
 
-               ),
+                  ),
+                  // SizedBox(height: 5,),
+                  if(orderScreens[_currentIndex].runtimeType == DailyExpenseScreen)
+                    Text(
+                      'This month : ₹ ${_expenseService.getMetrics('This month','By type',[])['Total']?.toStringAsFixed(2)}',
+                      style: TextStyle(
+                          fontSize: 12
+                      ),
+
+                    ),
                   if(orderScreens[_currentIndex].runtimeType == MetricsScreen)
                     SizedBox(
                       height: 30,
                       child: DropdownButton<String>(
                         isDense: true,
-                        value: _settingsService.getMetricChart(),
+                        value: settingsService.getMetricChart(),
                         onChanged: (String? newValue) {
                           if (newValue != null) {
-                            _settingsService.setMetricChart(newValue);
+                            settingsService.setMetricChart(newValue);
                           }
                         },
                         items: ['Bar Chart', 'Pie Chart'].map<DropdownMenuItem<String>>((String value) {
@@ -315,42 +317,44 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               actions: [
                 if(user == null)
-                Container(
-                  padding: EdgeInsets.all(10),
-                  // margin: EdgeInsets.all(20),
-                  child: Text(
-                    '$version',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 12
+                  Container(
+                    padding: EdgeInsets.all(10),
+                    // margin: EdgeInsets.all(20),
+                    child: Text(
+                      '$version',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12
+                      ),
                     ),
                   ),
-                ),
                 if(user != null)
-                Container(
-                  padding: EdgeInsets.all(6),
-                  child: AvatarWidget(
-                    imageUrl: user!.image,
-                    userName: user!.userName,
-                    onTap: (){
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsScreen()));
-                    },
+                  Container(
+                      padding: EdgeInsets.all(6),
+                      child: AvatarWidget(
+                        imageUrl: user!.image,
+                        userName: user!.userName,
+                        onTap: (){
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsScreen()));
+                        },
+                      )
                   )
-                )
               ],
               //leading: Text(version),
             ),
 
-        body: Platform.isWindows ?
-              Container(
-                child: Row(
-                  children: [
-                    AppDrawer(onSelectScreen: _onDrawerItemSelected),
-                    Expanded(child: orderScreens[_currentIndex])
-                  ],
-                ),
-              )
-            :  orderScreens[_currentIndex],
+            body: Platform.isWindows ?
+            Container(
+              child: Row(
+                children: [
+                  AppDrawer(onSelectScreen: _onDrawerItemSelected),
+                  Expanded(child: orderScreens[_currentIndex])
+                ],
+              ),
+            )
+                :  orderScreens[_currentIndex],
+          );
+        }
       ),
     );
   }
