@@ -27,7 +27,6 @@ class _MetricsScreenState extends State<MetricsScreen> {
   final ValueNotifier<String> _selectedDurationNotifier = ValueNotifier<String>('This week');
   final ValueNotifier<String> _selectedMetricBy = ValueNotifier<String>('By type');
   late Map<String,double> _metricsData = {};
-  late Map<String,double> _barCharData = {};
   DateTimeRange? selectedDateRange;
   late List<String> _expenseTypesOfDuration;
   late List<String> _unSelectedTypes = [];
@@ -45,17 +44,14 @@ class _MetricsScreenState extends State<MetricsScreen> {
     _expenseTypesOfDuration = _expenseService.expenseTypesOfSelectedDuration(_selectedDurationNotifier.value,customDateRange: selectedDateRange);
     _metricsData = _expenseService.getMetrics(_selectedDurationNotifier.value , _selectedMetricBy.value ,_unSelectedTypes,customDateRange: selectedDateRange);
     _metricsData2 = _expenseService.getMetrics2(_selectedDurationNotifier.value , _selectedMetricBy.value , _unSelectedTypes , customDateRange: selectedDateRange);
-    _barCharData = _expenseService.getMetrics(_selectedDurationNotifier.value , 'By type' ,_unSelectedTypes,customDateRange: selectedDateRange);
     _selectedDurationNotifier.addListener((){
         _expenseTypesOfDuration = _expenseService.expenseTypesOfSelectedDuration(_selectedDurationNotifier.value,customDateRange: selectedDateRange);
           _metricsData = _expenseService.getMetrics(_selectedDurationNotifier.value,_selectedMetricBy.value , _unSelectedTypes , customDateRange: selectedDateRange);
           _metricsData2 = _expenseService.getMetrics2(_selectedDurationNotifier.value , _selectedMetricBy.value , _unSelectedTypes, customDateRange: selectedDateRange);
-        _barCharData = _expenseService.getMetrics(_selectedDurationNotifier.value , 'By type' ,_unSelectedTypes,customDateRange: selectedDateRange);
     });
     _selectedMetricBy.addListener((){
         _metricsData = _expenseService.getMetrics(_selectedDurationNotifier.value,_selectedMetricBy.value , _unSelectedTypes, customDateRange: selectedDateRange);
         _metricsData2 = _expenseService.getMetrics2(_selectedDurationNotifier.value , _selectedMetricBy.value,_unSelectedTypes, customDateRange: selectedDateRange);
-        _barCharData = _expenseService.getMetrics(_selectedDurationNotifier.value , 'By type' ,_unSelectedTypes,customDateRange: selectedDateRange);
     });
   }
 
@@ -181,8 +177,8 @@ class _MetricsScreenState extends State<MetricsScreen> {
                                             child: SizedBox(
                                               height: 300,
                                               // child: ,
-                                              child: settingsService.getMetricChart() == 'Bar Chart' ? ExpenseBarChart(expenseData: Map.from(_barCharData)..remove('Total')) :
-                                    SingleChildScrollView(child: ExpensePieChart(expenseData: Map.from(_barCharData)..remove('Total'))),
+                                              child: settingsService.getMetricChart() == 'Bar Chart' ? ExpenseBarChart(expenseData: Map.from(_metricsData)..remove('Total')) :
+                                    SingleChildScrollView(child: ExpensePieChart(expenseData: Map.from(_metricsData)..remove('Total'))),
                                             ),
                                           ),
                                           ...primaryMetric.where((metric )=> metric.keys.first != 'Total').map((metric){
