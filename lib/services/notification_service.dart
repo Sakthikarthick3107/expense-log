@@ -51,9 +51,9 @@ class NotificationService {
   }) async {
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
     AndroidNotificationDetails(
-      'daily_notifications', // Channel ID
-      'Daily Notifications', // Channel Name
-      channelDescription: 'Notifications for time of the day',
+      'expense_log_notifications', // Channel ID
+      'Daily Expense Notifications', // Channel Name
+      channelDescription: 'Notifications for time of the day of Expense Log',
       importance: Importance.high,
       priority: Priority.high,
     );

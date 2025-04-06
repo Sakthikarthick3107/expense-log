@@ -23,58 +23,58 @@ class MainActivity : FlutterActivity() {
     private val CHANNEL = "com.expenseapp.expense_log/install"
     private val SMS_PERMISSION_CODE = 101
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        requestSmsPermission()
-        registerSmsReceiver()
-        // Initialize MethodChannel properly
-        MethodChannel(flutterEngine!!.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
-            if (call.method == "onSmsReceived") {
-                val message = call.arguments as String
-                Log.d("SMS_RECEIVER", "📩 SMS Data Sent to Flutter: $message")
-                result.success(null)
-            }
-        }
-    }
+//    override fun onCreate(savedInstanceState: Bundle?) {
+//        super.onCreate(savedInstanceState)
+//        requestSmsPermission()
+//        registerSmsReceiver()
+//        // Initialize MethodChannel properly
+//        MethodChannel(flutterEngine!!.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
+//            if (call.method == "onSmsReceived") {
+//                val message = call.arguments as String
+//                Log.d("SMS_RECEIVER", "📩 SMS Data Sent to Flutter: $message")
+//                result.success(null)
+//            }
+//        }
+//    }
 
-    private fun requestSmsPermission() {
-        val permissions = arrayOf(
-            Manifest.permission.RECEIVE_SMS,
-            Manifest.permission.READ_SMS
-        )
+//    private fun requestSmsPermission() {
+//        val permissions = arrayOf(
+//            Manifest.permission.RECEIVE_SMS,
+//            Manifest.permission.READ_SMS
+//        )
+//
+//        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECEIVE_SMS)
+//            != PackageManager.PERMISSION_GRANTED) {
+//            ActivityCompat.requestPermissions(this, permissions, SMS_PERMISSION_CODE)
+//        }
+//    }
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECEIVE_SMS)
-            != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, permissions, SMS_PERMISSION_CODE)
-        }
-    }
+//    private fun registerSmsReceiver() {
+//        val filter = IntentFilter("android.provider.Telephony.SMS_RECEIVED")
+//        registerReceiver(smsReceiver, filter)
+//    }
 
-    private fun registerSmsReceiver() {
-        val filter = IntentFilter("android.provider.Telephony.SMS_RECEIVED")
-        registerReceiver(smsReceiver, filter)
-    }
-
-    private val smsReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action == "android.provider.Telephony.SMS_RECEIVED") {
-                val bundle = intent.extras
-                if (bundle != null) {
-                    val pdus = bundle["pdus"] as Array<*>?
-                    pdus?.forEach { pdu ->
-                        val format = bundle.getString("format")
-                        val sms = SmsMessage.createFromPdu(pdu as ByteArray, format)
-                        val messageBody = sms.messageBody
-
-                        if (messageBody.contains("UPI") && messageBody.contains("debited", ignoreCase = true)) {
-                            // Send SMS content to Flutter via MethodChannel
-                            MethodChannel(flutterEngine!!.dartExecutor.binaryMessenger, CHANNEL)
-                                .invokeMethod("onSmsReceived", messageBody)
-                        }
-                    }
-                }
-            }
-        }
-    }
+//    private val smsReceiver = object : BroadcastReceiver() {
+//        override fun onReceive(context: Context?, intent: Intent?) {
+//            if (intent?.action == "android.provider.Telephony.SMS_RECEIVED") {
+//                val bundle = intent.extras
+//                if (bundle != null) {
+//                    val pdus = bundle["pdus"] as Array<*>?
+//                    pdus?.forEach { pdu ->
+//                        val format = bundle.getString("format")
+//                        val sms = SmsMessage.createFromPdu(pdu as ByteArray, format)
+//                        val messageBody = sms.messageBody
+//
+//                        if (messageBody.contains("UPI") && messageBody.contains("debited", ignoreCase = true)) {
+//                            // Send SMS content to Flutter via MethodChannel
+//                            MethodChannel(flutterEngine!!.dartExecutor.binaryMessenger, CHANNEL)
+//                                .invokeMethod("onSmsReceived", messageBody)
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)

@@ -62,7 +62,7 @@ class AppUpdate{
         MessageWidget.showSnackBar(context: context, message: 'Failed to download APK.', status: 0);
         return;
       }
-
+      debugPrint('Finished');
       bool installSuccess = await installApk(apkPath);
 
       if (installSuccess) {
@@ -73,10 +73,12 @@ class AppUpdate{
         await Future.delayed(
             Duration(seconds: 2));
       } else {
+        debugPrint('Failed');
         MessageWidget.showSnackBar(
             context: context, message: 'APK installation failed.', status: 0);
       }
     } catch (e) {
+      debugPrint('Failed');
       MessageWidget.showSnackBar(context: context,
           message: 'Failed to download or install APK: $e',
           status: 0);
