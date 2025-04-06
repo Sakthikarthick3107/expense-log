@@ -14,7 +14,9 @@ import 'package:expense_log/widgets/message_widget.dart';
 import 'package:expense_log/widgets/view_collection_modal.dart';
 import 'package:expense_log/widgets/warning_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:hive_flutter/adapters.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 
@@ -59,6 +61,26 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
         });
       });
 
+  }
+
+
+  final ImagePicker _picker = ImagePicker();
+
+  Future<void> _pickImageAndRecognizeText() async {
+    final XFile? imageFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (imageFile == null) return;
+
+    final inputImage = InputImage.fromFilePath(imageFile.path);
+    final textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
+
+    final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
+
+    debugPrint('--- Extracted Text ---');
+    for (TextBlock block in recognizedText.blocks) {
+      debugPrint(block.text);
+    }
+
+    textRecognizer.close();
   }
 
   @override
@@ -360,6 +382,11 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
+            FloatingActionButton(onPressed: _pickImageAndRecognizeText,
+              child: Icon(Icons.document_scanner_outlined),
+              tooltip: 'Bill',
+            ),
+            SizedBox(height: 10,),
             if(availableCollections.isNotEmpty)
             FloatingActionButton(
               onPressed: (){

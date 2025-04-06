@@ -268,14 +268,12 @@ class _MetricsScreenState extends State<MetricsScreen> {
         padding: EdgeInsets.symmetric(horizontal: 20 , vertical: 10),
         color: Theme.of(context).appBarTheme.backgroundColor,
         child: SizedBox(
-          height: selectedDateRange != null ? 80 : 50,
+          height: 80,
           child: Column(
             children: [
               if(selectedDateRange != null)
                 Text('${_uiService.displayDay(selectedDateRange!.start)} - ${_uiService.displayDay(selectedDateRange!.end)}'
-                ,style: TextStyle(
-                    color: Colors.white
-                  ),
+              ,
                 ),
               Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -330,9 +328,7 @@ class _MetricsScreenState extends State<MetricsScreen> {
                     ),
                     TextButton(onPressed: (){
                       _showMultiSelectDialog(context);
-                    }, child: Text('Filter Types',style: TextStyle(
-                        color: Colors.white
-                    ),),
+                    }, child: Text('Filter Types'),
                     )
                   ]
               ),
