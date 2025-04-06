@@ -270,7 +270,6 @@ class _HomeScreenState extends State<HomeScreen> {
               title:  Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: 0,
                 children: [
                   Text(
                     'expense.log',
@@ -280,6 +279,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
             
                   ),
+               SizedBox(height: 5,),
                if(orderScreens[_currentIndex].runtimeType == DailyExpenseScreen)
                Text(
                    'This month : ₹ ${_expenseService.getMetrics('This month','By type',[])['Total']?.toStringAsFixed(2)}',
