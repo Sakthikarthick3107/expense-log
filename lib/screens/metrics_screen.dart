@@ -204,14 +204,25 @@ class _MetricsScreenState extends State<MetricsScreen> {
                                                             // print(_selectedKey);
                                                           });
                                                         },
-                                                        title: Text(key, style: TextStyle(fontSize: 18),),
+
+                                                        title: Text(
+                                                          key,
+                                                          style: TextStyle(
+                                                              fontSize: 18,
+                                                              fontWeight : _selectedKey == key ? FontWeight.bold : FontWeight.normal,
+                                                              color: _selectedKey == key ? Theme.of(context).primaryColor : Theme.of(context).textTheme.displayMedium?.color
+                                                          ),
+
+                                                        ),
                                                         trailing: Text(
                                                           '₹${value.toStringAsFixed(2)}',
                                                           style: TextStyle(
                                                               fontSize: 16,
-                                                              fontWeight:  FontWeight.normal
+                                                              fontWeight : _selectedKey == key ? FontWeight.bold : FontWeight.normal,
+                                                              color: _selectedKey == key ? Theme.of(context).primaryColor : Theme.of(context).textTheme.displayMedium?.color
                                                           ),
                                                         ),
+                                                        // tileColor: _selectedKey == key ? Theme.of(context).primaryColor : Theme.of(context).listTileTheme.tileColor ,
                                                       ),
                                                     ),
                                                   ),
