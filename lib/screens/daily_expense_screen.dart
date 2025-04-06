@@ -382,11 +382,11 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            FloatingActionButton(onPressed: _pickImageAndRecognizeText,
-              child: Icon(Icons.document_scanner_outlined),
-              tooltip: 'Bill',
-            ),
-            SizedBox(height: 10,),
+            // FloatingActionButton(onPressed: _pickImageAndRecognizeText,
+            //   child: Icon(Icons.document_scanner_outlined),
+            //   tooltip: 'Bill',
+            // ),
+            // SizedBox(height: 10,),
             if(availableCollections.isNotEmpty)
             FloatingActionButton(
               onPressed: (){
