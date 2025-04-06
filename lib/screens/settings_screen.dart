@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:expense_log/models/user.dart';
 import 'package:expense_log/services/settings_service.dart';
 import 'package:expense_log/updates/app_update.dart';
+import 'package:expense_log/widgets/color_selector.dart';
 import 'package:expense_log/widgets/message_widget.dart';
 import 'package:expense_log/widgets/warning_dialog.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +15,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../main.dart';
+import '../utility/preset_colors.dart';
 import '../widgets/screen_order_popup.dart';
 
 
@@ -40,6 +42,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     downloadsCount();
     _checkIfUserExists();
   }
+
 
   Future<void> downloadsCount()async{
     int count = await _settingsService.fetchDownloadCount()  as int;
@@ -348,9 +351,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   },
                 ),
                 onTap: () {
-
+                  final current = _settingsService.getElevation();
+                  _settingsService.enableElevation(!current);
                 },
               ),
+              ListTile(
+                title: const Text('Color'),
+                subtitle: Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: ColorSelector(
+                    presetColors: presetColors,
+                    selectedColor: _settingsService.getPrimaryColor(),
+                    onColorSelected: (color) {
+                      setState(() async{
+                        await _settingsService.setPrimaryColor(color);
+                      });
+                    },
+                    smallSize: true,
+                  ),
+                ),
+              ),
+
               ListTile(
                 title: const Text('Load Metrics'),
                 subtitle: const Text('Prefer which duration expenses loads in Metrics by default',style: TextStyle(fontSize: 10),),

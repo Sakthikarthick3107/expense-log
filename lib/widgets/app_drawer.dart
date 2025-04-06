@@ -30,6 +30,7 @@ class _AppDrawerState extends State<AppDrawer> {
   late SettingsService _settingsService;
   late List<String> _screenNames = [];
 
+
   @override
   void initState(){
     super.initState();
@@ -83,6 +84,7 @@ class _AppDrawerState extends State<AppDrawer> {
                 return ListTile(
                   onTap: () => widget.onSelectScreen(index),
                   title: Text(item),
+
                   leading: Icon(screenIcons[item], color: Theme.of(context).iconTheme.color,),
                 );
               }).toList(),

@@ -266,7 +266,7 @@ class _MetricsScreenState extends State<MetricsScreen> {
       ),
       bottomNavigationBar: Container(
         padding: EdgeInsets.symmetric(horizontal: 20 , vertical: 10),
-        color: Colors.deepOrange,
+        color: Theme.of(context).appBarTheme.backgroundColor,
         child: SizedBox(
           height: selectedDateRange != null ? 80 : 50,
           child: Column(

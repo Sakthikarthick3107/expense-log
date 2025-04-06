@@ -8,6 +8,7 @@ import 'package:expense_log/screens/expense_type_screen.dart';
 import 'package:expense_log/screens/metrics_screen.dart';
 import 'package:expense_log/screens/settings_screen.dart';
 import 'package:expense_log/screens/upi_logs.dart';
+import 'package:expense_log/services/expense_service.dart';
 import 'package:expense_log/services/notification_service.dart';
 import 'package:expense_log/services/settings_service.dart';
 import 'package:expense_log/services/ui_service.dart';
@@ -40,6 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
   User? user;
   late SettingsService _settingsService;
+  late ExpenseService _expenseService;
   late UiService _uiService;
   late List<Widget> orderScreens = [];
   static const platform = MethodChannel('com.expenseapp.expense_log/install');
@@ -58,6 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
     _settingsService = Provider.of<SettingsService>(context,listen: false);
     _uiService = Provider.of<UiService>(context,listen: false);
+    _expenseService = Provider.of<ExpenseService>(context , listen: false);
     _checkIfUserExists();
     _scheduleNotifications();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -263,41 +266,58 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         drawer:Platform.isWindows ? null : AppDrawer(onSelectScreen: _onDrawerItemSelected),
-          appBar: AppBar(
-            title:  Text(
-              'expense.log',
-              style:const TextStyle(
-                  fontWeight: FontWeight.bold
+          appBar:  AppBar(
+              title:  Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: 0,
+                children: [
+                  Text(
+                    'expense.log',
+                    style:const TextStyle(
+                        fontWeight: FontWeight.bold,
+                      fontSize: 22
+                    ),
+            
+                  ),
+               if(orderScreens[_currentIndex].runtimeType == DailyExpenseScreen)
+               Text(
+                   'This month : ₹ ${_expenseService.getMetrics('This month','By type',[])['Total']?.toStringAsFixed(2)}',
+                 style: TextStyle(
+                   fontSize: 12
+                 ),
+
+               )
+                ],
               ),
-      
-            ),
-            actions: [
-              if(user == null)
-              Container(
-                padding: EdgeInsets.all(10),
-                // margin: EdgeInsets.all(20),
-                child: Text(
-                  '$version',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12
+              actions: [
+                if(user == null)
+                Container(
+                  padding: EdgeInsets.all(10),
+                  // margin: EdgeInsets.all(20),
+                  child: Text(
+                    '$version',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 12
+                    ),
                   ),
                 ),
-              ),
-              if(user != null)
-              Container(
-                padding: EdgeInsets.all(6),
-                child: AvatarWidget(
-                  imageUrl: user!.image,
-                  userName: user!.userName,
-                  onTap: (){
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsScreen()));
-                  },
+                if(user != null)
+                Container(
+                  padding: EdgeInsets.all(6),
+                  child: AvatarWidget(
+                    imageUrl: user!.image,
+                    userName: user!.userName,
+                    onTap: (){
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsScreen()));
+                    },
+                  )
                 )
-              )
-            ],
-            //leading: Text(version),
-          ),
+              ],
+              //leading: Text(version),
+            ),
+
         body: Platform.isWindows ?
               Container(
                 child: Row(

@@ -57,6 +57,7 @@ class ExpenseBarChart extends StatelessWidget {
                       child: Text(
                         value.toInt().toString(),
                         style: TextStyle(fontSize: 10),
+
                       ),
                     );
                   },
@@ -85,6 +86,20 @@ class ExpenseBarChart extends StatelessWidget {
               topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)), // Hide top X-axis
             ),
             barGroups: barGroups,
+            barTouchData: BarTouchData(
+              touchTooltipData: BarTouchTooltipData(
+                tooltipBgColor: Colors.black,
+                getTooltipItem: (group,groupIndex,rod,rodIndex){
+                  return BarTooltipItem( '${rod.toY.toStringAsFixed(2)}',
+                     TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+
+                  );
+                }
+              )
+            )
           ),
         ),
       ),

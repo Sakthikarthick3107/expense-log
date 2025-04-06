@@ -8,6 +8,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 
 import '../models/collection.dart';
+import '../services/settings_service.dart';
 
 class ViewCollectionModal extends StatefulWidget {
   List<Collection> collections;
@@ -39,49 +40,61 @@ class _ViewCollectionModalState extends State<ViewCollectionModal> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Theme.of(context).scaffoldBackgroundColor,
-      child: FractionallySizedBox(
-        heightFactor: 0.8,
-        child:  ListView.builder(
-          itemCount: widget.collections.length,
-          itemBuilder: (context, index) {
-            final collection = widget.collections[index];
-            final collectionCost = collection.expenseList.fold(0.0 , (act , cost) => act + cost.price );
-            final collectionItems = collection.expenseList.fold('' ,(act,str) => act  + str.name + ',' );
-            return ListTile(
-              onTap: (){
-                WarningDialog.showWarning(context: context,
-                    title: 'Confirm',
-                    message: 'Are you sure to add collection ${collection.name}?',
-                    onConfirmed: () async {
-                    int status = await _expenseService.createCollectionExpense(expenses: collection.expenseList, expenseDate: widget.expenseDate);
-                    if(status == 1){
-                      MessageWidget.showSnackBar(context: context, message: 'Collection added successfully',status: 1);
-                    }
-                    else{
-                      MessageWidget.showSnackBar(context: context, message: 'Failed to add collection',status: 0);
-                    }
-                      Navigator.pop(context);
-                    }
-                );
-              },
-              title: Text(collection.name),
-              trailing: Text('₹${collectionCost.toStringAsFixed(2)}'),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if(collection.description!.length > 0 )
-                  Text('${collection.description}',
-                    style: TextStyle(fontSize: 12),),
-                  Text(collectionItems , style: TextStyle(fontSize: 10),)
-                ],
-              ),
-            );
+    return Consumer<SettingsService>(
+      builder: (context,settingsService , child){
+        return Container(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          child: FractionallySizedBox(
+            heightFactor: 0.8,
+            child:  ListView.builder(
+              itemCount: widget.collections.length,
+              itemBuilder: (context, index) {
+                final collection = widget.collections[index];
+                final collectionCost = collection.expenseList.fold(0.0 , (act , cost) => act + cost.price );
+                final collectionItems = collection.expenseList.fold('' ,(act,str) => act  + str.name + ',' );
+                return Container(
+                  margin: EdgeInsets.only(bottom: 8),
+                  child: Material(
+                    elevation: settingsService.getElevation() ?  8 : 0,
+                    child: ListTile(
+                      onTap: (){
+                        WarningDialog.showWarning(context: context,
+                            title: 'Confirm',
+                            message: 'Are you sure to add collection ${collection.name}?',
+                            onConfirmed: () async {
+                              int status = await _expenseService.createCollectionExpense(expenses: collection.expenseList, expenseDate: widget.expenseDate);
+                              if(status == 1){
+                                MessageWidget.showSnackBar(context: context, message: 'Collection added successfully',status: 1);
 
-      },
-    ),
-      ),
+                              }
+                              else{
+                                MessageWidget.showSnackBar(context: context, message: 'Failed to add collection',status: 0);
+                              }
+                              Navigator.pop(context);
+                            }
+                        );
+                      },
+                      title: Text(collection.name),
+                      trailing: Text('₹${collectionCost.toStringAsFixed(2)}'),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if(collection.description!.length > 0 )
+                            Text('${collection.description}',
+                              style: TextStyle(fontSize: 12),),
+                          Text(collectionItems , style: TextStyle(fontSize: 10),)
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+
+              },
+            ),
+          ),
+        );
+      }
+
     );
   }
 }

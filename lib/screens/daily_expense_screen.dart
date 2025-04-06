@@ -96,35 +96,35 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
           },
           child: Column(
             children: [
-              Container(
-
-                padding:const EdgeInsets.all(10),
-                margin: const EdgeInsets.symmetric(horizontal: 10,vertical: 4),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(30.0),
-                  // color: Colors.white,
-                  // boxShadow: [
-                  //
-                  //   BoxShadow(
-                  //     color: Colors.grey.withOpacity(0.5),
-                  //     spreadRadius: 2,
-                  //     blurRadius: 5,
-                  //     offset:const Offset(0, 3),
-                  //   ),
-                  // ],
-                ),
-                child: Center(
-                  child: Text(
-                      'This month : ₹ ${_metricsData['Total']?.toStringAsFixed(2)}',
-                    textAlign: TextAlign.center,
-                    style:const TextStyle(
-                      // fontStyle: FontStyle.italic,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16
-                    ),
-                  ),
-                ),
-              ),
+              // Container(
+              //
+              //   padding:const EdgeInsets.all(10),
+              //   margin: const EdgeInsets.symmetric(horizontal: 10,vertical: 4),
+              //   decoration: BoxDecoration(
+              //     borderRadius: BorderRadius.circular(30.0),
+              //     // color: Colors.white,
+              //     // boxShadow: [
+              //     //
+              //     //   BoxShadow(
+              //     //     color: Colors.grey.withOpacity(0.5),
+              //     //     spreadRadius: 2,
+              //     //     blurRadius: 5,
+              //     //     offset:const Offset(0, 3),
+              //     //   ),
+              //     // ],
+              //   ),
+              //   child: Center(
+              //     child: Text(
+              //         'This month : ₹ ${_metricsData['Total']?.toStringAsFixed(2)}',
+              //       textAlign: TextAlign.center,
+              //       style:const TextStyle(
+              //         // fontStyle: FontStyle.italic,
+              //         fontWeight: FontWeight.w600,
+              //         fontSize: 16
+              //       ),
+              //     ),
+              //   ),
+              // ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -374,10 +374,7 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
                         return  ViewCollectionModal(collections: availableCollections,expenseDate: _selectedDateNotifier.value,);
                     }
                 );
-                setState(() {
-                  totalExpense = _expenseService.selectedDayTotalExpense(_selectedDateNotifier.value);
-                  _metricsData = _expenseService.getMetrics('This month','By type',[]);
-                });
+
               },
               child: Icon(Icons.collections_bookmark_rounded),
               tooltip: 'Load from Collection',

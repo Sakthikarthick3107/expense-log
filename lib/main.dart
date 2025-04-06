@@ -85,11 +85,11 @@ class MyApp extends StatelessWidget {
                 builder: EasyLoading.init(),
                 title: 'ExpenseLog',
                 debugShowCheckedModeBanner: false,
-                theme: appTheme(settingsService.isDarkTheme()),
+                theme: appTheme(settingsService.isDarkTheme(),settingsService.getPrimaryColor()),
                 scaffoldMessengerKey: MessageWidget.scaffoldMessengerKey,
                 home:  AnnotatedRegion<SystemUiOverlayStyle>(
                   value: SystemUiOverlayStyle(
-                    statusBarColor: appTheme(settingsService.isDarkTheme()).primaryColor,
+                    statusBarColor: appTheme(settingsService.isDarkTheme(),settingsService.getPrimaryColor()).primaryColor,
                     statusBarIconBrightness: settingsService.isDarkTheme() ? Brightness.light : Brightness.dark,
                     statusBarBrightness: settingsService.isDarkTheme() ? Brightness.dark : Brightness.light,
                   ),

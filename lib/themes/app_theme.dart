@@ -2,13 +2,19 @@ import 'dart:ffi';
 
 import 'package:flutter/material.dart';
 
+import '../utility/preset_colors.dart';
+
 Color _parseHexColor(String hex) {
   hex = hex.replaceAll('#', '');
   if (hex.length == 6) hex = 'FF$hex';
   return Color(int.parse(hex, radix: 16));
 }
 
-ThemeData appTheme(bool isDarkTheme) {
+ThemeData appTheme(bool isDarkTheme , String appPrimary) {
+  Color primaryColor = presetColors.firstWhere(
+        (c) => c.name.toLowerCase() == appPrimary.toLowerCase(),
+    orElse: () => presetColors[0], //
+  ).color;
   return ThemeData(
     fontFamily: 'Poppins',
     textTheme: TextTheme(
@@ -92,7 +98,7 @@ ThemeData appTheme(bool isDarkTheme) {
     floatingActionButtonTheme: FloatingActionButtonThemeData(
       shape: const CircleBorder(),
       foregroundColor: Colors.white,
-      backgroundColor: isDarkTheme? Color(0xFFFF5722).withOpacity(0.4) : Color(0xFFFF5722).withOpacity(0.8),
+      backgroundColor: isDarkTheme? primaryColor.withOpacity(0.4) : primaryColor.withOpacity(0.8),
       sizeConstraints: BoxConstraints.tightFor(
         width: 50,
         height: 50,
@@ -100,17 +106,18 @@ ThemeData appTheme(bool isDarkTheme) {
     ),
 
     colorScheme: ColorScheme.fromSeed(
-      seedColor: Color(0xFFFF5722),
-      primary: Color(0xFFFF5722),
+      seedColor: primaryColor,
+      primary: primaryColor,
       // secondary: Colors.deepOrange,
       surface: isDarkTheme ? Color(0xFF202124) :  Color(0xFFF0F8FF),
       background: isDarkTheme ? Color(0xFF202124) :  Color(0xFFF0F8FF),
 
     ),
     appBarTheme:  AppBarTheme(
+      elevation: 10,
         surfaceTintColor: Colors.transparent,
         shadowColor: Colors.transparent,
-        backgroundColor:isDarkTheme ? Color(0xFFFF5722).withOpacity(0.4) : Color(0xFFFF5722).withOpacity(0.8),
+        backgroundColor: isDarkTheme ? Colors.black12 : Colors.white,
         titleTextStyle: TextStyle(
           color: isDarkTheme ? Colors.white : Colors.black,
           fontSize: 20
@@ -122,7 +129,7 @@ ThemeData appTheme(bool isDarkTheme) {
 
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-          backgroundColor: isDarkTheme? Color(0xFFFF5722).withOpacity(0.4) : Color(0xFFFF5722).withOpacity(0.8),
+          backgroundColor: primaryColor,
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(5)
@@ -132,7 +139,7 @@ ThemeData appTheme(bool isDarkTheme) {
 
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
-          foregroundColor:isDarkTheme ? Colors.white : Colors.black
+          foregroundColor:primaryColor
       ),
     ),
 
@@ -224,15 +231,15 @@ ThemeData appTheme(bool isDarkTheme) {
       dayForegroundColor: WidgetStateProperty.all(isDarkTheme ? Colors.white : Colors.black),
       dayBackgroundColor: MaterialStateProperty.resolveWith((states) {
         if (states.contains(MaterialState.selected)) {
-          return Colors.orange;
+          return primaryColor.withOpacity(0.5);
         }
         return Colors.transparent;
       }),
       // Today customization
       todayForegroundColor: WidgetStateProperty.all(Colors.white),
-      todayBackgroundColor: WidgetStateProperty.all(Colors.deepOrange),
+      todayBackgroundColor: WidgetStateProperty.all(primaryColor),
       todayBorder: BorderSide(
-        color: Colors.red,
+        color: primaryColor,
         width: 2.0,
       ),
 
@@ -244,7 +251,7 @@ ThemeData appTheme(bool isDarkTheme) {
 
 
       rangePickerBackgroundColor: isDarkTheme ? Color(0xFF333333) : Color(0xFFF0F8FF),
-      rangeSelectionBackgroundColor: Colors.deepOrange.withOpacity(0.5),
+      rangeSelectionBackgroundColor: primaryColor.withOpacity(0.5),
       rangeSelectionOverlayColor: WidgetStateProperty.all(Colors.red.withOpacity(0.3)),
 
 
@@ -255,7 +262,7 @@ ThemeData appTheme(bool isDarkTheme) {
         foregroundColor: MaterialStateProperty.all(Colors.red),
       ),
       confirmButtonStyle: ButtonStyle(
-        foregroundColor: MaterialStateProperty.all(Colors.green),
+        foregroundColor: MaterialStateProperty.all(primaryColor),
       ),
     ),
 

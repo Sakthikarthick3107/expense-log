@@ -63,30 +63,33 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
                       final collection = allCollections[index];
                       final collectionCost = collection.expenseList.fold(0.0 , (act , cost) => act + cost.price );
                       final collectionItems = collection.expenseList.fold('' ,(act,str) => act  + str.name + ',' );
-                      return Material(
-                        elevation : settingsService.getElevation() ? 4  : 0,
-                        borderRadius: BorderRadius.circular(10),
-                        child: ListTile(
-                          title: Text(collection.name),
-                          trailing: Text('₹${collectionCost.toStringAsFixed(2)}'),
-                          subtitle: Text('${collection.description!.length > 0 ? collection.description : collectionItems}',
+                      return Container(
+                        margin: EdgeInsets.only(bottom: 4),
+                        child: Material(
+                          elevation : settingsService.getElevation() ? 8  : 0,
+                          borderRadius: BorderRadius.circular(10),
+                          child: ListTile(
+                            title: Text(collection.name),
+                            trailing: Text('₹${collectionCost.toStringAsFixed(2)}'),
+                            subtitle: Text('${collection.description!.length > 0 ? collection.description : collectionItems}',
 
-                            style: TextStyle(fontSize: 12),),
-                          onTap: () {
-                            showModalBottomSheet(
-                              isScrollControlled: true,
-                              showDragHandle: true,
-                              barrierColor: Colors.black,
-                              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-                              shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                              ),
-                              context: context,
-                              builder: (context) {
-                                return  CollectionFormModal(collection: collection);
-                              },
-                            );
-                          },
+                              style: TextStyle(fontSize: 12),),
+                            onTap: () {
+                              showModalBottomSheet(
+                                isScrollControlled: true,
+                                showDragHandle: true,
+                                barrierColor: Colors.black,
+                                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                                ),
+                                context: context,
+                                builder: (context) {
+                                  return  CollectionFormModal(collection: collection);
+                                },
+                              );
+                            },
+                          ),
                         ),
                       );
                     },

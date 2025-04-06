@@ -384,6 +384,16 @@ class SettingsService with ChangeNotifier{
         return true;
     }
 
+    String getPrimaryColor(){
+        return _settingsBox.get('primaryColor',defaultValue: 'Blue');
+    }
+
+    Future<bool> setPrimaryColor(String color) async{
+        await _settingsBox.put('primaryColor' , color);
+        notifyListeners();
+        return true;
+    }
+
     String getMetricChart(){
         String metricChart = _settingsBox.get('metricChart',defaultValue: 'Bar Chart');
         return metricChart;
