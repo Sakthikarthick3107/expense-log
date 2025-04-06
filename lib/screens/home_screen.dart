@@ -279,7 +279,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
             
                   ),
-               SizedBox(height: 5,),
+               // SizedBox(height: 5,),
                if(orderScreens[_currentIndex].runtimeType == DailyExpenseScreen)
                Text(
                    'This month : ₹ ${_expenseService.getMetrics('This month','By type',[])['Total']?.toStringAsFixed(2)}',
@@ -287,7 +287,30 @@ class _HomeScreenState extends State<HomeScreen> {
                    fontSize: 12
                  ),
 
-               )
+               ),
+                  if(orderScreens[_currentIndex].runtimeType == MetricsScreen)
+                    SizedBox(
+                      height: 30,
+                      child: DropdownButton<String>(
+                        isDense: true,
+                        value: _settingsService.getMetricChart(),
+                        onChanged: (String? newValue) {
+                          if (newValue != null) {
+                            _settingsService.setMetricChart(newValue);
+                          }
+                        },
+                        items: ['Bar Chart', 'Pie Chart'].map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(
+                              value,
+                              style: TextStyle(fontSize: 12),
+                            ),
+                          );
+                        }).toList(),
+                        underline: SizedBox(),
+                      ),
+                    )
                 ],
               ),
               actions: [

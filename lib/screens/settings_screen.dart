@@ -391,27 +391,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 onTap: () {},
               ),
-
-              ListTile(
-                title: const Text('Metrics Chart'),
-                subtitle: const Text('Set your preference chart for metrics visualization',style: TextStyle(fontSize: 10),),
-                trailing: DropdownButton<String>(
-                  value: _settingsService.getMetricChart(),
-                  onChanged: (String? newValue) {
-                    if (newValue != null) {
-                      _settingsService.setMetricChart(newValue);
-                    }
-                  },
-                  items: ['Bar Chart', 'Pie Chart'].map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value , style: TextStyle(fontSize: 15),),
-                    );
-                  }).toList(),
-                ),
-                onTap: () {}, // Optional: you can leave it empty
-              ),
-
               ListTile(
                 onTap: (){
                   List<String> screens = _settingsService.getScreenOrder();

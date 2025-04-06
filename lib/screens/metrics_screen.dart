@@ -128,9 +128,81 @@ class _MetricsScreenState extends State<MetricsScreen> {
       body: Consumer<SettingsService>(
           builder: (context,settingsService , child){
             return Container(
-              padding:const EdgeInsets.all(20),
+              padding:const EdgeInsets.all(10),
               child: Column(
                   children :[
+                    // Container(
+                    //   padding: EdgeInsets.symmetric(horizontal: 20 , vertical: 10),
+                    //   color: Theme.of(context).appBarTheme.backgroundColor,
+                    //   child: SizedBox(
+                    //     // height: 80,
+                    //     child: Column(
+                    //       children: [
+                    //         Row(
+                    //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    //             children:[
+                    //               DropdownButton<String>(
+                    //                 value: _selectedMetricBy.value,
+                    //                 onChanged: (String? newValue){
+                    //                   setState(() {
+                    //                     _selectedMetricBy.value = newValue!;
+                    //                   });
+                    //                 },
+                    //                 items: metricsBy.map((String value){
+                    //                   return DropdownMenuItem<String>(
+                    //                       value: value,
+                    //                       child: Text(value,style: TextStyle(fontSize: 16))
+                    //                   );
+                    //
+                    //                 }).toList(),
+                    //               ),
+                    //               DropdownButton<String>(
+                    //                 value: _selectedDurationNotifier.value,
+                    //
+                    //                 onChanged: (String? newValue) async {
+                    //                   if(newValue == 'Custom'){
+                    //                     DateTimeRange? getRange = await _uiService.selectedDuration(context , lastSelectedRange: selectedDateRange);
+                    //                     if(getRange != selectedDateRange && getRange != null){
+                    //                       setState(() {
+                    //                         selectedDateRange = getRange;
+                    //                         // print(selectedDateRange);
+                    //                         _selectedDurationNotifier.value = '';
+                    //                         _selectedDurationNotifier.value = 'Custom';
+                    //                       });
+                    //                     }
+                    //
+                    //                   }
+                    //                   else if(newValue != 'Custom'){
+                    //                     setState(() {
+                    //                       selectedDateRange = null;
+                    //                       _selectedDurationNotifier.value = newValue!;
+                    //                     });
+                    //                   }
+                    //
+                    //
+                    //                 },
+                    //                 items: metricsDuration.map((String value){
+                    //                   return DropdownMenuItem<String>(
+                    //                       value: value,
+                    //                       child: Text(value,style: TextStyle(fontSize: 16),)
+                    //                   );
+                    //
+                    //                 }).toList(),
+                    //               ),
+                    //               TextButton(onPressed: (){
+                    //                 _showMultiSelectDialog(context);
+                    //               }, child: Text('Filter Types'),
+                    //               )
+                    //             ]
+                    //         ),
+                    //         if(selectedDateRange != null)
+                    //           Text('${_uiService.displayDay(selectedDateRange!.start)} - ${_uiService.displayDay(selectedDateRange!.end)}'
+                    //             ,
+                    //           ),
+                    //       ],
+                    //     ),
+                    //   ),
+                    // ),
                     Container(
                       child: Text(
                         '₹ ${_metricsData2.keys.first['Total']?.toStringAsFixed(2)}',
