@@ -1,3 +1,4 @@
+import 'package:expense_log/models/collection.dart';
 import 'package:expense_log/models/expense.dart';
 import 'package:expense_log/models/expense2.dart';
 import 'package:expense_log/models/expense_type.dart';
@@ -10,12 +11,48 @@ import 'package:hive/hive.dart';
 class ExpenseService {
   final _expenseTypeBox = Hive.box<ExpenseType>('expenseTypeBox');
   final _expenseBox2 = Hive.box<Expense2>('expense2Box');
+  final _collectionBox = Hive.box<Collection>('collectionBox');
 
   List<ExpenseType> getExpenseTypes() {
     List<ExpenseType> expenseTypes = List.from(_expenseTypeBox.values);
     expenseTypes.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
     return expenseTypes;
   }
+
+  double getTypeLimitUsage(ExpenseType type){
+    final today = DateTime.now();
+    DateTime startDate;
+    DateTime endDate;
+
+    if (type.limitBy == 'Week') {
+      final weekday = today.weekday % 7;
+      startDate = today.subtract(Duration(days: weekday));
+      endDate = startDate.add(const Duration(days: 6));
+
+      startDate = DateTime(startDate.year, startDate.month, startDate.day);
+      endDate = DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59);
+
+    } else if (type.limitBy == 'Month') {
+      startDate = DateTime(today.year, today.month, 1);
+      endDate = DateTime(today.year, today.month + 1, 0);
+
+      startDate = DateTime(startDate.year, startDate.month, startDate.day);
+      endDate = DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59);
+    } else {
+      return -1;
+    }
+
+    final total = getExpenses()
+        .where((e) =>
+    e.expenseType.id == type.id &&
+        e.date.isAfter(startDate.subtract(const Duration(seconds: 1))) &&
+        e.date.isBefore(endDate.add(const Duration(days: 1))))
+        .fold<double>(0.0, (sum, e) => sum + e.price);
+
+    return total;
+  }
+
+
 
 
 
@@ -44,25 +81,251 @@ class ExpenseService {
           return 0;
         }
       }
+      final isLimitByChanged = checkIfExist.limitBy != type.limitBy;
+      final isLimitChanged = checkIfExist.limit != type.limit;
+
+      if (
+      (isLimitByChanged || isLimitChanged) &&
+          (type.limit != null || type.limitBy != null)
+      ) {
+
+        final today = DateTime.now();
+        DateTime startDate;
+        DateTime endDate;
+
+        if (type.limitBy == 'Week') {
+          final weekday = today.weekday % 7;
+          startDate = today.subtract(Duration(days: weekday));
+          endDate = startDate.add(const Duration(days: 6));
+
+          startDate = DateTime(startDate.year, startDate.month, startDate.day);
+          endDate = DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59);
+
+        } else if (type.limitBy == 'Month') {
+          startDate = DateTime(today.year, today.month, 1);
+          endDate = DateTime(today.year, today.month + 1, 0);
+
+          startDate = DateTime(startDate.year, startDate.month, startDate.day);
+          endDate = DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59);
+        } else {
+          return -1;
+        }
+
+        final total = getExpenses()
+            .where((e) =>
+        e.expenseType.id == type.id &&
+            e.date.isAfter(startDate.subtract(const Duration(seconds: 1))) &&
+            e.date.isBefore(endDate.add(const Duration(days: 1))))
+            .fold<double>(0.0, (sum, e) => sum + e.price);
+
+        if (total > 0 && (checkIfExist.limitBy != null || checkIfExist.limit != null)) {
+          return -1;
+        }
+      }
+      else if((type.limit == null || type.limitBy == null)){
+        final today = DateTime.now();
+        DateTime startDate;
+        DateTime endDate;
+
+        if (checkIfExist.limitBy == 'Week') {
+          final weekday = today.weekday % 7;
+          startDate = today.subtract(Duration(days: weekday));
+          endDate = startDate.add(const Duration(days: 6));
+
+          startDate = DateTime(startDate.year, startDate.month, startDate.day);
+          endDate = DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59);
+
+        } else if (checkIfExist.limitBy == 'Month') {
+          startDate = DateTime(today.year, today.month, 1);
+          endDate = DateTime(today.year, today.month + 1, 0);
+
+          startDate = DateTime(startDate.year, startDate.month, startDate.day);
+          endDate = DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59);
+        } else {
+          return -1;
+        }
+
+        final total = getExpenses()
+            .where((e) =>
+        e.expenseType.id == type.id &&
+            e.date.isAfter(startDate.subtract(const Duration(seconds: 1))) &&
+            e.date.isBefore(endDate.add(const Duration(days: 1))))
+            .fold<double>(0.0, (sum, e) => sum + e.price);
+
+        if (total > 0) {
+          return -1;
+        }
+
+      }
       _expenseTypeBox.put(type.id, type);
       _expenseBox2.values
           .where((expense) => expense.expenseType.id == type.id)
           .forEach((expense) =>
           _expenseBox2.put(expense.id, expense.copyWith(expenseType: type)));
+
+      _collectionBox.values.forEach((collection) {
+        collection.updateExpensesForType(type);
+        _collectionBox.put(collection.id, collection);
+      });
       return 1;
     }
   }
 
   int createExpense(Expense2 expense) {
-    _expenseBox2.put(expense.id, expense);
-    return 1;
+    // if(isTypeLimitExceeded(expense)){
+    //   return -1; // expense limit exceeds
+    // }
+    // else{
+      _expenseBox2.put(expense.id, expense);
+      return 1;
+    // }
+
   }
+
+  bool isTypeLimitExceeded(Expense2 expense){
+    final limit = expense.expenseType.limit;
+    final limitBy = expense.expenseType.limitBy;
+
+    if (limit == null || limitBy == null) return false;
+
+    final expenseDate = expense.date;
+
+    final today = DateTime.now();
+
+    DateTime startDate;
+    DateTime endDate;
+
+    if (limitBy == 'Week') {
+      final weekday = today.weekday % 7;
+      startDate = today.subtract(Duration(days: weekday));
+      endDate = startDate.add(const Duration(days: 6));
+
+      startDate = DateTime(startDate.year, startDate.month, startDate.day);
+      endDate = DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59);
+
+    } else if (limitBy == 'Month') {
+      startDate = DateTime(today.year, today.month, 1);
+      endDate = DateTime(today.year, today.month + 1, 0);
+
+      startDate = DateTime(startDate.year, startDate.month, startDate.day);
+      endDate = DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59);
+    } else {
+      return false;
+    }
+
+    if (expenseDate.isBefore(startDate) || expenseDate.isAfter(endDate)) {
+      return false;
+    }
+
+    final matchingExpenses = getExpenses().where((e) =>
+    e.id != expense.id &&
+    e.expenseType.id == expense.expenseType.id &&
+        e.date.isAfter(startDate.subtract(const Duration(days: 1))) &&
+        e.date.isBefore(endDate.add(const Duration(days: 1)))
+    );
+
+    final total = matchingExpenses.fold<double>(0.0, (sum, e) => sum + e.price);
+
+    return total + expense.price > limit;
+  }
+
+  List<String>? exceededExpenses(List<Expense2> newExpenses) {
+    final today = DateTime.now();
+    final Map<int, double> typeTotals = {};
+    final Map<int, ExpenseType> typeMap = {};
+
+    for (var newExp in newExpenses) {
+      final type = newExp.expenseType;
+      final typeId = type.id;
+
+      DateTime startDate;
+      DateTime endDate;
+
+      if (type.limitBy == 'Week') {
+        final weekday = today.weekday % 7;
+        startDate = today.subtract(Duration(days: weekday));
+        endDate = startDate.add(const Duration(days: 6));
+      } else if (type.limitBy == 'Month') {
+        startDate = DateTime(today.year, today.month, 1);
+        endDate = DateTime(today.year, today.month + 1, 0);
+      } else {
+        continue;
+      }
+
+      startDate = DateTime(startDate.year, startDate.month, startDate.day);
+      endDate = DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59);
+
+      final previousTotal = getExpenses()
+          .where((e) =>
+      e.expenseType.id == typeId &&
+          e.date.isAfter(startDate.subtract(const Duration(seconds: 1))) &&
+          e.date.isBefore(endDate.add(const Duration(seconds: 1))))
+          .fold<double>(0, (sum, e) => sum + e.price);
+
+      typeTotals[typeId] = (typeTotals[typeId] ?? previousTotal) + newExp.price;
+      typeMap[typeId] = type;
+    }
+
+    final List<String> exceededList = [];
+    typeTotals.forEach((typeId, totalAmount) {
+      final type = typeMap[typeId]!;
+      final limit = type.limit;
+
+      if (limit != null && totalAmount > limit) {
+        final exceededBy = (totalAmount - limit).toStringAsFixed(2);
+        exceededList.add('${type.name} exceeded by ₹$exceededBy');
+      }
+    });
+    return exceededList.isEmpty ? null : exceededList;
+  }
+
+  List<String> getExpenseTypeLimitSummary() {
+    final today = DateTime.now();
+    List<String> summaryList = [];
+    List<ExpenseType> types = getExpenseTypes();
+
+    for (final type in types) {
+      if (type.limit == null || type.limitBy == null) continue;
+
+      DateTime startDate;
+      DateTime endDate;
+
+      if (type.limitBy == 'Week') {
+        final weekday = today.weekday % 7;
+        startDate = today.subtract(Duration(days: weekday));
+        endDate = startDate.add(const Duration(days: 6));
+      } else if (type.limitBy == 'Month') {
+        startDate = DateTime(today.year, today.month, 1);
+        endDate = DateTime(today.year, today.month + 1, 0);
+      } else {
+        continue;
+      }
+
+      startDate = DateTime(startDate.year, startDate.month, startDate.day);
+      endDate = DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59);
+
+      final totalSpent = getExpenses()
+          .where((e) =>
+      e.expenseType.id == type.id &&
+          e.date.isAfter(startDate.subtract(const Duration(seconds: 1))) &&
+          e.date.isBefore(endDate.add(const Duration(days: 1))))
+          .fold<double>(0.0, (sum, e) => sum + e.price);
+
+      summaryList.add(
+        '${type.name} - ${type.limitBy} (₹${totalSpent.toStringAsFixed(0)} / ₹${type.limit!.toStringAsFixed(0)})',
+      );
+    }
+
+    return summaryList;
+  }
+
+
 
   Future<int> createCollectionExpense(
       {required List<Expense2> expenses, required DateTime expenseDate}) async {
     try {
       SettingsService settingsService = SettingsService();
-
+      int skipped = 0;
       for (Expense2 exp in expenses) {
         Expense2 newExpense = exp.copyWith(
             id: await settingsService.getBoxKey('expenseId'),
@@ -70,26 +333,36 @@ class ExpenseService {
             created: DateTime.now(),
             updated: null,
         );
-        createExpense(newExpense);
-          // print(newExpense);
-
+        if(isTypeLimitExceeded(newExpense)){
+          skipped ++;
         }
-      return 1;
+        else{
+          createExpense(newExpense);
+        }
+        }
+      return skipped;
     }
     catch(e){
       print('Error $e');
-      return 0;
+      return -1;
     }
   }
 
   Future<int> copyAndSaveExpenses(
-      {required DateTime copyFromDate, required DateTime pasteToDate}) async {
+      {required DateTime copyFromDate, required DateTime pasteToDate , List<String>? exceedList}) async {
     try {
       // print(getExpenses());
+      int skipped = 0;
       List<Expense2> getExpensesOfTheSelectedDate = getExpensesOfTheDay(
           copyFromDate);
       if (getExpensesOfTheSelectedDate.length == 0) {
         return -1;
+      }
+      if(exceedList !=  null){
+        var exceedStatus = exceededExpenses(getExpensesOfTheSelectedDate);
+        if (exceedStatus != null) {
+          exceedList.addAll(exceedStatus);
+        }
       }
       // print('Selected expenses: $getExpensesOfTheSelectedDate');
       SettingsService settingsService = SettingsService();
@@ -101,14 +374,18 @@ class ExpenseService {
           created: DateTime.now(),
           updated: null,
         );
-        createExpense(newExpense);
-        // print(newExpense);
+        // if(isTypeLimitExceeded(newExpense)){
+        //   skipped ++;
+        // }
+        // else{
+          createExpense(newExpense);
+        // }
       }
 
-      return 1;
+      return skipped;
     } catch (e) {
       print('Error copying expenses: $e');
-      return 0;
+      return -2;
     }
   }
 

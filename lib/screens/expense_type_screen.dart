@@ -90,11 +90,26 @@ class _ExpenseTypeScreenState extends State<ExpenseTypeScreen> {
                               elevation: settingsService.getElevation() ? 8: 0,
                               color: settingsService.getElevation() ? Theme.of(context).cardColor : Colors.transparent,
 
-                              child: Center(
-                                child: Text(
-                                  expType.name,
-                                  style: const TextStyle(fontSize: 16),
-                                ),
+                              child: ListTile(
+                                title: Text(
+                                    expType.name,
+                                    style: const TextStyle(fontSize: 16),
+                                  overflow: TextOverflow.ellipsis,
+                                  ),
+                                subtitle: (expType.limit != null && (expType.limitBy?.isNotEmpty ?? false))
+                                    ? Text(
+                                  '${expType.limitBy!} ( ${_expenseService.getTypeLimitUsage(expType)} / ${expType.limit} )',
+                                  style:  TextStyle(
+                                      fontSize: 10,
+                                    color: (expType.limit != null &&
+                                        _expenseService.getTypeLimitUsage(expType) > expType.limit!)
+                                        ? Colors.red
+                                        : Theme.of(context).textTheme.displayMedium?.color,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ) : null,
+
+
                               ),
                             ),
                           );

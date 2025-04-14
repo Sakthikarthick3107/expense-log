@@ -24,13 +24,14 @@ class ExpenseAdapter extends TypeAdapter<Expense> {
       date: fields[4] as DateTime,
       created: fields[5] as DateTime,
       updated: fields[6] as DateTime?,
+      isReturnable: fields[7] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, Expense obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(8)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -44,7 +45,9 @@ class ExpenseAdapter extends TypeAdapter<Expense> {
       ..writeByte(5)
       ..write(obj.created)
       ..writeByte(6)
-      ..write(obj.updated);
+      ..write(obj.updated)
+      ..writeByte(7)
+      ..write(obj.isReturnable);
   }
 
   @override

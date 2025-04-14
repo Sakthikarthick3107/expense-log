@@ -184,13 +184,13 @@ class _CollectionFormModalState extends State<CollectionFormModal> {
                         final action = widget.collection != null ? 'edited' : 'created';
                         if (status == 1) {
                           Navigator.pop(context);
-                          MessageWidget.showSnackBar(
+                          MessageWidget.showToast(
                               context: context, message: 'Successfully $action collection', status: 1);
 
                           addedExpenseNotifier.value.clear();
                         } else {
                           Navigator.pop(context);
-                          MessageWidget.showSnackBar(
+                          MessageWidget.showToast(
                               context: context, message: 'Failed to create collection', status: 0);
                         }
                       }

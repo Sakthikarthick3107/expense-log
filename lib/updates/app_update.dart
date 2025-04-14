@@ -38,7 +38,7 @@ class AppUpdate{
       final dio = Dio();
       final appDir = await getExternalStorageDirectory();
       if (appDir == null) {
-        MessageWidget.showSnackBar(context: context, message: 'Could not get storage directory', status: 0);
+        MessageWidget.showToast(context: context, message: 'Could not get storage directory', status: 0);
         return;
       }
       final apkPath = '${appDir.path}/expense_log_${DateTime.now().millisecondsSinceEpoch}.apk'; // Unique file name
@@ -59,14 +59,14 @@ class AppUpdate{
       // Check if the APK is downloaded successfully
       final file = File(apkPath);
       if (!file.existsSync()) {
-        MessageWidget.showSnackBar(context: context, message: 'Failed to download APK.', status: 0);
+        MessageWidget.showToast(context: context, message: 'Failed to download APK.', status: 0);
         return;
       }
       debugPrint('Finished');
-      bool installSuccess = await installApk(apkPath);
+      bool installSuccess = await installApk(context , apkPath);
 
       if (installSuccess) {
-        MessageWidget.showSnackBar(context: context,
+        MessageWidget.showToast(context: context,
             message: 'Update installed successfully!',
             status: 1);
 
@@ -74,19 +74,19 @@ class AppUpdate{
             Duration(seconds: 2));
       } else {
         debugPrint('Failed');
-        MessageWidget.showSnackBar(
+        MessageWidget.showToast(
             context: context, message: 'APK installation failed.', status: 0);
       }
     } catch (e) {
       debugPrint('Failed');
-      MessageWidget.showSnackBar(context: context,
+      MessageWidget.showToast(context: context,
           message: 'Failed to download or install APK: $e',
           status: 0);
       print(e);
     }
   }
 
-  Future<bool> installApk(String apkPath) async {
+  Future<bool> installApk(BuildContext context , String apkPath) async {
     const platform = MethodChannel('com.expenseapp.expense_log/install');
     try {
       final bool success = await platform.invokeMethod('installApk', {'apkPath': apkPath});
@@ -125,13 +125,13 @@ class AppUpdate{
         }
       }
       else {
-        MessageWidget.showSnackBar(context: context, message: 'Failed to fetch release', status: 0);
+        MessageWidget.showToast(context: context, message: 'Failed to fetch release', status: 0);
 
       }
     }
     catch(e){
       // print('Error checking for updates: $e');
-      MessageWidget.showSnackBar(context: context, message: 'Error while checking updates', status: 0);
+      MessageWidget.showToast(context: context, message: 'Error while checking updates', status: 0);
     }
   }
 
@@ -230,7 +230,7 @@ class AppUpdate{
 
   Future<void> _copyLinkToClipboard(BuildContext context , String url) async {
     await Clipboard.setData(ClipboardData(text: url));
-    MessageWidget.showSnackBar(context: context, message: 'Link copied to clipboard!');
+    MessageWidget.showToast(context: context, message: 'Link copied to clipboard!');
   }
 
   Future<void> _launchUrl(String url) async {
@@ -245,7 +245,7 @@ class AppUpdate{
           // ),
         );
       } else {
-        MessageWidget.showToast(message: 'Could not launch the update', status: 1);
+        // MessageWidget.showToast(context: context ,message: 'Could not launch the update', status: 1);
       }
 
   }

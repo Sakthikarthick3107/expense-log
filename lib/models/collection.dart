@@ -1,5 +1,7 @@
 import 'package:expense_log/models/expense2.dart';
 import 'package:hive/hive.dart';
+
+import 'expense_type.dart';
 part 'collection.g.dart';
 
 
@@ -54,4 +56,13 @@ class Collection{
     );
   }
 
+  void updateExpensesForType(ExpenseType newType) {
+    for (var expense in expenseList) {
+      if (expense.expenseType.id == newType.id) {
+        expense.copyWith(
+          expenseType: newType,
+        );
+      }
+    }
+  }
 }

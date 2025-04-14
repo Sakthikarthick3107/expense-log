@@ -23,6 +23,10 @@ class _ExpenseTypeFormState extends State<ExpenseTypeForm> {
   final _formKey =GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final _limitController = TextEditingController();
+  String? _selectedLimitBy;
+  final List<String> _limitOptions = ['Week', 'Month'];
+
   late SettingsService _settingsService;
   late ExpenseService _expenseService;
 
@@ -34,6 +38,8 @@ class _ExpenseTypeFormState extends State<ExpenseTypeForm> {
     if(widget.type != null){
       _nameController.text = widget.type!.name;
       _descriptionController.text = widget.type!.description!;
+      _limitController.text = widget.type!.limit?.toString() ?? '';
+      _selectedLimitBy = widget.type!.limitBy;
     }
   }
 
@@ -41,29 +47,57 @@ class _ExpenseTypeFormState extends State<ExpenseTypeForm> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text( widget.type == null ? 'New Type':'Edit Type'),
-      content: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextFormField(
-              controller: _nameController,
-              decoration: InputDecoration(labelText: 'Type'),
-              validator: (value){
-                if(value==null){
-                  return 'Type is mandatory';
-                }
-                return null;
-              },
-            ),
-            TextFormField(
-              controller: _descriptionController,
-              decoration: InputDecoration(labelText: 'Description'),
+      content: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: _nameController,
+                decoration: InputDecoration(labelText: 'Type'),
+                validator: (value){
+                  if(value==null){
+                    return 'Type is mandatory';
+                  }
+                  else if(value.length > 20){
+                    return 'Length should not exceed 20 ';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: _descriptionController,
+                decoration: InputDecoration(labelText: 'Description'),
+        
+              ),
+              TextFormField(
+                controller: _limitController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(labelText: 'Limit (optional)'),
+                onChanged: (_) => setState(() {}), // rebuild to show/hide dropdown
+              ),
 
-            ),
-          ],
+              if (_limitController.text.trim().isNotEmpty)
+                DropdownButtonFormField<String>(
+                  decoration: InputDecoration(labelText: 'Limit By'),
+                  value: _selectedLimitBy,
+                  items: _limitOptions.map((e) => DropdownMenuItem(
+                    value: e,
+                    child: Text(e),
+                  )).toList(),
+                  onChanged: (val) => setState(() => _selectedLimitBy = val),
+                  validator: (value) {
+                    if (_limitController.text.trim().isNotEmpty && (value == null || value.isEmpty)) {
+                      return 'Please choose how to apply the limit';
+                    }
+                    return null;
+                  },
+                ),
+            ],
+          ),
+        
         ),
-
       ),
       actions: [
         TextButton(
@@ -74,22 +108,35 @@ class _ExpenseTypeFormState extends State<ExpenseTypeForm> {
           if(_formKey.currentState?.validate() ?? false){
             final name = _nameController.text;
             final description = _descriptionController.text ?? '';
+            final limit = _limitController.text.isEmpty
+                ? null
+                : double.tryParse(_limitController.text);
+            final limitBy = (_selectedLimitBy?.isEmpty ?? true) || limit == null ? null : _selectedLimitBy;
+
             final expType = ExpenseType(
                 id: widget.type?.id ?? await _settingsService.getBoxKey('expenseTypeId'),
                 name: name,
-                description: description
+                description: description,
+                limit: limit,
+                limitBy: limitBy,
             );
             int result = _expenseService.createExpenseType(expType);
             if(result == 1){
               Navigator.pop(context,true);
-              MessageWidget.showSnackBar(
+              MessageWidget.showToast(
                   context: context,
                   message:'${widget.type == null ? 'Created' : 'Edited'} type - ${expType.name}',
                   status: result);
             }
+            else if (result == -1) {
+              MessageWidget.showToast(
+                context: context,
+                message: 'Cannot apply limit changes : Already in track for the selected duration ',
+              );
+            }
             else{
               Navigator.pop(context,false);
-              MessageWidget.showSnackBar(
+              MessageWidget.showToast(
                   context: context,
                   message: 'Type ${expType.name} already exists',
                   status: result);

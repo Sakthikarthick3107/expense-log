@@ -26,6 +26,9 @@ class Expense{
   @HiveField(6)
   DateTime? updated;
 
+  @HiveField(7)
+  bool isReturnable;
+
   Expense({
     required this.id,
     required this.name,
@@ -33,7 +36,8 @@ class Expense{
     required this.expenseType,
     required this.date,
     required this.created,
-    this.updated
+    this.updated,
+    this.isReturnable = false
     });
 
   Future<void> save() async{

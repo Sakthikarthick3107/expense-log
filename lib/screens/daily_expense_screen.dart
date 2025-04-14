@@ -50,12 +50,13 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
       _collectionService = Provider.of<CollectionService>(context,listen: false);
       setState(() {
         availableCollections = _collectionService.getCollections();
-        print(availableCollections);
+
       });
       totalExpense = _expenseService.selectedDayTotalExpense(_selectedDateNotifier.value);
       _metricsData = _expenseService.getMetrics('This month','By type',[]);
       _selectedDateNotifier.addListener((){
         setState(() {
+          _metricsData = _expenseService.getMetrics('This month','By type',[]);
           totalExpense = _expenseService.selectedDayTotalExpense(_selectedDateNotifier.value);
           deleteList.clear();
         });
@@ -100,7 +101,7 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
                   if(_selectedDateNotifier.value.year == DateTime.now().year &&
                       _selectedDateNotifier.value.month == DateTime.now().month &&
                       _selectedDateNotifier.value.day == DateTime.now().day){
-                    MessageWidget.showSnackBar(context: context, message: 'Cannot able to set daily expense for future dates', status: 0);
+                    MessageWidget.showToast(context: context, message: 'Cannot able to set daily expense for future dates', status: 0);
 
                   }
                   else{
@@ -190,7 +191,7 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
                         if(_selectedDateNotifier.value.year == DateTime.now().year &&
                             _selectedDateNotifier.value.month == DateTime.now().month &&
                             _selectedDateNotifier.value.day == DateTime.now().day){
-                            MessageWidget.showSnackBar(context: context, message: 'Cannot able to set daily expense for future dates', status: 0);
+                            MessageWidget.showToast(context: context, message: 'Cannot able to set daily expense for future dates', status: 0);
 
                         }
                         else{
@@ -425,20 +426,35 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
                       onConfirmed: () async {
 
                         if(copyFromDate != null){
-                          int createCopiedExpenses = await _expenseService.copyAndSaveExpenses(copyFromDate: copyFromDate , pasteToDate:  _selectedDateNotifier.value);
-                          if(createCopiedExpenses == 1){
+                          List<String> getExceedList = [] ;
+                          int createCopiedExpenses = await _expenseService.copyAndSaveExpenses(copyFromDate: copyFromDate , pasteToDate:  _selectedDateNotifier.value , exceedList: getExceedList);
+                          if(createCopiedExpenses == 0){
                             setState(() {
                               totalExpense = _expenseService.selectedDayTotalExpense(_selectedDateNotifier.value);
                               _metricsData = _expenseService.getMetrics('This month','By type',[]);
                             });
-                            MessageWidget.showSnackBar(context: context, message: 'Copied successfully' , status: createCopiedExpenses);
+                            MessageWidget.showToast(context: context, message: 'Copied successfully' , status: 1);
+                            if(getExceedList.isNotEmpty){
+                              WarningDialog.showWarning(
+                                  context: context,
+                                  title: 'Info',
+                                  message: getExceedList.join('\n'),
+                                  onConfirmed: (){
+
+                                  }
+                              );
+                            }
                           }
                           else if(createCopiedExpenses == -1){
-                            MessageWidget.showSnackBar(context: context, message: 'No expenses in the selected date!',status: createCopiedExpenses);
+                            MessageWidget.showToast(context: context, message: 'No expenses in the selected date!',status: 0);
                           }
-                          else{
-                            MessageWidget.showSnackBar(context: context, message: 'Error when copying expenses',status: createCopiedExpenses);
+                          else if(createCopiedExpenses > 0){
+                            MessageWidget.showToast(context: context, message: '${createCopiedExpenses} expenses exceeded their limits and were skipped.');
                           }
+                          else if(createCopiedExpenses == -2){
+                            MessageWidget.showToast(context: context, message: 'Error when copying expenses',status: 0);
+                          }
+                          
                         }
                       }
                   );
@@ -471,7 +487,7 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
                 }
                 else{
                   Navigator.push(context, MaterialPageRoute(builder: (context) => HomeScreen(initialIndex: 1,)));
-                  MessageWidget.showSnackBar(context: context, message: 'Create your expense type for adding your expense and keep track of it');
+                  MessageWidget.showToast(context: context, message: 'Create your expense type for adding your expense and keep track of it');
                 }
 
               },

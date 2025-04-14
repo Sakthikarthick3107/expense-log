@@ -63,12 +63,15 @@ class _ViewCollectionModalState extends State<ViewCollectionModal> {
                             message: 'Are you sure to add collection ${collection.name}?',
                             onConfirmed: () async {
                               int status = await _expenseService.createCollectionExpense(expenses: collection.expenseList, expenseDate: widget.expenseDate);
-                              if(status == 1){
-                                MessageWidget.showSnackBar(context: context, message: 'Collection added successfully',status: 1);
+                              if(status == 0){
+                                MessageWidget.showToast(context: context, message: 'Collection added successfully',status: 1);
 
                               }
+                              else if(status > 0){
+                                MessageWidget.showToast(context: context, message:'${status} expenses exceeded their limits and were skipped.' );
+                              }
                               else{
-                                MessageWidget.showSnackBar(context: context, message: 'Failed to add collection',status: 0);
+                                MessageWidget.showToast(context: context, message: 'Failed to add collection',status: 0);
                               }
                               Navigator.pop(context);
                             }

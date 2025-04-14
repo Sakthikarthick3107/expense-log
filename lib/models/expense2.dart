@@ -26,6 +26,9 @@ class Expense2{
 
   @HiveField(6)
   DateTime? updated;
+  //
+  // @HiveField(7)
+  // bool? isReturnable;
 
   Expense2({
     required this.id,
@@ -35,6 +38,7 @@ class Expense2{
     required this.date,
     required this.created,
     this.updated
+    // this.isReturnable
   });
 
   Expense2 copyWith({
@@ -45,6 +49,7 @@ class Expense2{
     ExpenseType? expenseType,
     DateTime? created,
     DateTime? updated
+    // bool? isReturnable
   }) {
     return Expense2(
         id: id ?? this.id,
@@ -54,6 +59,7 @@ class Expense2{
         date: date ?? this.date,
         created: created ?? this.created,
         updated: updated ?? this.updated
+        // isReturnable: isReturnable ?? this.isReturnable
     );
   }
 
@@ -66,6 +72,7 @@ class Expense2{
       'date': date.toIso8601String() ,
       'created': created.toIso8601String(),
       'updated': updated?.toIso8601String()
+      // 'isReturnable' : isReturnable
 
     };
   }
@@ -78,7 +85,8 @@ class Expense2{
       expenseType: ExpenseType.fromJson(json['expenseType']),
       date: DateTime.parse(json['date']),
       created: DateTime.parse(json['created']),
-      updated: json['updated'] != null ? DateTime.parse(json['updated']) : null,
+      updated: json['updated'] != null ? DateTime.parse(json['updated']) : null
+      // isReturnable: json['isReturnable']
     );
   }
 }

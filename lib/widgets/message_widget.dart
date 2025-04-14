@@ -12,27 +12,30 @@ class MessageWidget{
   GlobalKey<ScaffoldMessengerState>();
 
   static void showToast({
-      required String message,
-      int? status,
-      ToastGravity gravity = ToastGravity.BOTTOM,
-      Toast length = Toast.LENGTH_SHORT,
-      Color textColor = Colors.white,
-      double fontSize = 16.0,
-      int? timeInSecForIosWeb,
-    }) {
-        Color? backgroundColor = status == 1 ? Colors.green : status == 0 ? Colors.red : null;
-        Fluttertoast.showToast(
-            msg: message,
-            toastLength: length,
-            gravity: gravity,
-            backgroundColor: backgroundColor,
-            textColor: textColor,
-            fontSize: fontSize,
-            // timeInSecForIosWeb: timeInSecForIosWeb!
-        );
-  }
-  static void cancelToast(){
-    Fluttertoast.cancel();
+    required BuildContext context,
+    required String message,
+    int? status,
+    ToastGravity gravity = ToastGravity.BOTTOM,
+    Toast length = Toast.LENGTH_LONG,
+    double fontSize = 16.0,
+    int? timeInSecForIosWeb,
+  }) {
+
+    String icon = status == 1
+        ? '✅ '
+        : status == 0
+        ? '❌ '
+        : 'ℹ️ ';
+
+    Fluttertoast.showToast(
+      msg: '$icon $message',
+      toastLength: length,
+      gravity: gravity,
+      textColor:  Theme.of(context).scaffoldBackgroundColor,
+      fontSize: fontSize,
+      // timeInSecForIosWeb: timeInSecForIosWeb,
+      backgroundColor:Theme.of(context).textTheme.displayMedium?.color
+    );
   }
 
   static void showSnackBar({

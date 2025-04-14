@@ -55,10 +55,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     String getDownloadLink = await _settingsService.downloadUrl();
     if(getDownloadLink.length > 0){
       await Clipboard.setData(ClipboardData(text: getDownloadLink));
-      MessageWidget.showSnackBar(context: context, message: 'Link copied to clipboard!',status:1);
+      MessageWidget.showToast(context: context, message: 'Link copied to clipboard!',status:1);
     }
     else{
-      MessageWidget.showSnackBar(context: context, message: 'Issue in getting link',status:0);
+      MessageWidget.showToast(context: context, message: 'Issue in getting link',status:0);
     }
   }
 
@@ -292,10 +292,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     int loginUser = await _settingsService.googleSignIn();
                     if(loginUser == 1){
                       _checkIfUserExists();
-                      MessageWidget.showSnackBar(context: context, message: 'Loggedin successfully',status: 1);
+                      MessageWidget.showToast(context: context, message: 'Loggedin successfully',status: 1);
                     }
                     else{
-                      MessageWidget.showSnackBar(context: context, message: 'Failed to login',status: 0);
+                      MessageWidget.showToast(context: context, message: 'Failed to login',status: 0);
                     }
                   },
                   title: Text('Signin using Google'),
@@ -313,10 +313,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             setState(() {
                               user = null;
                             });
-                            MessageWidget.showSnackBar(context: context, message: 'Loggedout successfully' , status: 1);
+                            MessageWidget.showToast(context: context, message: 'Loggedout successfully' , status: 1);
                           }
                           else
-                            MessageWidget.showSnackBar(context: context, message: 'Failed to logout',status: 0);
+                            MessageWidget.showToast(context: context, message: 'Failed to logout',status: 0);
                         });
 
                   },
@@ -398,7 +398,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   showReorderPopup(context, screens, (newOrder) async {
                     print("Updated Order: $newOrder");
                     await _settingsService.saveScreenOrder(newOrder);
-                    MessageWidget.showSnackBar(context: context, message: 'Closing application for reorder settings');
+                    MessageWidget.showToast(context: context, message: 'Closing application for reorder settings');
                     Future.delayed(Duration(seconds: 4), () {
                       exit(0);
                     });
@@ -412,10 +412,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onTap: () async {
                   int setBackup = await _settingsService.backupHiveToGoogleDrive();
                   if(setBackup == 1){
-                    MessageWidget.showSnackBar(context: context, message: 'Backup successfully',status: 1);
+                    MessageWidget.showToast(context: context, message: 'Backup successfully',status: 1);
                   }
                   else{
-                    MessageWidget.showSnackBar(context: context, message: 'Backup failed',status: 0);
+                    MessageWidget.showToast(context: context, message: 'Backup failed',status: 0);
                   }
                 },
                 title: Text('Backup Data'),
@@ -425,12 +425,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onTap: () async {
                   int setRestore = await _settingsService.pickBackupFileAndRestore();
                   if(setRestore == 1){
-                    MessageWidget.showSnackBar(context: context, message: 'Restored successfully - Closing application',status: 1);
+                    MessageWidget.showToast(context: context, message: 'Restored successfully - Closing application',status: 1);
                     setState(() {}); // Rebuilds the widget
                     SystemNavigator.pop(animated: true);
                   }
                   else{
-                    MessageWidget.showSnackBar(context: context, message: 'Restore failed',status: 0);
+                    MessageWidget.showToast(context: context, message: 'Restore failed',status: 0);
                   }
                 },
                 title: Text('Restore'),

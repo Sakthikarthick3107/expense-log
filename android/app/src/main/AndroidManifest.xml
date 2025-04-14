@@ -28,7 +28,8 @@
 
         android:label="Expense Log"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:theme="@style/Theme.AppCompat.Light.NoActionBar">
 
         <service
             android:name="com.dexterous.flutterlocalnotifications.ForegroundService"

@@ -20,19 +20,25 @@ class ExpenseTypeAdapter extends TypeAdapter<ExpenseType> {
       id: fields[0] as int,
       name: fields[1] as String,
       description: fields[2] as String?,
+      limit: fields[3] as double?,
+      limitBy: fields[4] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, ExpenseType obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(5)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
       ..write(obj.name)
       ..writeByte(2)
-      ..write(obj.description);
+      ..write(obj.description)
+      ..writeByte(3)
+      ..write(obj.limit)
+      ..writeByte(4)
+      ..write(obj.limitBy);
   }
 
   @override

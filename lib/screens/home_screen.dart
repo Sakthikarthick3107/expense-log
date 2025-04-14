@@ -227,7 +227,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void welcomeGreeting(){
     String timeOfDay = _uiService.getTimeOfDay();
     String userName = user != null ? user!.userName : 'User';
-    MessageWidget.showSnackBar(context: context, message: 'Good $timeOfDay, $userName' , status: -1);
+    MessageWidget.showToast(context: context, message: 'Good $timeOfDay, $userName' , status: -1);
   }
 
 
@@ -240,6 +240,10 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
   }
+
+
+
+  final GlobalKey<TooltipState> _tooltipKey = GlobalKey<TooltipState>();
 
   @override
   Widget build(BuildContext context){
@@ -282,14 +286,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   ),
                   // SizedBox(height: 5,),
-                  if(orderScreens[_currentIndex].runtimeType == DailyExpenseScreen)
-                    Text(
-                      'This month : ₹ ${_expenseService.getMetrics('This month','By type',[])['Total']?.toStringAsFixed(2)}',
-                      style: TextStyle(
-                          fontSize: 12
-                      ),
-
-                    ),
+                  // if(orderScreens[_currentIndex].runtimeType == DailyExpenseScreen)
+                  //   Text(
+                  //     'This month : ₹ ${_expenseService.getMetrics('This month','By type',[])['Total']?.toStringAsFixed(2)}',
+                  //     style: TextStyle(
+                  //         fontSize: 12
+                  //     ),
+                  //
+                  //   ),
                   if(orderScreens[_currentIndex].runtimeType == MetricsScreen)
                     SizedBox(
                       height: 30,
@@ -316,6 +320,25 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
               actions: [
+
+                Tooltip(
+                  key: _tooltipKey,
+                  message:  [
+                    'This month : ₹ ${_expenseService.getMetrics('This month', 'By type', [])['Total']?.toStringAsFixed(2)}',
+                    // '\n',
+                    if(_expenseService.getExpenseTypeLimitSummary().isNotEmpty)...[
+                      'Limits',
+                      ..._expenseService.getExpenseTypeLimitSummary()
+                    ]
+                  ].join('\n'),
+                  child: IconButton(
+                    icon: Icon(Icons.info_outline),
+                    onPressed: () {
+                      final dynamic tooltip = _tooltipKey.currentState;
+                      tooltip?.ensureTooltipVisible();
+                    },
+                  ),
+                ),
                 if(user == null)
                   Container(
                     padding: EdgeInsets.all(10),
