@@ -131,7 +131,7 @@ class _ExpenseTypeFormState extends State<ExpenseTypeForm> {
             else if (result == -1) {
               MessageWidget.showToast(
                 context: context,
-                message: 'Cannot apply limit changes : Already in track for the selected duration ',
+                message: 'Cannot apply limit changes : Already in track for the selected/previous duration ',
               );
             }
             else{

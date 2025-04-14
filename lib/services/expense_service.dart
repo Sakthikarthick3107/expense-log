@@ -85,7 +85,7 @@ class ExpenseService {
       final isLimitChanged = checkIfExist.limit != type.limit;
 
       if (
-      (isLimitByChanged || isLimitChanged) &&
+      (isLimitChanged) &&
           (type.limit != null || type.limitBy != null)
       ) {
 
@@ -122,7 +122,7 @@ class ExpenseService {
           return -1;
         }
       }
-      else if((type.limit == null || type.limitBy == null)){
+      if(isLimitByChanged || (type.limit == null || type.limitBy == null)){
         final today = DateTime.now();
         DateTime startDate;
         DateTime endDate;
