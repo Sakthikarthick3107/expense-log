@@ -214,8 +214,8 @@ class SettingsService with ChangeNotifier{
         notifyListeners();
     }
 
-    Future<String> downloadUrl() async{
-        final url = Uri.parse('https://api.github.com/repos/Sakthikarthick3107/expense-log/releases/latest');
+    Future<String> downloadUrl(String version) async{
+        final url = Uri.parse('https://api.github.com/repos/Sakthikarthick3107/expense-log/releases/tags/${version}');
         try {
             final response = await http.get(url);
             if (response.statusCode == 200) {

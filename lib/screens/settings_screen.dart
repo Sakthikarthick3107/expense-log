@@ -51,8 +51,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
   }
 
-  Future<void> _copyLinkToClipboard(BuildContext context) async {
-    String getDownloadLink = await _settingsService.downloadUrl();
+  Future<void> _copyLinkToClipboard(BuildContext context,String version) async {
+    String getDownloadLink = await _settingsService.downloadUrl(version);
     if(getDownloadLink.length > 0){
       await Clipboard.setData(ClipboardData(text: getDownloadLink));
       MessageWidget.showToast(context: context, message: 'Link copied to clipboard!',status:1);
@@ -182,7 +182,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               Text('Current Version'),
                               Text(version)
                             ],
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('Stable Releases'),
+                            ],
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('1.2.5'),
+                              GestureDetector(
+                                onTap: () {
+                                  _copyLinkToClipboard(context, 'v1.2.5');
+                                },
+                                child: Text(
+                                  'Copy Link',
+                                  style: TextStyle(
+                                    color: Colors.blue,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
+                              )
+
+                            ],
                           )
+
                         ],
                       )
                   )
@@ -193,9 +219,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   // setState(() {
                   //   _copyLinkToClipboard(context);
                   // });
-                  String getDownloadLink = await _settingsService.downloadUrl();
+                  String getDownloadLink = await _settingsService.downloadUrl("v"+version);
                   Share.share(getDownloadLink);
                 },
+
                 title: Text('Share App'),
               ),
               ListTile(
