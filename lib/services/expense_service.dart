@@ -320,6 +320,11 @@ class ExpenseService {
   }
 
 
+  List<Expense2> getExpenseForType(ExpenseType? type){
+    var expenses = getExpenses().where((exp) => exp.expenseType.id == type?.id).toList();
+    return expenses;
+  }
+
 
   Future<int> createCollectionExpense(
       {required List<Expense2> expenses, required DateTime expenseDate}) async {

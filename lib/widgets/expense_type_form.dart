@@ -2,6 +2,7 @@ import 'package:expense_log/models/expense_type.dart';
 import 'package:expense_log/services/expense_service.dart';
 import 'package:expense_log/services/settings_service.dart';
 import 'package:expense_log/widgets/message_widget.dart';
+import 'package:expense_log/widgets/type_usage_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -46,7 +47,33 @@ class _ExpenseTypeFormState extends State<ExpenseTypeForm> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text( widget.type == null ? 'New Type':'Edit Type'),
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children:[
+            Text( widget.type == null ? 'New Type':'Edit Type'),
+            if(widget.type != null)
+            TextButton(
+                onPressed: (){
+                  showModalBottomSheet(
+                      isScrollControlled: true,
+                      showDragHandle: true,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                      ),
+                      context: context,
+                      builder: (context){
+                        return  TypeUsageDrawer(expenses: _expenseService.getExpenseForType(widget.type));
+                      }
+                  );
+                },
+                child: Text('History',
+                  style: TextStyle(
+                      color: Theme.of(context).textTheme.displayMedium?.color
+                  )
+                  ,)
+            )
+
+    ]),
       content: SingleChildScrollView(
         child: Form(
           key: _formKey,
