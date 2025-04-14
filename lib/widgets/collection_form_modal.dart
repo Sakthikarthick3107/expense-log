@@ -1,3 +1,4 @@
+import 'package:expense_log/services/expense_service.dart';
 import 'package:expense_log/widgets/warning_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -24,6 +25,7 @@ class _CollectionFormModalState extends State<CollectionFormModal> {
   final _formKey = GlobalKey<FormState>();
   late SettingsService _settingsService;
   late CollectionService _collectionService;
+  late ExpenseService _expenseService;
   final ValueNotifier<List<Expense2>> addedExpenseNotifier = ValueNotifier<List<Expense2>>([]);
   late TextEditingController _nameController = TextEditingController();
   late TextEditingController _descriptionController = TextEditingController();
@@ -34,6 +36,7 @@ class _CollectionFormModalState extends State<CollectionFormModal> {
     super.initState();
     _settingsService = Provider.of<SettingsService>(context, listen: false);
     _collectionService = Provider.of<CollectionService>(context, listen: false);
+    _expenseService = Provider.of<ExpenseService>(context,listen: false);
     _nameController = TextEditingController(text: widget.collection?.name ?? '');
     _descriptionController = TextEditingController(text:  widget.collection?.description ?? '');
     addedExpenseNotifier.value = List.from(widget.collection?.expenseList ?? []);
@@ -180,13 +183,23 @@ class _CollectionFormModalState extends State<CollectionFormModal> {
                           created: widget.collection?.created ?? DateTime.now(),
                           updated: widget.collection?.created != null ? DateTime.now() : null
                         );
+                        List<String>? exceedList = _expenseService.exceededExpenses(newCollection.expenseList);
                         int status = await _collectionService.createCollection(newCollection);
                         final action = widget.collection != null ? 'edited' : 'created';
                         if (status == 1) {
                           Navigator.pop(context);
                           MessageWidget.showToast(
                               context: context, message: 'Successfully $action collection', status: 1);
+                        if(exceedList != null && exceedList.isNotEmpty){
+                          WarningDialog.showWarning(
+                              context: context,
+                              title: 'Info',
+                              message: exceedList.join('\n'),
+                              onConfirmed: (){
 
+                              }
+                          );
+                        }
                           addedExpenseNotifier.value.clear();
                         } else {
                           Navigator.pop(context);

@@ -52,26 +52,40 @@ class _ExpenseTypeFormState extends State<ExpenseTypeForm> {
           children:[
             Text( widget.type == null ? 'New Type':'Edit Type'),
             if(widget.type != null)
-            TextButton(
-                onPressed: (){
-                  showModalBottomSheet(
-                      isScrollControlled: true,
-                      showDragHandle: true,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                      ),
-                      context: context,
-                      builder: (context){
-                        return  TypeUsageDrawer(expenses: _expenseService.getExpenseForType(widget.type));
-                      }
-                  );
-                },
-                child: Text('History',
-                  style: TextStyle(
-                      color: Theme.of(context).textTheme.displayMedium?.color
-                  )
-                  ,)
-            )
+              IconButton(onPressed:(){
+                showModalBottomSheet(
+                              isScrollControlled: true,
+                              showDragHandle: true,
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                              ),
+                              context: context,
+                              builder: (context){
+                                return  TypeUsageDrawer(expenses: _expenseService.getExpenseForType(widget.type));
+                              }
+                          );
+              },
+                  icon: Icon(Icons.history_rounded))
+            // TextButton(
+            //     onPressed: (){
+            //       showModalBottomSheet(
+            //           isScrollControlled: true,
+            //           showDragHandle: true,
+            //           shape: const RoundedRectangleBorder(
+            //             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            //           ),
+            //           context: context,
+            //           builder: (context){
+            //             return  TypeUsageDrawer(expenses: _expenseService.getExpenseForType(widget.type));
+            //           }
+            //       );
+            //     },
+            //     child: Text('History',
+            //       style: TextStyle(
+            //           color: Theme.of(context).textTheme.displayMedium?.color
+            //       )
+            //       ,)
+            // )
 
     ]),
       content: SingleChildScrollView(

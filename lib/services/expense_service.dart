@@ -262,8 +262,14 @@ class ExpenseService {
           e.date.isBefore(endDate.add(const Duration(seconds: 1))))
           .fold<double>(0, (sum, e) => sum + e.price);
 
-      typeTotals[typeId] = (typeTotals[typeId] ?? previousTotal) + newExp.price;
-      typeMap[typeId] = type;
+      if(
+      newExp.date.isAfter(startDate.subtract(const Duration(seconds: 1))) &&
+      newExp.date.isBefore(endDate.add(const Duration(seconds: 1)))
+      ){
+        typeTotals[typeId] = (typeTotals[typeId] ?? previousTotal) + newExp.price;
+        typeMap[typeId] = type;
+    }
+
     }
 
     final List<String> exceededList = [];
