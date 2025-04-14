@@ -42,7 +42,7 @@ class _TypeUsageDrawerState extends State<TypeUsageDrawer> {
           color: Theme.of(context).scaffoldBackgroundColor,
           child: FractionallySizedBox(
             heightFactor: 0.9,
-            child: ListView(
+            child: Column(
               children: [
                 Center(
                   child: Padding(
@@ -50,56 +50,61 @@ class _TypeUsageDrawerState extends State<TypeUsageDrawer> {
                     child: Text(
                       widget.expenses.first.expenseType.name + ' - ₹' + widget.expenses.fold(0.0 , (act , exp) => act + exp.price).toStringAsFixed(2),
                       style: TextStyle(
-                        fontSize: 20
+                          fontSize: 20
                       ),
                     ),
                   ),
                 ),
-                ...sortedDates.map((date) {
-                  final expensesForDate = groupedExpenses[date]!;
-                  return Container(
-                    padding: EdgeInsets.symmetric(horizontal: 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                         Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children:
-                            [ Text(
-                              '${date.day}/${date.month}/${date.year}',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w700
-                              ),
-                            ),
-                              Text(
-                               '₹ ' +  expensesForDate.fold(0.0, (acc,exp) => acc + exp.price).toStringAsFixed(2),
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w700
-                                ),
-                              )
-                          ]
-                          ),
-                        ...expensesForDate.map((expense) =>  Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                Expanded(
+                  child: ListView(
+                    children: sortedDates.map((date) {
+                        final expensesForDate = groupedExpenses[date]!;
+                        return Container(
+                          padding: EdgeInsets.symmetric(horizontal: 20,vertical: 4),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                expense.name,
-                                style: const TextStyle(fontSize: 12),
+                               Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children:
+                                  [ Text(
+                                    '${date.day}/${date.month}/${date.year}',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w700
+                                    ),
+                                  ),
+                                    Text(
+                                     '₹ ' +  expensesForDate.fold(0.0, (acc,exp) => acc + exp.price).toStringAsFixed(2),
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w700
+                                      ),
+                                    )
+                                ]
+                                ),
+                              ...expensesForDate.map((expense) =>  Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      expense.name,
+                                      style: const TextStyle(fontSize: 12),
+                                    ),
+                                    Text(
+                                      expense.price.toStringAsFixed(2),
+                                      style: const TextStyle(fontSize: 12),
+                                    ),
+                                  ],
+                                ),
+
                               ),
-                              Text(
-                                expense.price.toStringAsFixed(2),
-                                style: const TextStyle(fontSize: 12),
-                              ),
+
+                              const Divider(),
                             ],
                           ),
+                        );
+                      }).toList(),
 
-                        ),
-                    
-                        const Divider(),
-                      ],
-                    ),
-                  );
-                }).toList(),
+                  ),
+                ),
               ],
             ),
           ),
