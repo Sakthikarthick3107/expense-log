@@ -122,7 +122,11 @@ class ExpenseService {
           return -1;
         }
       }
-      if(isLimitByChanged || (type.limit == null || type.limitBy == null)){
+      if((isLimitByChanged ||
+          (type.limit == null || type.limitBy == null))
+      && (checkIfExist.limit != null || checkIfExist.limitBy != null)
+
+      ){
         final today = DateTime.now();
         DateTime startDate;
         DateTime endDate;
