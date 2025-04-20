@@ -354,10 +354,15 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
 
                       if (groupByType) {
                         // Group by type
-                        Map<ExpenseType, List<Expense2>> grpWithType = {};
+                        Map<String, List<Expense2>> grpWithType = {};
                         for (var expense in expenseOfTheDate) {
-                          final type = expense.expenseType;
-                          grpWithType.putIfAbsent(type, () => []).add(expense);
+                          final type = expense.expenseType.name;
+                          if(grpWithType.containsKey(type)){
+                            grpWithType[type]!.add(expense);
+                          }
+                          else{
+                            grpWithType[type] = [expense];
+                          }
                         }
 
                         return ListView(
@@ -369,7 +374,7 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
                               Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6),
                                 child: Text(
-                                  type.name,
+                                  type,
                                   style:  TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 10,
