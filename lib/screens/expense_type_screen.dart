@@ -96,6 +96,7 @@ class _ExpenseTypeScreenState extends State<ExpenseTypeScreen> {
                                     style: const TextStyle(fontSize: 16),
                                   overflow: TextOverflow.ellipsis,
                                   ),
+
                                 subtitle: (expType.limit != null && (expType.limitBy?.isNotEmpty ?? false))
                                     ? Text(
                                   '${expType.limitBy!} ( ${_expenseService.getTypeLimitUsage(expType)} / ${expType.limit} )',
