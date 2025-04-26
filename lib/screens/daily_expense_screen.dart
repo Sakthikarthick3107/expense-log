@@ -369,17 +369,31 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
                           children: grpWithType.entries.expand((entry) {
                             final type = entry.key;
                             final expenses = entry.value;
+                            double typeTotal = expenses.fold<double>(0.0, (sum, e) => sum + e.price);
 
                             return [
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6),
-                                child: Text(
-                                  type,
-                                  style:  TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 10,
-                                    color: Theme.of(context).primaryColor,
-                                  ),
+                                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 6),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+
+                                    Text(
+                                      type,
+                                      style:  TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 10,
+                                        color: Theme.of(context).primaryColor,
+                                      ),
+                                    ),
+                                    Text(
+                                      "₹ ${typeTotal.toStringAsFixed(2)}",
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: Theme.of(context).primaryColor,
+                                      ),
+                                    )
+                                  ],
                                 ),
                               ),
                               ...expenses.map((expOfDay) => buildExpenseTile(expOfDay,showType: false)).toList(),
