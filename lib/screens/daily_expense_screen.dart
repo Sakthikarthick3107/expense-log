@@ -265,10 +265,10 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
                     Row(
                       children: [
                         Checkbox(
-                          value: groupByType,
+                          value: _settingsService.groupExpByType(),
                           onChanged: (value) {
-                            setState(() {
-                              groupByType = value!;
+                            setState(() async{
+                              await _settingsService.setGrpExpByType(value!);
                             });
                           },
                         ),
@@ -352,7 +352,7 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
                         );
                       }
 
-                      if (groupByType) {
+                      if (_settingsService.groupExpByType()) {
                         // Group by type
                         Map<String, List<Expense2>> grpWithType = {};
                         for (var expense in expenseOfTheDate) {

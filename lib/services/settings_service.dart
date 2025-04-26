@@ -204,6 +204,16 @@ class SettingsService with ChangeNotifier{
         return nextId;
     }
 
+    bool groupExpByType(){
+        bool grp = _settingsBox.get('isGroupByType' , defaultValue: false) as bool;
+        return grp;
+    }
+
+    Future<void> setGrpExpByType(bool isGrp) async{
+        await _settingsBox.put('isGroupByType' , isGrp);
+        notifyListeners();
+    }
+
     bool isDarkTheme()  {
             bool theme =  _settingsBox.get('isDarkTheme', defaultValue: false) as bool;
             return theme;

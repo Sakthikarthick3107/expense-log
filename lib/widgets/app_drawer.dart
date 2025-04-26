@@ -95,7 +95,7 @@ class _AppDrawerState extends State<AppDrawer> {
                   Navigator.pop(context);
                   Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsScreen()));
                 } else {
-                  widget.onSelectScreen(3);
+                  widget.onSelectScreen(5);
                 }
               },
               leading: Icon(Icons.settings, color: Theme.of(context).iconTheme.color),
