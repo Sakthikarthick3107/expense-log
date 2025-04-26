@@ -6,11 +6,13 @@ import 'package:expense_log/services/collection_service.dart';
 import 'package:expense_log/services/notification_service.dart';
 import 'package:expense_log/services/expense_service.dart';
 import 'package:expense_log/services/settings_service.dart';
+import 'package:expense_log/services/report_service.dart';
 import 'package:expense_log/services/ui_service.dart';
 import 'package:expense_log/services/upi_service.dart';
 import 'package:expense_log/themes/app_theme.dart';
 import 'package:expense_log/widgets/message_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:hive/hive.dart';
@@ -30,10 +32,7 @@ Future<void> requestPermissions() async {
   }
 }
 
-
-
-
-void main() async{
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   await requestPermissions();
@@ -52,55 +51,65 @@ void main() async{
   await Hive.openBox<Collection>('collectionBox');
   await Hive.openBox<UpiLog>('upiLogBox');
 
-
   // await checkAndRunMigration();
   tz.initializeTimeZones(); // Initialize timezone
   await NotificationService.initialize();
 
-  runApp(
-      MultiProvider(providers: [
-             ChangeNotifierProvider(create: (_)=>SettingsService()),
-              Provider(create: (_)=>ExpenseService()),
-              Provider(create: (_) => UiService()),
-              Provider(create: (_) => CollectionService(),),
-              Provider(create: (_) => UpiService())
-              // ProxyProvider2<ExpenseService,SettingsService,UiService>(
-              //     update: (_,expenseService,settingsService,__)=> UiService(expenseService, settingsService)
-              // )
-      ],
-        child: const MyApp(),
-      )
-      );
+  await FlutterDownloader.initialize(
+    debug: true,
+    ignoreSsl: true,
+  );
+
+  runApp(MultiProvider(
+    providers: [
+      ChangeNotifierProvider(create: (_) => SettingsService()),
+      Provider(create: (_) => ExpenseService()),
+      Provider(create: (_) => UiService()),
+      Provider(
+        create: (_) => CollectionService(),
+      ),
+      Provider(create: (_) => UpiService()),
+      Provider(create: (_) => ReportService())
+      // ProxyProvider2<ExpenseService,SettingsService,UiService>(
+      //     update: (_,expenseService,settingsService,__)=> UiService(expenseService, settingsService)
+      // )
+    ],
+    child: const MyApp(),
+  ));
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-
   @override
   Widget build(BuildContext context) {
-      return Consumer<SettingsService>(
-          builder: (context,settingsService,child){
-            return MaterialApp(
-                builder: EasyLoading.init(),
-                title: 'ExpenseLog',
-                debugShowCheckedModeBanner: false,
-                theme: appTheme(settingsService.isDarkTheme(),settingsService.getPrimaryColor()),
-                scaffoldMessengerKey: MessageWidget.scaffoldMessengerKey,
-                home:  AnnotatedRegion<SystemUiOverlayStyle>(
-                  value: SystemUiOverlayStyle(
-                    statusBarColor: appTheme(settingsService.isDarkTheme(),settingsService.getPrimaryColor()).primaryColor,
-                    statusBarIconBrightness: settingsService.isDarkTheme() ? Brightness.light : Brightness.dark,
-                    statusBarBrightness: settingsService.isDarkTheme() ? Brightness.dark : Brightness.light,
-                  ),
-                  child: const Scaffold(
-                    resizeToAvoidBottomInset: false,
-                    body: HomeScreen(),
-                  ),
-                ),
-              );
-
-          });
-
+    return Consumer<SettingsService>(
+        builder: (context, settingsService, child) {
+      return MaterialApp(
+        builder: EasyLoading.init(),
+        title: 'ExpenseLog',
+        debugShowCheckedModeBanner: false,
+        theme: appTheme(
+            settingsService.isDarkTheme(), settingsService.getPrimaryColor()),
+        scaffoldMessengerKey: MessageWidget.scaffoldMessengerKey,
+        home: AnnotatedRegion<SystemUiOverlayStyle>(
+          value: SystemUiOverlayStyle(
+            statusBarColor: appTheme(settingsService.isDarkTheme(),
+                    settingsService.getPrimaryColor())
+                .primaryColor,
+            statusBarIconBrightness: settingsService.isDarkTheme()
+                ? Brightness.light
+                : Brightness.dark,
+            statusBarBrightness: settingsService.isDarkTheme()
+                ? Brightness.dark
+                : Brightness.light,
+          ),
+          child: const Scaffold(
+            resizeToAvoidBottomInset: false,
+            body: HomeScreen(),
+          ),
+        ),
+      );
+    });
   }
 }
