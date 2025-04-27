@@ -57,7 +57,8 @@ class ReportService {
               ]),
     );
     final pdfBytes = await pdf.save();
-    await savePdfAndShowNotification(pdfBytes, 'metrics_report', expenseDate);
+    await savePdfAndShowNotification(
+        pdfBytes, 'daily_expense_report', expenseDate);
   }
 
   Future<void> prepareMetricsReport(List<Expense2> expenses,

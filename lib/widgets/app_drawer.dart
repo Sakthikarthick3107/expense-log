@@ -26,18 +26,15 @@ class AppDrawer extends StatefulWidget {
 }
 
 class _AppDrawerState extends State<AppDrawer> {
-
   late SettingsService _settingsService;
   late List<String> _screenNames = [];
 
-
   @override
-  void initState(){
+  void initState() {
     super.initState();
-    _settingsService = Provider.of<SettingsService>(context,listen: false);
+    _settingsService = Provider.of<SettingsService>(context, listen: false);
     loadMenuOrder();
   }
-
 
   Future<void> requestStoragePermission() async {
     PermissionStatus status = await Permission.storage.request();
@@ -63,7 +60,8 @@ class _AppDrawerState extends State<AppDrawer> {
     "Types": Icons.category_outlined,
     "Collections": Icons.collections_bookmark_rounded,
     "Metrics": Icons.auto_graph_outlined,
-    "UPI Logs" : Icons.payment
+    "UPI Logs": Icons.payment,
+    "Downloads": Icons.download
   };
 
   @override
@@ -84,8 +82,10 @@ class _AppDrawerState extends State<AppDrawer> {
                 return ListTile(
                   onTap: () => widget.onSelectScreen(index),
                   title: Text(item),
-
-                  leading: Icon(screenIcons[item], color: Theme.of(context).iconTheme.color,),
+                  leading: Icon(
+                    screenIcons[item],
+                    color: Theme.of(context).iconTheme.color,
+                  ),
                 );
               }).toList(),
             ),
@@ -93,12 +93,16 @@ class _AppDrawerState extends State<AppDrawer> {
               onTap: () {
                 if (!Platform.isWindows) {
                   Navigator.pop(context);
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsScreen()));
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => SettingsScreen()));
                 } else {
                   widget.onSelectScreen(5);
                 }
               },
-              leading: Icon(Icons.settings, color: Theme.of(context).iconTheme.color),
+              leading: Icon(Icons.settings,
+                  color: Theme.of(context).iconTheme.color),
               title: Text('Settings'),
             )
           ],

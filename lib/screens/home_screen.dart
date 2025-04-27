@@ -4,6 +4,7 @@ import 'package:expense_log/models/expense_type.dart';
 import 'package:expense_log/models/user.dart';
 import 'package:expense_log/screens/collections_screen.dart';
 import 'package:expense_log/screens/daily_expense_screen.dart';
+import 'package:expense_log/screens/downloads_screen.dart';
 import 'package:expense_log/screens/expense_type_screen.dart';
 import 'package:expense_log/screens/metrics_screen.dart';
 import 'package:expense_log/screens/settings_screen.dart';
@@ -94,6 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
     const MetricsScreen(),
     const CollectionsScreen(),
     const UpiLogs(),
+    const DownloadsScreen(),
     const SettingsScreen()
   ];
 
@@ -290,7 +292,18 @@ class _HomeScreenState extends State<HomeScreen> {
                       }).toList(),
                       underline: SizedBox(),
                     ),
-                  )
+                  ),
+                if (orderScreens[_currentIndex].runtimeType == DownloadsScreen)
+                  Tooltip(
+                    // key: _tooltipKey,
+                    message:
+                        '/storage/emulated/0/Android/data/com.expenseapp.expense_log/files/downloads/ExpenseLog_Reports',
+                    child: Text(
+                      '/storage/emulated/0/Android/data/com.expenseapp.expense_log/files/downloads/ExpenseLog_Reports',
+                      style: const TextStyle(fontSize: 8),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
               ],
             ),
             actions: [
