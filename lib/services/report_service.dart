@@ -1,5 +1,6 @@
 import 'dart:io';
-import 'package:flutter_downloader/flutter_downloader.dart';
+import 'package:expense_log/models/date_range.dart';
+import 'package:expense_log/utility/pdf_helper.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:open_file/open_file.dart';
 import 'package:pdf/pdf.dart';
@@ -7,16 +8,12 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:flutter/services.dart' show rootBundle;
 import '../models/expense2.dart';
 import 'package:expense_log/services/notification_service.dart';
+import 'dart:typed_data';
 
 class ReportService {
   const ReportService();
 
   Future<void> prepareDailyExpenseReport(List<Expense2> expenses) async {
-    final logoBytes = await rootBundle
-        .load('assets/icons/terminal.png')
-        .then((value) => value.buffer.asUint8List());
-    final poppinsFont =
-        pw.Font.ttf(await rootBundle.load('assets/fonts/Poppins-Regular.ttf'));
     final pdf = pw.Document();
     final groupedExpenses = <String, List<Expense2>>{};
     for (var expense in expenses) {
@@ -31,165 +28,176 @@ class ReportService {
 
     pdf.addPage(
       pw.MultiPage(
-          pageTheme: pw.PageTheme(
-            buildBackground: (context) => pw.FullPage(
-              ignoreMargins: true,
-              child: pw.Opacity(
-                opacity: 0.1,
-                child: pw.Center(
-                  child: pw.Image(
-                    pw.MemoryImage(logoBytes),
-                    width: 300,
-                    height: 300,
-                    fit: pw.BoxFit.contain,
-                  ),
-                ),
-              ),
-            ),
-          ),
+          pageTheme: PdfHelper.pageBackground(),
           footer: (context) {
-            return pw.Container(
-                alignment: pw.Alignment.center,
-                margin: const pw.EdgeInsets.only(top: 5),
-                child: pw.Column(children: [
-                  pw.Text(
-                    'Expense Log -  Daily Expense Report ${expenseDate}',
-                    style: pw.TextStyle(
-                      font: poppinsFont,
-                      fontSize: 12,
-                      color: PdfColors.grey600,
-                    ),
-                  ),
-                  pw.Text(
-                    'Generated at - ${DateTime.now().toString()}',
-                    style: pw.TextStyle(
-                      font: poppinsFont,
-                      fontSize: 8,
-                      color: PdfColors.grey600,
-                    ),
-                  ),
-                ]));
+            return PdfHelper.footer(
+                footerTitle:
+                    'Expense Log -  Daily Expense Report $expenseDate');
           },
           build: (context) => [
                 pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
-                    // Centered heading
-                    pw.Center(
-                      child: pw.Text(
-                        'Daily Expense Report',
-                        style: pw.TextStyle(
-                          fontSize: 24,
-                          fontWeight: pw.FontWeight.bold,
-                          font: poppinsFont,
-                        ),
-                      ),
-                    ),
-                    pw.SizedBox(height: 10),
-                    pw.Center(
-                      child: pw.Text(
-                        expenseDate,
-                        style: pw.TextStyle(
-                          fontSize: 18,
-                          fontWeight: pw.FontWeight.bold,
-                          font: poppinsFont,
-                        ),
-                      ),
-                    ),
-                    pw.SizedBox(height: 20),
-
-                    ...groupedExpenses.entries.map((entry) {
-                      final expenseType = entry.key;
-                      final expenseList = entry.value;
-                      final totalExpense = expenseList.fold(
-                          0.0, (sum, item) => sum + item.price);
-
-                      return pw.Column(
-                        crossAxisAlignment: pw.CrossAxisAlignment.start,
-                        children: [
-                          pw.Table(border: pw.TableBorder.all(), columnWidths: {
-                            0: pw.FlexColumnWidth(2),
-                            1: pw.FlexColumnWidth(1)
-                          }, children: [
-                            pw.TableRow(
-                                decoration:
-                                    pw.BoxDecoration(color: PdfColors.grey300),
-                                children: [
-                                  pw.Padding(
-                                      padding: const pw.EdgeInsets.all(8),
-                                      child: pw.Column(
-                                          crossAxisAlignment:
-                                              pw.CrossAxisAlignment.start,
-                                          children: [
-                                            pw.Text('${expenseType}',
-                                                style: pw.TextStyle(
-                                                    font: poppinsFont,
-                                                    fontSize: 18,
-                                                    fontWeight:
-                                                        pw.FontWeight.bold)),
-                                            pw.Text(
-                                                '${expenseList[0].expenseType.description}',
-                                                style: pw.TextStyle(
-                                                    font: poppinsFont))
-                                          ])),
-                                  pw.Padding(
-                                    padding: const pw.EdgeInsets.all(8),
-                                    child: pw.Text('₹${totalExpense}',
-                                        style: pw.TextStyle(font: poppinsFont)),
-                                  )
-                                ])
-                          ]),
-                          pw.Table(
-                            border: pw.TableBorder.all(),
-                            columnWidths: {
-                              0: pw.FlexColumnWidth(2),
-                              1: pw.FlexColumnWidth(1),
-                            },
-                            children: [
-                              ...expenseList.map((expense) => pw.TableRow(
-                                    children: [
-                                      pw.Padding(
-                                        padding: const pw.EdgeInsets.all(8),
-                                        child: pw.Text(expense.name,
-                                            style: pw.TextStyle(
-                                                font: poppinsFont)),
-                                      ),
-                                      pw.Padding(
-                                        padding: const pw.EdgeInsets.all(8),
-                                        child: pw.Text('₹${expense.price}',
-                                            style: pw.TextStyle(
-                                                font: poppinsFont)),
-                                      ),
-                                    ],
-                                  )),
-                            ],
-                          ),
-                        ],
-                      );
-                    }),
-
+                    ...PdfHelper.header(
+                        reportTitle: 'Daily Expense Report',
+                        subtitle: expenseDate),
+                    ...PdfHelper.generateExpenseTableGrpByType(expenses),
                     pw.SizedBox(height: 20),
                     pw.Row(
                         mainAxisAlignment: pw.MainAxisAlignment.end,
                         children: [
-                          pw.Text(
+                          PdfHelper.text(
                             'Total : ₹${expenses.fold(0.0, (sum, item) => sum + item.price)}',
-                            style: pw.TextStyle(
-                              fontSize: 20,
-                              fontWeight: pw.FontWeight.bold,
-                              font: poppinsFont,
-                            ),
+                            fontSize: 20,
+                            fontWeight: pw.FontWeight.bold,
                           ),
                         ]),
                   ],
                 ),
               ]),
     );
+    final pdfBytes = await pdf.save();
+    await savePdfAndShowNotification(pdfBytes, 'metrics_report', expenseDate);
+  }
+
+  Future<void> prepareMetricsReport(List<Expense2> expenses,
+      List<String> selectedTypes, DateRange selectedRange) async {
+    final pdf = pw.Document();
+    final filteredExpenses = expenses
+        .where((expense) => selectedTypes.contains(expense.expenseType.name))
+        .toList();
+
+    final Map<String, double> typeTotals = {};
+
+    for (var expense in filteredExpenses) {
+      typeTotals.update(
+        expense.expenseType.name,
+        (existing) => existing + expense.price,
+        ifAbsent: () => expense.price,
+      );
+    }
+
+    String startDate =
+        '${selectedRange.start.day}-${selectedRange.start.month}-${selectedRange.start.year}';
+    String endDate =
+        '${selectedRange.end.day}-${selectedRange.end.month}-${selectedRange.end.year}';
+
+    filteredExpenses.sort((a, b) => a.date.compareTo(b.date));
+
+    final groupedByDate = <String, List<Expense2>>{};
+    for (var expense in filteredExpenses) {
+      String expenseDate =
+          '${expense.date.day}-${expense.date.month}-${expense.date.year}';
+      if (!groupedByDate.containsKey(expenseDate)) {
+        groupedByDate[expenseDate] = [];
+      }
+      groupedByDate[expenseDate]?.add(expense);
+    }
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageTheme: PdfHelper.pageBackground(),
+        footer: (context) {
+          return PdfHelper.footer(
+            footerTitle: 'Expense Log - Metrics Report',
+          );
+        },
+        build: (context) {
+          List<pw.Widget> widgets = [];
+
+          widgets.addAll(PdfHelper.header(
+            reportTitle: 'Metrics Report',
+            subtitle: '${startDate} to ${endDate}',
+          ));
+
+          widgets.add(
+            pw.Text(
+              'Expense Type - Summary',
+              style: pw.TextStyle(fontSize: 17, fontWeight: pw.FontWeight.bold),
+            ),
+          );
+
+          widgets.add(pw.SizedBox(height: 5));
+
+          widgets.add(
+            pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: typeTotals.entries.map((entry) {
+                return pw.Padding(
+                  padding: const pw.EdgeInsets.symmetric(vertical: 2),
+                  child: pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                    children: [
+                      pw.Expanded(
+                        child: PdfHelper.text(
+                          entry.key,
+                          fontSize: 15,
+                        ),
+                      ),
+                      PdfHelper.text(
+                        '₹${entry.value.toStringAsFixed(2)}',
+                        fontSize: 15,
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+          );
+
+          widgets.add(pw.SizedBox(height: 20));
+
+          for (var entry in groupedByDate.entries) {
+            final dateExpenses = entry.value;
+            String dateTitle = entry.key;
+
+            widgets.add(
+              pw.Text(
+                '$dateTitle',
+                style:
+                    pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
+              ),
+            );
+
+            widgets
+                .addAll(PdfHelper.generateExpenseTableGrpByType(dateExpenses));
+            widgets.add(pw.SizedBox(height: 20));
+          }
+
+          // Add total at the end
+          widgets.add(
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.end,
+              children: [
+                PdfHelper.text(
+                  'Total: ₹${filteredExpenses.fold(0.0, (sum, item) => sum + item.price)}',
+                  fontSize: 20,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ],
+            ),
+          );
+
+          return widgets;
+        },
+      ),
+    );
+
+    final pdfBytes = await pdf.save();
+    await savePdfAndShowNotification(
+        pdfBytes, 'metrics_report', '${startDate}_to_${endDate}');
+  }
+
+  Future<void> savePdfAndShowNotification(
+      Uint8List pdfBytes, String reportName, String expenseDate) async {
     final output = await getExternalStorageDirectory();
-    final filePath = '${output!.path}/daily_expense_report_${expenseDate}.pdf';
+    if (output == null) return;
+    final filePath = '${output!.path}/${reportName}_$expenseDate.pdf';
     final file = File(filePath);
-    await file.writeAsBytes(await pdf.save());
+
+    await file.writeAsBytes(pdfBytes);
     await NotificationService.showDownloadCompletedNotification(file);
+
     // await OpenFile.open(filePath);
     // await downloadPdf(file);
   }

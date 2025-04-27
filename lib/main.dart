@@ -19,6 +19,7 @@ import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
+import 'package:expense_log/utility/pdf_helper.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -54,6 +55,7 @@ void main() async {
   // await checkAndRunMigration();
   tz.initializeTimeZones(); // Initialize timezone
   await NotificationService.initialize();
+  await PdfHelper.initialize();
 
   await FlutterDownloader.initialize(
     debug: true,
@@ -63,8 +65,10 @@ void main() async {
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (_) => SettingsService()),
-      Provider(create: (_) => ExpenseService()),
       Provider(create: (_) => UiService()),
+      ProxyProvider<UiService, ExpenseService>(
+        update: (_, uiService, __) => ExpenseService(uiService: uiService),
+      ),
       Provider(
         create: (_) => CollectionService(),
       ),

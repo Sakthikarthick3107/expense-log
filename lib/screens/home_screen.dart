@@ -36,7 +36,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-
   String version = '';
   int _currentIndex = 0;
   User? user;
@@ -47,8 +46,6 @@ class _HomeScreenState extends State<HomeScreen> {
   static const platform = MethodChannel('com.expenseapp.expense_log/install');
   late UpiService _upiService;
 
-
-
   @override
   void initState() {
     super.initState();
@@ -58,9 +55,9 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _currentIndex = widget.initialIndex;
     });
-    _settingsService = Provider.of<SettingsService>(context,listen: false);
-    _uiService = Provider.of<UiService>(context,listen: false);
-    _expenseService = Provider.of<ExpenseService>(context , listen: false);
+    _settingsService = Provider.of<SettingsService>(context, listen: false);
+    _uiService = Provider.of<UiService>(context, listen: false);
+    _expenseService = Provider.of<ExpenseService>(context, listen: false);
     _checkIfUserExists();
     _scheduleNotifications();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -70,9 +67,8 @@ class _HomeScreenState extends State<HomeScreen> {
       reorderScreens();
     });
     _fetchVersion();
-    _upiService = Provider.of<UpiService>(context , listen: false);
+    _upiService = Provider.of<UpiService>(context, listen: false);
   }
-
 
   Future<void> _requestPermissions() async {
     var status = await Permission.sms.status;
@@ -92,9 +88,6 @@ class _HomeScreenState extends State<HomeScreen> {
   //   });
   // }
 
-
-
-
   final List<Widget> _screens = [
     const DailyExpenseScreen(),
     const ExpenseTypeScreen(),
@@ -104,19 +97,19 @@ class _HomeScreenState extends State<HomeScreen> {
     const SettingsScreen()
   ];
 
-  Future<void> reorderScreens() async{
+  Future<void> reorderScreens() async {
     List<String> savedOrder = await _settingsService.getScreenOrder();
-    List<String> defaultOrder = await _settingsService.getScreenOrder(getDefault: true);
+    List<String> defaultOrder =
+        await _settingsService.getScreenOrder(getDefault: true);
     List<Widget> orderedScreens = [];
 
     for (String screen in savedOrder) {
       int index = defaultOrder.indexOf(screen);
       if (index != -1) {
-          orderedScreens.add(_screens[index]);
-
+        orderedScreens.add(_screens[index]);
       }
     }
-      orderedScreens.add(_screens.last);
+    orderedScreens.add(_screens.last);
 
     setState(() {
       orderScreens = orderedScreens;
@@ -130,11 +123,9 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-
-
-  Future<void> _scheduleNotifications() async{
+  Future<void> _scheduleNotifications() async {
     final _settingsBox = Hive.box('settingsBox');
-    String userName = await _settingsBox.get('userName',defaultValue: 'User');
+    String userName = await _settingsBox.get('userName', defaultValue: 'User');
     NotificationService.scheduleNotification(
       id: 1,
       title: 'Good Morning, $userName!',
@@ -214,41 +205,35 @@ class _HomeScreenState extends State<HomeScreen> {
       hour: 23,
       minute: 0,
     );
-
   }
 
-  Future<void> _checkIfUserExists() async{
+  Future<void> _checkIfUserExists() async {
     User? userData = await _settingsService.getUser();
     setState(() {
       user = userData;
     });
   }
 
-  void welcomeGreeting(){
+  void welcomeGreeting() {
     String timeOfDay = _uiService.getTimeOfDay();
     String userName = user != null ? user!.userName : 'User';
-    MessageWidget.showToast(context: context, message: 'Good $timeOfDay, $userName' , status: -1);
+    MessageWidget.showToast(
+        context: context, message: 'Good $timeOfDay, $userName', status: -1);
   }
 
-
-
-  void _onDrawerItemSelected(int index){
-    if(!Platform.isWindows)
-    Navigator.pop(context);
+  void _onDrawerItemSelected(int index) {
+    if (!Platform.isWindows) Navigator.pop(context);
     setState(() {
       _currentIndex = index;
     });
-
   }
-
-
 
   final GlobalKey<TooltipState> _tooltipKey = GlobalKey<TooltipState>();
 
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
     return WillPopScope(
-      onWillPop: ()async{
+      onWillPop: () async {
         if (_currentIndex != 0) {
           setState(() {
             _currentIndex = 0;
@@ -257,128 +242,115 @@ class _HomeScreenState extends State<HomeScreen> {
         }
         bool willExit = false;
         await WarningDialog.showWarning(
-          context: context,
-          message: 'Are you sure to exit app?',
-          onConfirmed: () {
-            willExit =  true;
-            SystemNavigator.pop(animated: true);
-          }
-
-        );
+            context: context,
+            message: 'Are you sure to exit app?',
+            onConfirmed: () {
+              willExit = true;
+              SystemNavigator.pop(animated: true);
+            });
         return willExit;
       },
-      child: Consumer<SettingsService>(
-        builder: (context,settingsService,child){
-          return Scaffold(
-            resizeToAvoidBottomInset: false,
-            drawer:Platform.isWindows ? null : AppDrawer(onSelectScreen: _onDrawerItemSelected),
-            appBar:  AppBar(
-              title:  Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'expense.log',
-                    style:const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 22
-                    ),
-
-                  ),
-                  // SizedBox(height: 5,),
-                  // if(orderScreens[_currentIndex].runtimeType == DailyExpenseScreen)
-                  //   Text(
-                  //     'This month : ₹ ${_expenseService.getMetrics('This month','By type',[])['Total']?.toStringAsFixed(2)}',
-                  //     style: TextStyle(
-                  //         fontSize: 12
-                  //     ),
-                  //
-                  //   ),
-                  if(orderScreens[_currentIndex].runtimeType == MetricsScreen)
-                    SizedBox(
-                      height: 30,
-                      child: DropdownButton<String>(
-                        isDense: true,
-                        value: settingsService.getMetricChart(),
-                        onChanged: (String? newValue) {
-                          if (newValue != null) {
-                            settingsService.setMetricChart(newValue);
-                          }
-                        },
-                        items: ['Bar Chart', 'Pie Chart'].map<DropdownMenuItem<String>>((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(
-                              value,
-                              style: TextStyle(fontSize: 12),
-                            ),
-                          );
-                        }).toList(),
-                        underline: SizedBox(),
-                      ),
-                    )
-                ],
-              ),
-              actions: [
-
-                Tooltip(
-                  key: _tooltipKey,
-                  message:  [
-                    'This month : ₹ ${_expenseService.getMetrics('This month', 'By type', [])['Total']?.toStringAsFixed(2)}',
-                    // '\n',
-                    if(_expenseService.getExpenseTypeLimitSummary().isNotEmpty)...[
-                      'Limits',
-                      ..._expenseService.getExpenseTypeLimitSummary()
-                    ]
-                  ].join('\n'),
-                  child: IconButton(
-                    icon: Icon(Icons.info_outline),
-                    onPressed: () {
-                      final dynamic tooltip = _tooltipKey.currentState;
-                      tooltip?.ensureTooltipVisible();
-                    },
-                  ),
+      child:
+          Consumer<SettingsService>(builder: (context, settingsService, child) {
+        return Scaffold(
+          resizeToAvoidBottomInset: false,
+          drawer: Platform.isWindows
+              ? null
+              : AppDrawer(onSelectScreen: _onDrawerItemSelected),
+          appBar: AppBar(
+            title: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'expense.log',
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 22),
                 ),
-                if(user == null)
-                  Container(
-                    padding: EdgeInsets.all(10),
-                    // margin: EdgeInsets.all(20),
-                    child: Text(
-                      '$version',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 12
-                      ),
+                if (orderScreens[_currentIndex].runtimeType == MetricsScreen)
+                  SizedBox(
+                    height: 30,
+                    child: DropdownButton<String>(
+                      isDense: true,
+                      value: settingsService.getMetricChart(),
+                      onChanged: (String? newValue) {
+                        if (newValue != null) {
+                          settingsService.setMetricChart(newValue);
+                        }
+                      },
+                      items: ['Bar Chart', 'Pie Chart']
+                          .map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(
+                            value,
+                            style: TextStyle(fontSize: 12),
+                          ),
+                        );
+                      }).toList(),
+                      underline: SizedBox(),
                     ),
-                  ),
-                if(user != null)
-                  Container(
-                      padding: EdgeInsets.all(6),
-                      child: AvatarWidget(
-                        imageUrl: user!.image,
-                        userName: user!.userName,
-                        onTap: (){
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsScreen()));
-                        },
-                      )
                   )
               ],
-              //leading: Text(version),
             ),
-
-            body: Platform.isWindows ?
-            Container(
-              child: Row(
-                children: [
-                  AppDrawer(onSelectScreen: _onDrawerItemSelected),
-                  Expanded(child: orderScreens[_currentIndex])
-                ],
+            actions: [
+              Tooltip(
+                key: _tooltipKey,
+                message: [
+                  'This month : ₹ ${_expenseService.getMetrics('This month', 'By type', [])['Total']?.toStringAsFixed(2)}',
+                  // '\n',
+                  if (_expenseService
+                      .getExpenseTypeLimitSummary()
+                      .isNotEmpty) ...[
+                    'Limits',
+                    ..._expenseService.getExpenseTypeLimitSummary()
+                  ]
+                ].join('\n'),
+                child: IconButton(
+                  icon: Icon(Icons.info_outline),
+                  onPressed: () {
+                    final dynamic tooltip = _tooltipKey.currentState;
+                    tooltip?.ensureTooltipVisible();
+                  },
+                ),
               ),
-            )
-                :  orderScreens[_currentIndex],
-          );
-        }
-      ),
+              if (user == null)
+                Container(
+                  padding: EdgeInsets.all(10),
+                  // margin: EdgeInsets.all(20),
+                  child: Text(
+                    '$version',
+                    style: TextStyle(color: Colors.white, fontSize: 12),
+                  ),
+                ),
+              if (user != null)
+                Container(
+                    padding: EdgeInsets.all(6),
+                    child: AvatarWidget(
+                      imageUrl: user!.image,
+                      userName: user!.userName,
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => SettingsScreen()));
+                      },
+                    ))
+            ],
+            //leading: Text(version),
+          ),
+          body: Platform.isWindows
+              ? Container(
+                  child: Row(
+                    children: [
+                      AppDrawer(onSelectScreen: _onDrawerItemSelected),
+                      Expanded(child: orderScreens[_currentIndex])
+                    ],
+                  ),
+                )
+              : orderScreens[_currentIndex],
+        );
+      }),
     );
   }
 }

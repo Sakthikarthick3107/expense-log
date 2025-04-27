@@ -1,67 +1,78 @@
 import 'package:expense_log/models/collection.dart';
-import 'package:expense_log/models/expense.dart';
+import 'package:expense_log/models/date_range.dart';
 import 'package:expense_log/models/expense2.dart';
 import 'package:expense_log/models/expense_type.dart';
 import 'package:expense_log/services/settings_service.dart';
 import 'package:expense_log/services/ui_service.dart';
 import 'package:flutter/material.dart';
-import 'package:googleapis/cloudsearch/v1.dart';
 import 'package:hive/hive.dart';
 
 class ExpenseService {
+  final UiService uiService;
   final _expenseTypeBox = Hive.box<ExpenseType>('expenseTypeBox');
   final _expenseBox2 = Hive.box<Expense2>('expense2Box');
   final _collectionBox = Hive.box<Collection>('collectionBox');
 
+  ExpenseService({required this.uiService});
+
   List<ExpenseType> getExpenseTypes() {
     List<ExpenseType> expenseTypes = List.from(_expenseTypeBox.values);
-    expenseTypes.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    expenseTypes
+        .sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
     return expenseTypes;
   }
 
-  double getTypeLimitUsage(ExpenseType type){
-    final today = DateTime.now();
+  double getTypeLimitUsage(ExpenseType type) {
     DateTime startDate;
     DateTime endDate;
-
-    if (type.limitBy == 'Week') {
-      final weekday = today.weekday % 7;
-      startDate = today.subtract(Duration(days: weekday));
-      endDate = startDate.add(const Duration(days: 6));
-
-      startDate = DateTime(startDate.year, startDate.month, startDate.day);
-      endDate = DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59);
-
-    } else if (type.limitBy == 'Month') {
-      startDate = DateTime(today.year, today.month, 1);
-      endDate = DateTime(today.year, today.month + 1, 0);
-
-      startDate = DateTime(startDate.year, startDate.month, startDate.day);
-      endDate = DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59);
-    } else {
+    DateRange? getRange = uiService.getDateRange(type.limitBy ?? '');
+    if (getRange != null) {
+      startDate = getRange.start;
+      endDate = getRange.end;
+    } else
       return -1;
-    }
 
     final total = getExpenses()
         .where((e) =>
-    e.expenseType.id == type.id &&
-        e.date.isAfter(startDate.subtract(const Duration(seconds: 1))) &&
-        e.date.isBefore(endDate.add(const Duration(days: 1))))
+            e.expenseType.id == type.id &&
+            e.date.isAfter(startDate.subtract(const Duration(seconds: 1))) &&
+            e.date.isBefore(endDate.add(const Duration(days: 1))))
         .fold<double>(0.0, (sum, e) => sum + e.price);
 
     return total;
   }
 
-
-
-
-
   List<Expense2> getExpenses() => _expenseBox2.values.toList();
+
+  List<Expense2> getExpensesOfSelectedDuration(String rangeType,
+      {DateTimeRange? customDateRange}) {
+    DateTime startDate;
+    DateTime endDate;
+
+    DateRange? getRange = uiService.getDateRange(rangeType);
+
+    if (getRange != null) {
+      startDate = getRange.start;
+      endDate = getRange.end;
+    } else if (customDateRange != null) {
+      startDate = customDateRange.start;
+      endDate = customDateRange.end;
+    } else {
+      throw Exception('No valid date range provided.');
+    }
+
+    List<Expense2> filteredExpenses = getExpenses().where((expense) {
+      return expense.date.isAfter(startDate.subtract(Duration(days: 1))) &&
+          expense.date.isBefore(endDate.add(Duration(days: 1)));
+    }).toList();
+
+    return filteredExpenses;
+  }
 
   bool ifExpenseTypeExist(ExpenseType type) {
     final expenseTypes = _expenseTypeBox.values.toList();
-    return expenseTypes.any((expType) =>
-    expType.name.toLowerCase() == type.name.toLowerCase());
+    return expenseTypes.any(
+        (expType) => expType.name.toLowerCase() == type.name.toLowerCase());
   }
 
   int createExpenseType(ExpenseType type) {
@@ -69,13 +80,11 @@ class ExpenseService {
     if (checkIfExist == null) {
       if (ifExpenseTypeExist(type)) {
         return 0;
-      }
-      else {
+      } else {
         _expenseTypeBox.put(type.id, type);
         return 1;
       }
-    }
-    else {
+    } else {
       if (type.name.toLowerCase() != checkIfExist.name.toLowerCase()) {
         if (ifExpenseTypeExist(type)) {
           return 0;
@@ -84,88 +93,59 @@ class ExpenseService {
       final isLimitByChanged = checkIfExist.limitBy != type.limitBy;
       final isLimitChanged = checkIfExist.limit != type.limit;
 
-      if (
-      (isLimitChanged) &&
-          (type.limit != null || type.limitBy != null)
-      ) {
-
-        final today = DateTime.now();
+      if ((isLimitChanged) && (type.limit != null || type.limitBy != null)) {
         DateTime startDate;
         DateTime endDate;
 
-        if (type.limitBy == 'Week') {
-          final weekday = today.weekday % 7;
-          startDate = today.subtract(Duration(days: weekday));
-          endDate = startDate.add(const Duration(days: 6));
-
-          startDate = DateTime(startDate.year, startDate.month, startDate.day);
-          endDate = DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59);
-
-        } else if (type.limitBy == 'Month') {
-          startDate = DateTime(today.year, today.month, 1);
-          endDate = DateTime(today.year, today.month + 1, 0);
-
-          startDate = DateTime(startDate.year, startDate.month, startDate.day);
-          endDate = DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59);
-        } else {
+        DateRange? getRange = uiService.getDateRange(type.limitBy ?? '');
+        if (getRange != null) {
+          startDate = getRange.start;
+          endDate = getRange.end;
+        } else
           return -1;
-        }
 
         final total = getExpenses()
             .where((e) =>
-        e.expenseType.id == type.id &&
-            e.date.isAfter(startDate.subtract(const Duration(seconds: 1))) &&
-            e.date.isBefore(endDate.add(const Duration(days: 1))))
+                e.expenseType.id == type.id &&
+                e.date
+                    .isAfter(startDate.subtract(const Duration(seconds: 1))) &&
+                e.date.isBefore(endDate.add(const Duration(days: 1))))
             .fold<double>(0.0, (sum, e) => sum + e.price);
 
-        if (total > 0 && (checkIfExist.limitBy != null || checkIfExist.limit != null)) {
+        if (total > 0 &&
+            (checkIfExist.limitBy != null || checkIfExist.limit != null)) {
           return -1;
         }
       }
-      if((isLimitByChanged ||
-          (type.limit == null || type.limitBy == null))
-      && (checkIfExist.limit != null || checkIfExist.limitBy != null)
-
-      ){
-        final today = DateTime.now();
+      if ((isLimitByChanged || (type.limit == null || type.limitBy == null)) &&
+          (checkIfExist.limit != null || checkIfExist.limitBy != null)) {
         DateTime startDate;
         DateTime endDate;
 
-        if (checkIfExist.limitBy == 'Week') {
-          final weekday = today.weekday % 7;
-          startDate = today.subtract(Duration(days: weekday));
-          endDate = startDate.add(const Duration(days: 6));
-
-          startDate = DateTime(startDate.year, startDate.month, startDate.day);
-          endDate = DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59);
-
-        } else if (checkIfExist.limitBy == 'Month') {
-          startDate = DateTime(today.year, today.month, 1);
-          endDate = DateTime(today.year, today.month + 1, 0);
-
-          startDate = DateTime(startDate.year, startDate.month, startDate.day);
-          endDate = DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59);
-        } else {
+        DateRange? getRange = uiService.getDateRange(type.limitBy ?? '');
+        if (getRange != null) {
+          startDate = getRange.start;
+          endDate = getRange.end;
+        } else
           return -1;
-        }
 
         final total = getExpenses()
             .where((e) =>
-        e.expenseType.id == type.id &&
-            e.date.isAfter(startDate.subtract(const Duration(seconds: 1))) &&
-            e.date.isBefore(endDate.add(const Duration(days: 1))))
+                e.expenseType.id == type.id &&
+                e.date
+                    .isAfter(startDate.subtract(const Duration(seconds: 1))) &&
+                e.date.isBefore(endDate.add(const Duration(days: 1))))
             .fold<double>(0.0, (sum, e) => sum + e.price);
 
         if (total > 0) {
           return -1;
         }
-
       }
       _expenseTypeBox.put(type.id, type);
       _expenseBox2.values
           .where((expense) => expense.expenseType.id == type.id)
-          .forEach((expense) =>
-          _expenseBox2.put(expense.id, expense.copyWith(expenseType: type)));
+          .forEach((expense) => _expenseBox2.put(
+              expense.id, expense.copyWith(expenseType: type)));
 
       _collectionBox.values.forEach((collection) {
         collection.updateExpensesForType(type);
@@ -180,13 +160,12 @@ class ExpenseService {
     //   return -1; // expense limit exceeds
     // }
     // else{
-      _expenseBox2.put(expense.id, expense);
-      return 1;
+    _expenseBox2.put(expense.id, expense);
+    return 1;
     // }
-
   }
 
-  bool isTypeLimitExceeded(Expense2 expense){
+  bool isTypeLimitExceeded(Expense2 expense) {
     final limit = expense.expenseType.limit;
     final limitBy = expense.expenseType.limitBy;
 
@@ -194,39 +173,25 @@ class ExpenseService {
 
     final expenseDate = expense.date;
 
-    final today = DateTime.now();
-
     DateTime startDate;
     DateTime endDate;
 
-    if (limitBy == 'Week') {
-      final weekday = today.weekday % 7;
-      startDate = today.subtract(Duration(days: weekday));
-      endDate = startDate.add(const Duration(days: 6));
-
-      startDate = DateTime(startDate.year, startDate.month, startDate.day);
-      endDate = DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59);
-
-    } else if (limitBy == 'Month') {
-      startDate = DateTime(today.year, today.month, 1);
-      endDate = DateTime(today.year, today.month + 1, 0);
-
-      startDate = DateTime(startDate.year, startDate.month, startDate.day);
-      endDate = DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59);
-    } else {
+    DateRange? getRange = uiService.getDateRange(limitBy);
+    if (getRange != null) {
+      startDate = getRange.start;
+      endDate = getRange.end;
+    } else
       return false;
-    }
 
     if (expenseDate.isBefore(startDate) || expenseDate.isAfter(endDate)) {
       return false;
     }
 
     final matchingExpenses = getExpenses().where((e) =>
-    e.id != expense.id &&
-    e.expenseType.id == expense.expenseType.id &&
+        e.id != expense.id &&
+        e.expenseType.id == expense.expenseType.id &&
         e.date.isAfter(startDate.subtract(const Duration(days: 1))) &&
-        e.date.isBefore(endDate.add(const Duration(days: 1)))
-    );
+        e.date.isBefore(endDate.add(const Duration(days: 1))));
 
     final total = matchingExpenses.fold<double>(0.0, (sum, e) => sum + e.price);
 
@@ -245,35 +210,26 @@ class ExpenseService {
       DateTime startDate;
       DateTime endDate;
 
-      if (type.limitBy == 'Week') {
-        final weekday = today.weekday % 7;
-        startDate = today.subtract(Duration(days: weekday));
-        endDate = startDate.add(const Duration(days: 6));
-      } else if (type.limitBy == 'Month') {
-        startDate = DateTime(today.year, today.month, 1);
-        endDate = DateTime(today.year, today.month + 1, 0);
-      } else {
+      DateRange? getRange = uiService.getDateRange(type.limitBy ?? '');
+      if (getRange != null) {
+        startDate = getRange.start;
+        endDate = getRange.end;
+      } else
         continue;
-      }
-
-      startDate = DateTime(startDate.year, startDate.month, startDate.day);
-      endDate = DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59);
 
       final previousTotal = getExpenses()
           .where((e) =>
-      e.expenseType.id == typeId &&
-          e.date.isAfter(startDate.subtract(const Duration(seconds: 1))) &&
-          e.date.isBefore(endDate.add(const Duration(seconds: 1))))
+              e.expenseType.id == typeId &&
+              e.date.isAfter(startDate.subtract(const Duration(seconds: 1))) &&
+              e.date.isBefore(endDate.add(const Duration(seconds: 1))))
           .fold<double>(0, (sum, e) => sum + e.price);
 
-      if(
-      newExp.date.isAfter(startDate.subtract(const Duration(seconds: 1))) &&
-      newExp.date.isBefore(endDate.add(const Duration(seconds: 1)))
-      ){
-        typeTotals[typeId] = (typeTotals[typeId] ?? previousTotal) + newExp.price;
+      if (newExp.date.isAfter(startDate.subtract(const Duration(seconds: 1))) &&
+          newExp.date.isBefore(endDate.add(const Duration(seconds: 1)))) {
+        typeTotals[typeId] =
+            (typeTotals[typeId] ?? previousTotal) + newExp.price;
         typeMap[typeId] = type;
-    }
-
+      }
     }
 
     final List<String> exceededList = [];
@@ -290,7 +246,6 @@ class ExpenseService {
   }
 
   List<String> getExpenseTypeLimitSummary() {
-    final today = DateTime.now();
     List<String> summaryList = [];
     List<ExpenseType> types = getExpenseTypes();
 
@@ -300,25 +255,18 @@ class ExpenseService {
       DateTime startDate;
       DateTime endDate;
 
-      if (type.limitBy == 'Week') {
-        final weekday = today.weekday % 7;
-        startDate = today.subtract(Duration(days: weekday));
-        endDate = startDate.add(const Duration(days: 6));
-      } else if (type.limitBy == 'Month') {
-        startDate = DateTime(today.year, today.month, 1);
-        endDate = DateTime(today.year, today.month + 1, 0);
-      } else {
+      DateRange? getRange = uiService.getDateRange(type.limitBy!);
+      if (getRange != null) {
+        startDate = getRange.start;
+        endDate = getRange.end;
+      } else
         continue;
-      }
-
-      startDate = DateTime(startDate.year, startDate.month, startDate.day);
-      endDate = DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59);
 
       final totalSpent = getExpenses()
           .where((e) =>
-      e.expenseType.id == type.id &&
-          e.date.isAfter(startDate.subtract(const Duration(seconds: 1))) &&
-          e.date.isBefore(endDate.add(const Duration(days: 1))))
+              e.expenseType.id == type.id &&
+              e.date.isAfter(startDate.subtract(const Duration(seconds: 1))) &&
+              e.date.isBefore(endDate.add(const Duration(days: 1))))
           .fold<double>(0.0, (sum, e) => sum + e.price);
 
       summaryList.add(
@@ -329,12 +277,11 @@ class ExpenseService {
     return summaryList;
   }
 
-
-  List<Expense2> getExpenseForType(ExpenseType? type){
-    var expenses = getExpenses().where((exp) => exp.expenseType.id == type?.id).toList();
+  List<Expense2> getExpenseForType(ExpenseType? type) {
+    var expenses =
+        getExpenses().where((exp) => exp.expenseType.id == type?.id).toList();
     return expenses;
   }
-
 
   Future<int> createCollectionExpense(
       {required List<Expense2> expenses, required DateTime expenseDate}) async {
@@ -343,37 +290,37 @@ class ExpenseService {
       int skipped = 0;
       for (Expense2 exp in expenses) {
         Expense2 newExpense = exp.copyWith(
-            id: await settingsService.getBoxKey('expenseId'),
-            date: expenseDate,
-            created: DateTime.now(),
-            updated: null,
+          id: await settingsService.getBoxKey('expenseId'),
+          date: expenseDate,
+          created: DateTime.now(),
+          updated: null,
         );
-        if(isTypeLimitExceeded(newExpense)){
-          skipped ++;
-        }
-        else{
+        if (isTypeLimitExceeded(newExpense)) {
+          skipped++;
+        } else {
           createExpense(newExpense);
         }
-        }
+      }
       return skipped;
-    }
-    catch(e){
+    } catch (e) {
       print('Error $e');
       return -1;
     }
   }
 
   Future<int> copyAndSaveExpenses(
-      {required DateTime copyFromDate, required DateTime pasteToDate , List<String>? exceedList}) async {
+      {required DateTime copyFromDate,
+      required DateTime pasteToDate,
+      List<String>? exceedList}) async {
     try {
       // print(getExpenses());
       int skipped = 0;
-      List<Expense2> getExpensesOfTheSelectedDate = getExpensesOfTheDay(
-          copyFromDate);
+      List<Expense2> getExpensesOfTheSelectedDate =
+          getExpensesOfTheDay(copyFromDate);
       if (getExpensesOfTheSelectedDate.length == 0) {
         return -1;
       }
-      if(exceedList !=  null){
+      if (exceedList != null) {
         var exceedStatus = exceededExpenses(getExpensesOfTheSelectedDate);
         if (exceedStatus != null) {
           exceedList.addAll(exceedStatus);
@@ -393,7 +340,7 @@ class ExpenseService {
         //   skipped ++;
         // }
         // else{
-          createExpense(newExpense);
+        createExpense(newExpense);
         // }
       }
 
@@ -404,9 +351,7 @@ class ExpenseService {
     }
   }
 
-
-  void deleteExpense(Map<int, Expense2> expenses) =>
-      {
+  void deleteExpense(Map<int, Expense2> expenses) => {
         expenses.forEach((id, expense) {
           _expenseBox2.delete(expense.id);
         })
@@ -431,39 +376,22 @@ class ExpenseService {
       {DateTimeRange? customDateRange}) {
     final expenseTypes = getExpenseTypes();
     final expenses = getExpenses();
-    DateTime now = DateTime.now();
-    DateTime startDate = DateTime(now.year, now.month, now.day);
-    DateTime endDate = now;
+
+    DateTime startDate;
+    DateTime endDate;
     List<String> usedTypes = [];
-    switch (duration) {
-      case 'This week':
-        startDate = startDate.subtract(Duration(days: startDate.weekday % 7));
-        endDate = startDate.add(Duration(days: 6));
-        break;
-      case 'Last week':
-        startDate =
-            startDate.subtract(Duration(days: (startDate.weekday + 7) % 7 + 7));
-        endDate = startDate.add(Duration(days: 6));
-        break;
-      case 'This month':
-        startDate = DateTime(now.year, now.month, 1);
-        endDate = DateTime(now.year, now.month + 1, 0);
-        break;
-      case 'Last month':
-        startDate = DateTime(now.year, now.month - 1, 1);
-        endDate = DateTime(now.year, now.month, 0);
-        break;
-      default:
-        startDate = customDateRange!.start;
-        endDate = customDateRange.end;
-        break;
-    }
+    DateRange? getRange =
+        uiService.getDateRange(duration, customDateRange: customDateRange);
+
+    startDate = getRange!.start;
+    endDate = getRange!.end;
 
     for (var expenseType in expenseTypes) {
-      double total = expenses.where((expense) =>
-      expense.expenseType.id == expenseType.id &&
-          !expense.date.isBefore(startDate) &&
-          expense.date.isBefore(endDate.add(Duration(days: 1))))
+      double total = expenses
+          .where((expense) =>
+              expense.expenseType.id == expenseType.id &&
+              !expense.date.isBefore(startDate) &&
+              expense.date.isBefore(endDate.add(Duration(days: 1))))
           .fold(0.0, (sum, expense) => sum + expense.price);
       if (total != 0) {
         usedTypes.add(expenseType.name);
@@ -472,46 +400,29 @@ class ExpenseService {
     return usedTypes;
   }
 
-  Map<String, double> getMetrics(String duration, String metricBy,
-      List<String> unselectedTypes , {DateTimeRange? customDateRange}) {
+  Map<String, double> getMetrics(
+      String duration, String metricBy, List<String> unselectedTypes,
+      {DateTimeRange? customDateRange}) {
     final expenseTypes = getExpenseTypes();
     final expenses = getExpenses();
     Map<String, double> metricData = {'Total': 0.0};
-    DateTime now = DateTime.now();
-    DateTime startDate = DateTime(now.year, now.month, now.day);
-    DateTime endDate = now;
 
-    switch (duration) {
-      case 'This week':
-        startDate = startDate.subtract(Duration(days: startDate.weekday % 7));
-        endDate = startDate.add(Duration(days: 6));
-        break;
-      case 'Last week':
-        startDate =
-            startDate.subtract(Duration(days: (startDate.weekday + 7) % 7 + 7));
-        endDate = startDate.add(Duration(days: 6));
-        break;
-      case 'This month':
-        startDate = DateTime(now.year, now.month, 1);
-        endDate = DateTime(now.year, now.month + 1, 0);
-        break;
-      case 'Last month':
-        startDate = DateTime(now.year, now.month - 1, 1);
-        endDate = DateTime(now.year, now.month, 0);
-        break;
-      default:
-        startDate = customDateRange!.start;
-        endDate = customDateRange.end;
-        break;
-    }
+    DateTime startDate;
+    DateTime endDate;
+    DateRange? getRange =
+        uiService.getDateRange(duration, customDateRange: customDateRange);
+
+    startDate = getRange!.start;
+    endDate = getRange.end;
 
     if (metricBy == 'By type') {
       for (var expenseType in expenseTypes) {
-        double total = expenses.where((expense) =>
-        expense.expenseType.id == expenseType.id &&
-            !expense.date.isBefore(startDate) &&
-            expense.date.isBefore(endDate.add(Duration(days: 1))) &&
-            !unselectedTypes.contains(expenseType.name))
+        double total = expenses
+            .where((expense) =>
+                expense.expenseType.id == expenseType.id &&
+                !expense.date.isBefore(startDate) &&
+                expense.date.isBefore(endDate.add(Duration(days: 1))) &&
+                !unselectedTypes.contains(expenseType.name))
             .fold(0.0, (sum, expense) => sum + expense.price);
 
         if (total != 0) {
@@ -519,25 +430,22 @@ class ExpenseService {
           metricData['Total'] = (metricData['Total'] ?? 0.0) + total;
         }
       }
-    }
-
-    else if (metricBy == 'By day') {
+    } else if (metricBy == 'By day') {
       UiService uiService = UiService();
       Map<DateTime, double> tempMetricsData = {};
       double overallTotal = 0.0;
       for (var expense in expenses.where((exp) =>
-      !unselectedTypes.contains(exp.expenseType.name) &&
+          !unselectedTypes.contains(exp.expenseType.name) &&
           !exp.date.isBefore(startDate) &&
           exp.date.isBefore(endDate.add(Duration(days: 1))))) {
-        DateTime day = DateTime(
-            expense.date.year, expense.date.month, expense.date.day);
+        DateTime day =
+            DateTime(expense.date.year, expense.date.month, expense.date.day);
         tempMetricsData[day] = (tempMetricsData[day] ?? 0.0) + expense.price;
         overallTotal += expense.price;
       }
       List<DateTime> sortedDays = tempMetricsData.keys.toList();
       sortedDays.sort((a, b) => b.compareTo(a));
       Map<String, double> sortedMetricsData = {'Total': overallTotal};
-
 
       for (DateTime day in sortedDays) {
         String dayString = uiService.displayDay(day);
@@ -558,47 +466,26 @@ class ExpenseService {
     UiService uiService = UiService();
     Map<Map<String, double>, List<Map<String, double>>> fullMetrics = {};
     fullMetrics[{'Total': 0.0}] = [];
-    DateTime now = DateTime.now();
-    DateTime startDate = DateTime(now.year, now.month, now.day);
-    DateTime endDate = now;
 
-    switch (duration) {
-      case 'This week':
-        startDate = startDate.subtract(Duration(days: startDate.weekday % 7));
-        endDate = startDate.add(Duration(days: 6));
-        break;
-      case 'Last week':
-        startDate =
-            startDate.subtract(Duration(days: (startDate.weekday + 7) % 7 + 7));
-        endDate = startDate.add(Duration(days: 6));
-        break;
-      case 'This month':
-        startDate = DateTime(now.year, now.month, 1);
-        endDate = DateTime(now.year, now.month + 1, 0);
-        break;
-      case 'Last month':
-        startDate = DateTime(now.year, now.month - 1, 1);
-        endDate = DateTime(now.year, now.month, 0);
-        break;
-      default:
-        startDate = customDateRange!.start;
-        endDate = customDateRange.end;
-        break;
-    }
+    DateTime startDate;
+    DateTime endDate;
 
-    // print('Start Date ${startDate}');
+    DateRange? getRange =
+        uiService.getDateRange(duration, customDateRange: customDateRange);
+
+    startDate = getRange!.start;
+    endDate = getRange.end;
 
     if (metricBy == 'By type') {
       for (var expenseType in expenseTypes) {
         var filterWithType = expenses.where((expense) =>
-        expense.expenseType.id == expenseType.id &&
+            expense.expenseType.id == expenseType.id &&
             !expense.date.isBefore(startDate) &&
             expense.date.isBefore(endDate.add(Duration(days: 1))) &&
-            !unselectedTypes.contains(expenseType.name)
-        );
+            !unselectedTypes.contains(expenseType.name));
 
-        double total = filterWithType.fold(
-            0.0, (sum, expense) => sum + expense.price);
+        double total =
+            filterWithType.fold(0.0, (sum, expense) => sum + expense.price);
 
         if (total != 0) {
           Map<String, double> primaryMetric = {};
@@ -608,9 +495,8 @@ class ExpenseService {
           List<Map<String, double>> secondaryMetric = [];
           Map<DateTime, double> secondaryTempMetric = {};
           for (var expenseDate in filterWithType) {
-            DateTime day = DateTime(
-                expenseDate.date.year, expenseDate.date.month,
-                expenseDate.date.day);
+            DateTime day = DateTime(expenseDate.date.year,
+                expenseDate.date.month, expenseDate.date.day);
             secondaryTempMetric[day] =
                 (secondaryTempMetric[day] ?? 0) + expenseDate.price;
           }
@@ -630,20 +516,18 @@ class ExpenseService {
           }
         }
       }
-    }
-
-    else if (metricBy == 'By day') {
+    } else if (metricBy == 'By day') {
       Map<DateTime, double> primaryTempMetricsData = {};
       double overallTotal = 0.0;
 
       var filterWithDayLimit = expenses.where((exp) =>
-      !unselectedTypes.contains(exp.expenseType.name) &&
+          !unselectedTypes.contains(exp.expenseType.name) &&
           !exp.date.isBefore(startDate) &&
           exp.date.isBefore(endDate.add(Duration(days: 1))));
 
       for (var expense in filterWithDayLimit) {
-        DateTime day = DateTime(
-            expense.date.year, expense.date.month, expense.date.day);
+        DateTime day =
+            DateTime(expense.date.year, expense.date.month, expense.date.day);
         primaryTempMetricsData[day] =
             (primaryTempMetricsData[day] ?? 0.0) + expense.price;
         overallTotal += expense.price;
@@ -651,7 +535,6 @@ class ExpenseService {
       List<DateTime> sortedDays = primaryTempMetricsData.keys.toList();
       sortedDays.sort((a, b) => b.compareTo(a));
       Map<String, double> sortedMetricsData = {'Total': overallTotal};
-
 
       for (DateTime day in sortedDays) {
         Map<String, double> primaryMetric = {};
@@ -662,10 +545,9 @@ class ExpenseService {
         primaryMetric[dayString] = dailyTotal;
 
         var todaysExpense = filterWithDayLimit.where((selected) =>
-        day.year == selected.date.year &&
+            day.year == selected.date.year &&
             day.month == selected.date.month &&
-            day.day == selected.date.day
-        );
+            day.day == selected.date.day);
         Map<String, double> tempSecMetric = {};
 
         for (var exp in todaysExpense) {
@@ -688,5 +570,4 @@ class ExpenseService {
 
     return fullMetrics;
   }
-
 }
