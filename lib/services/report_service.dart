@@ -190,7 +190,7 @@ class ReportService {
 
   Future<void> savePdfAndShowNotification(
       Uint8List pdfBytes, String reportName, String expenseDate) async {
-    final output = await getExternalStorageDirectory();
+    final output = await getDownloadsDirectory();
     if (output == null) return;
     final filePath = '${output!.path}/${reportName}_$expenseDate.pdf';
     final file = File(filePath);

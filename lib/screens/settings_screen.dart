@@ -190,10 +190,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text('2.1.2'),
+                                Text('2.1.3'),
                                 GestureDetector(
                                   onTap: () {
-                                    _copyLinkToClipboard(context, 'v2.1.2');
+                                    _copyLinkToClipboard(context, 'v2.1.3');
                                   },
                                   child: Text(
                                     'Copy Link',
