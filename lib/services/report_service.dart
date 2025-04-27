@@ -192,9 +192,17 @@ class ReportService {
       Uint8List pdfBytes, String reportName, String expenseDate) async {
     final output = await getDownloadsDirectory();
     if (output == null) return;
-    final filePath = '${output!.path}/${reportName}_$expenseDate.pdf';
-    final file = File(filePath);
+    final String folderName = 'ExpenseLog_Reports';
 
+    final Directory folder = Directory('${output!.path}/$folderName');
+
+    if (!await folder.exists()) {
+      await folder.create(recursive: true);
+    }
+
+    final filePath = '${folder.path}/${reportName}_$expenseDate.pdf';
+    final file = File(filePath);
+    print('File saved at: $filePath');
     await file.writeAsBytes(pdfBytes);
     await NotificationService.showDownloadCompletedNotification(file);
 
