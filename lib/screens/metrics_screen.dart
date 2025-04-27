@@ -6,6 +6,7 @@ import 'package:expense_log/services/settings_service.dart';
 import 'package:expense_log/services/ui_service.dart';
 import 'package:expense_log/widgets/expense_bar_chart.dart';
 import 'package:expense_log/widgets/expense_pie_chart.dart';
+import 'package:expense_log/widgets/message_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:provider/provider.dart';
@@ -167,6 +168,11 @@ class _MetricsScreenState extends State<MetricsScreen> {
             Container(
               child: Row(
                 children: [
+                  IconButton(
+                    onPressed: () {},
+                    color: Theme.of(context).scaffoldBackgroundColor,
+                    icon: const Icon(Icons.file_download),
+                  ),
                   Expanded(
                     child: Align(
                       alignment: Alignment.center,
@@ -179,6 +185,9 @@ class _MetricsScreenState extends State<MetricsScreen> {
                   ),
                   IconButton(
                     onPressed: () async {
+                      MessageWidget.showToast(
+                          context: context,
+                          message: 'Downloading in progress...');
                       await _reportService.prepareMetricsReport(
                           _expenseService.getExpensesOfSelectedDuration(
                               _selectedDurationNotifier.value,
@@ -190,7 +199,7 @@ class _MetricsScreenState extends State<MetricsScreen> {
                               _selectedDurationNotifier.value!,
                               customDateRange: selectedDateRange)!);
                     },
-                    icon: const Icon(Icons.download),
+                    icon: const Icon(Icons.file_download),
                   ),
                 ],
               ),

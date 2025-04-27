@@ -18,7 +18,6 @@ import '../main.dart';
 import '../utility/preset_colors.dart';
 import '../widgets/screen_order_popup.dart';
 
-
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
@@ -35,30 +34,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
   User? user;
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
-    _settingsService = Provider.of<SettingsService>(context,listen: false);
+    _settingsService = Provider.of<SettingsService>(context, listen: false);
     _fetchVersion();
     downloadsCount();
     _checkIfUserExists();
   }
 
-
-  Future<void> downloadsCount()async{
-    int count = await _settingsService.fetchDownloadCount()  as int;
+  Future<void> downloadsCount() async {
+    int count = await _settingsService.fetchDownloadCount() as int;
     setState(() {
       downloads = count;
     });
   }
 
-  Future<void> _copyLinkToClipboard(BuildContext context,String version) async {
+  Future<void> _copyLinkToClipboard(
+      BuildContext context, String version) async {
     String getDownloadLink = await _settingsService.downloadUrl(version);
-    if(getDownloadLink.length > 0){
+    if (getDownloadLink.length > 0) {
       await Clipboard.setData(ClipboardData(text: getDownloadLink));
-      MessageWidget.showToast(context: context, message: 'Link copied to clipboard!',status:1);
-    }
-    else{
-      MessageWidget.showToast(context: context, message: 'Issue in getting link',status:0);
+      MessageWidget.showToast(
+          context: context, message: 'Link copied to clipboard!', status: 1);
+    } else {
+      MessageWidget.showToast(
+          context: context, message: 'Issue in getting link', status: 0);
     }
   }
 
@@ -69,7 +69,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
   }
 
-  Future<void> _checkIfUserExists() async{
+  Future<void> _checkIfUserExists() async {
     User? userData = await _settingsService.getUser();
     setState(() {
       user = userData;
@@ -84,33 +84,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  Future<void> _launchMail(String url) async{
+  Future<void> _launchMail(String url) async {
     final Uri emailUri = Uri(
-      scheme: 'mailto',
-      path: url,
-      query: 'subject=Hello&body=How are you?'
-    );
-    if(await canLaunchUrl(emailUri)){
+        scheme: 'mailto', path: url, query: 'subject=Hello&body=How are you?');
+    if (await canLaunchUrl(emailUri)) {
       await launchUrl(emailUri);
     }
   }
 
-  void showReorderPopup(BuildContext context, List<String> screens, Function(List<String>) onSave) {
+  void showReorderPopup(BuildContext context, List<String> screens,
+      Function(List<String>) onSave) {
     showDialog(
       context: context,
       builder: (context) => ScreenOrderPopup(screens: screens, onSave: onSave),
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar:!Platform.isWindows ? AppBar(
-        title: Text(user != null? user!.userName :'Settings',
-
-        ),
-      ) : null,
+      appBar: !Platform.isWindows
+          ? AppBar(
+              title: Text(
+                user != null ? user!.userName : 'Settings',
+              ),
+            )
+          : null,
       body: Container(
         padding: EdgeInsets.all(20),
         child: SingleChildScrollView(
@@ -119,7 +118,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             children: [
               Text('General'),
               ListTile(
-                onTap: (){
+                onTap: () {
                   setState(() {
                     settingIndex = settingIndex == 1 ? 0 : 1;
                   });
@@ -127,41 +126,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: Text('About'),
               ),
               AnimatedSize(
-                duration: const Duration(milliseconds: 200),
-                curve: Curves.easeInOut,
-                child : settingIndex == 1 ?
-                Consumer<SettingsService>(
-                    builder: (context,settingsService , child){
-                      return Container(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 0),
-                        child: Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeInOut,
+                  child: settingIndex == 1
+                      ? Consumer<SettingsService>(
+                          builder: (context, settingsService, child) {
+                          return Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 0),
+                            child: Column(
                               children: [
-                                Text('Downloads'),
-                                Text(downloads.toString())
-          
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text('Downloads'),
+                                    Text(downloads.toString())
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [Text('Version'), Text(version)],
+                                )
                               ],
                             ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text('Version'),
-                                Text(version)
-                              ],
-                            )
-                          ],
-                        ),
-                      );
-                    })
-                    : SizedBox.shrink()
-              ),
+                          );
+                        })
+                      : SizedBox.shrink()),
               ListTile(
-                onTap: (){
+                onTap: () {
                   setState(() {
-                    settingIndex = settingIndex ==3 ? 0 : 3;
+                    settingIndex = settingIndex == 3 ? 0 : 3;
                   });
                   final appUpdate = AppUpdate();
                   appUpdate.checkForUpdates(context);
@@ -169,49 +165,66 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: Text('Updates'),
               ),
               AnimatedSize(
-                  duration: const Duration(milliseconds: 200),
-                  curve: Curves.easeInOut,
-                  child: settingIndex == 3 ?
-                  Container(
-                      padding :EdgeInsets.symmetric(horizontal: 40, vertical: 0),
-                      child : Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text('Current Version'),
-                              Text(version)
-                            ],
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text('Stable Releases'),
-                            ],
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text('1.2.5'),
-                              GestureDetector(
-                                onTap: () {
-                                  _copyLinkToClipboard(context, 'v1.2.5');
-                                },
-                                child: Text(
-                                  'Copy Link',
-                                  style: TextStyle(
-                                    color: Colors.blue,
-                                    decoration: TextDecoration.underline,
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeInOut,
+                child: settingIndex == 3
+                    ? Container(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 40, vertical: 0),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('Current Version'),
+                                Text(version)
+                              ],
+                            ),
+                            SizedBox(height: 5),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('Stable Releases'),
+                              ],
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('2.1.2'),
+                                GestureDetector(
+                                  onTap: () {
+                                    _copyLinkToClipboard(context, 'v2.1.2');
+                                  },
+                                  child: Text(
+                                    'Copy Link',
+                                    style: TextStyle(
+                                      color: Colors.blue,
+                                      decoration: TextDecoration.underline,
+                                    ),
                                   ),
-                                ),
-                              )
-
-                            ],
-                          )
-
-                        ],
-                      )
-                  )
+                                )
+                              ],
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('1.2.5'),
+                                GestureDetector(
+                                  onTap: () {
+                                    _copyLinkToClipboard(context, 'v1.2.5');
+                                  },
+                                  child: Text(
+                                    'Copy Link',
+                                    style: TextStyle(
+                                      color: Colors.blue,
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                  ),
+                                )
+                              ],
+                            ),
+                          ],
+                        ))
                     : SizedBox.shrink(),
               ),
               ListTile(
@@ -219,16 +232,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   // setState(() {
                   //   _copyLinkToClipboard(context);
                   // });
-                  String getDownloadLink = await _settingsService.downloadUrl("v"+version);
+                  String getDownloadLink =
+                      await _settingsService.downloadUrl("v" + version);
                   Share.share(getDownloadLink);
                 },
-
                 title: Text('Share App'),
               ),
               ListTile(
-                onTap: (){
+                onTap: () {
                   setState(() {
-                    settingIndex = settingIndex ==4 ? 0 : 4;
+                    settingIndex = settingIndex == 4 ? 0 : 4;
                   });
                 },
                 title: Text('Developer Info'),
@@ -236,123 +249,131 @@ class _SettingsScreenState extends State<SettingsScreen> {
               AnimatedSize(
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeInOut,
-                child: settingIndex == 4 ?
-                Container(
-                  padding :EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Sakthikarthick Nagendran',
-                        style: TextStyle(
-                            fontSize: 18
+                child: settingIndex == 4
+                    ? Container(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Sakthikarthick Nagendran',
+                              style: TextStyle(fontSize: 18),
+                            ),
+                            Text(
+                              'Chennai',
+                              style: TextStyle(fontSize: 14),
+                            ),
+                            SizedBox(height: 20),
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 10,
+                              children: [
+                                InkWell(
+                                  onTap: () {
+                                    _launchMail('sakthikarthick3107@gmail.com');
+                                  },
+                                  child: Container(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 15, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                            color: Colors.orange, width: 2),
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Text('Mail')),
+                                ),
+                                SizedBox(
+                                  width: 10,
+                                ),
+                                InkWell(
+                                  onTap: () {
+                                    _launchURL(
+                                        'https://sakthikarthick3107.netlify.app');
+                                  },
+                                  child: Container(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 15, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                            color: Colors.orange, width: 2),
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Text('Portfolio')),
+                                ),
+                                SizedBox(
+                                  width: 10,
+                                ),
+                                InkWell(
+                                  onTap: () {
+                                    _launchURL(
+                                        'https://www.instagram.com/__intelligent__psycho__/');
+                                  },
+                                  child: Container(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 15, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                            color: Colors.orange, width: 2),
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Text('Instagram')),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
-
-                      ),
-                      Text(
-                        'Chennai',
-                        style: TextStyle(
-                            fontSize: 14
-                        ),
-
-                      ),
-                      SizedBox(height: 20),
-                      Wrap(
-                        spacing: 6,
-                        runSpacing: 10,
-                        children: [
-                          InkWell(
-                            onTap: (){
-                              _launchMail('sakthikarthick3107@gmail.com');
-                            },
-                            child: Container(
-                                padding: EdgeInsets.symmetric(horizontal: 15,vertical: 6),
-
-                                decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.orange, width: 2),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Text('Mail')),
-                          ),
-                          SizedBox(width: 10,),
-                          InkWell(
-                            onTap: (){
-                              _launchURL('https://sakthikarthick3107.netlify.app');
-
-                            },
-                            child: Container(
-                                padding: EdgeInsets.symmetric(horizontal: 15,vertical: 6),
-
-                                decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.orange, width: 2),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Text('Portfolio')),
-                          ),
-                          SizedBox(width: 10,),
-                          InkWell(
-                            onTap: (){
-                              _launchURL('https://www.instagram.com/__intelligent__psycho__/');
-                            },
-                            child: Container(
-                                padding: EdgeInsets.symmetric(horizontal: 15,vertical: 6),
-
-                                decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.orange, width: 2),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Text('Instagram')),
-                          ),
-
-                        ],
-                      ),
-
-                    ],
-                  ),
-                )
-                    : SizedBox.shrink() ,
+                      )
+                    : SizedBox.shrink(),
               ),
-
-              if(user == null && !Platform.isWindows)
+              if (user == null && !Platform.isWindows)
                 ListTile(
-                  onTap: ()async{
+                  onTap: () async {
                     int loginUser = await _settingsService.googleSignIn();
-                    if(loginUser == 1){
+                    if (loginUser == 1) {
                       _checkIfUserExists();
-                      MessageWidget.showToast(context: context, message: 'Loggedin successfully',status: 1);
-                    }
-                    else{
-                      MessageWidget.showToast(context: context, message: 'Failed to login',status: 0);
+                      MessageWidget.showToast(
+                          context: context,
+                          message: 'Loggedin successfully',
+                          status: 1);
+                    } else {
+                      MessageWidget.showToast(
+                          context: context,
+                          message: 'Failed to login',
+                          status: 0);
                     }
                   },
                   title: Text('Signin using Google'),
                 ),
-
-              if(user != null)
+              if (user != null)
                 ListTile(
-                  onTap: ()async{
-                    await WarningDialog.showWarning(context: context,
+                  onTap: () async {
+                    await WarningDialog.showWarning(
+                        context: context,
                         title: 'Warning',
                         message: 'Are you sure to signout?',
-                        onConfirmed: ()async{
-                          int signOutUser = await _settingsService.googleSignOut();
-                          if(signOutUser == 1){
+                        onConfirmed: () async {
+                          int signOutUser =
+                              await _settingsService.googleSignOut();
+                          if (signOutUser == 1) {
                             setState(() {
                               user = null;
                             });
-                            MessageWidget.showToast(context: context, message: 'Loggedout successfully' , status: 1);
-                          }
-                          else
-                            MessageWidget.showToast(context: context, message: 'Failed to logout',status: 0);
+                            MessageWidget.showToast(
+                                context: context,
+                                message: 'Loggedout successfully',
+                                status: 1);
+                          } else
+                            MessageWidget.showToast(
+                                context: context,
+                                message: 'Failed to logout',
+                                status: 0);
                         });
-
                   },
                   title: Text('Signout'),
                   subtitle: Text(
                     '${user!.email}',
-                    style: TextStyle(
-                        fontSize: 14
-                    ),
+                    style: TextStyle(fontSize: 14),
                   ),
                 ),
               Text('Display'),
@@ -390,7 +411,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     presetColors: presetColors,
                     selectedColor: _settingsService.getPrimaryColor(),
                     onColorSelected: (color) {
-                      setState(() async{
+                      setState(() async {
                         await _settingsService.setPrimaryColor(color);
                       });
                     },
@@ -398,10 +419,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
               ),
-
               ListTile(
                 title: const Text('Load Metrics'),
-                subtitle: const Text('Prefer which duration expenses loads in Metrics by default',style: TextStyle(fontSize: 10),),
+                subtitle: const Text(
+                  'Prefer which duration expenses loads in Metrics by default',
+                  style: TextStyle(fontSize: 10),
+                ),
                 trailing: DropdownButton<String>(
                   value: _settingsService.landingMetric(),
                   onChanged: (String? newValue) {
@@ -409,23 +432,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       _settingsService.setLandingMetric(newValue);
                     }
                   },
-                  items: ['This week', 'Last week', 'This month' , 'Last month'].map<DropdownMenuItem<String>>((String value) {
+                  items: ['This week', 'Last week', 'This month', 'Last month']
+                      .map<DropdownMenuItem<String>>((String value) {
                     return DropdownMenuItem<String>(
                       value: value,
-                      child: Text(value , style: TextStyle(fontSize: 15),),
+                      child: Text(
+                        value,
+                        style: TextStyle(fontSize: 15),
+                      ),
                     );
                   }).toList(),
                 ),
                 onTap: () {},
               ),
               ListTile(
-                onTap: (){
+                onTap: () {
                   List<String> screens = _settingsService.getScreenOrder();
-          
+
                   showReorderPopup(context, screens, (newOrder) async {
                     print("Updated Order: $newOrder");
                     await _settingsService.saveScreenOrder(newOrder);
-                    MessageWidget.showToast(context: context, message: 'Closing application for reorder settings');
+                    MessageWidget.showToast(
+                        context: context,
+                        message: 'Closing application for reorder settings');
                     Future.delayed(Duration(seconds: 4), () {
                       exit(0);
                     });
@@ -433,40 +462,46 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 },
                 title: Text('Customize Navigation'),
               ),
-
               Text('Data'),
               ListTile(
                 onTap: () async {
-                  int setBackup = await _settingsService.backupHiveToGoogleDrive();
-                  if(setBackup == 1){
-                    MessageWidget.showToast(context: context, message: 'Backup successfully',status: 1);
-                  }
-                  else{
-                    MessageWidget.showToast(context: context, message: 'Backup failed',status: 0);
+                  int setBackup =
+                      await _settingsService.backupHiveToGoogleDrive();
+                  if (setBackup == 1) {
+                    MessageWidget.showToast(
+                        context: context,
+                        message: 'Backup successfully',
+                        status: 1);
+                  } else {
+                    MessageWidget.showToast(
+                        context: context, message: 'Backup failed', status: 0);
                   }
                 },
                 title: Text('Backup Data'),
               ),
-
               ListTile(
                 onTap: () async {
-                  int setRestore = await _settingsService.pickBackupFileAndRestore();
-                  if(setRestore == 1){
-                    MessageWidget.showToast(context: context, message: 'Restored successfully - Closing application',status: 1);
+                  int setRestore =
+                      await _settingsService.pickBackupFileAndRestore();
+                  if (setRestore == 1) {
+                    MessageWidget.showToast(
+                        context: context,
+                        message: 'Restored successfully - Closing application',
+                        status: 1);
                     setState(() {}); // Rebuilds the widget
                     SystemNavigator.pop(animated: true);
-                  }
-                  else{
-                    MessageWidget.showToast(context: context, message: 'Restore failed',status: 0);
+                  } else {
+                    MessageWidget.showToast(
+                        context: context, message: 'Restore failed', status: 0);
                   }
                 },
                 title: Text('Restore'),
               )
-
             ],
           ),
         ),
       ),
-    );;
+    );
+    ;
   }
 }
