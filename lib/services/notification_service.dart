@@ -4,21 +4,24 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
+import 'package:path/path.dart' as p;
+import 'package:open_file/open_file.dart';
 
 class NotificationService {
   static final FlutterLocalNotificationsPlugin _notificationsPlugin =
-  FlutterLocalNotificationsPlugin();
+      FlutterLocalNotificationsPlugin();
 
   // Initialize the notification plugin
   static Future<void> initialize() async {
     await _requestNotificationPermission();
     const AndroidInitializationSettings initializationSettingsAndroid =
-    AndroidInitializationSettings('@mipmap/ic_launcher');
+        AndroidInitializationSettings('@mipmap/ic_launcher');
 
     const InitializationSettings initializationSettings =
-    InitializationSettings(android: initializationSettingsAndroid);
+        InitializationSettings(android: initializationSettingsAndroid);
 
-    await _notificationsPlugin.initialize(initializationSettings);
+    await _notificationsPlugin.initialize(initializationSettings,
+        onDidReceiveNotificationResponse: onSelectNotification);
   }
 
   // Request notification permission for Android
@@ -28,7 +31,8 @@ class NotificationService {
 
       if (!status.isGranted) {
         // Permission not granted, request it
-        PermissionStatus permissionStatus = await Permission.notification.request();
+        PermissionStatus permissionStatus =
+            await Permission.notification.request();
 
         if (permissionStatus.isGranted) {
           print("Notification permission granted");
@@ -50,7 +54,7 @@ class NotificationService {
     required int minute,
   }) async {
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
-    AndroidNotificationDetails(
+        AndroidNotificationDetails(
       'expense_log_notifications', // Channel ID
       'Daily Expense Notifications', // Channel Name
       channelDescription: 'Notifications for time of the day of Expense Log',
@@ -59,7 +63,7 @@ class NotificationService {
     );
 
     const NotificationDetails platformChannelSpecifics =
-    NotificationDetails(android: androidPlatformChannelSpecifics);
+        NotificationDetails(android: androidPlatformChannelSpecifics);
 
     await _notificationsPlugin.zonedSchedule(
       id,
@@ -68,22 +72,62 @@ class NotificationService {
       _scheduleDailyTime(hour, minute),
       platformChannelSpecifics,
       uiLocalNotificationDateInterpretation:
-      UILocalNotificationDateInterpretation.absoluteTime,
-      matchDateTimeComponents: DateTimeComponents.time, androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+          UILocalNotificationDateInterpretation.absoluteTime,
+      matchDateTimeComponents: DateTimeComponents.time,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
     );
   }
 
   // Helper method to calculate the next notification time
   static tz.TZDateTime _scheduleDailyTime(int hour, int minute) {
     tz.initializeTimeZones();
-    tz.setLocalLocation(tz.getLocation('Asia/Kolkata')); // Set timezone as needed
+    tz.setLocalLocation(
+        tz.getLocation('Asia/Kolkata')); // Set timezone as needed
 
     final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
     final tz.TZDateTime scheduledDate =
-    tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
+        tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
 
     return scheduledDate.isBefore(now)
         ? scheduledDate.add(const Duration(days: 1))
         : scheduledDate;
+  }
+
+  static Future<void> onSelectNotification(
+      NotificationResponse notificationResponse) async {
+    print('Notification tapped with payload: ${notificationResponse.payload}');
+    if (notificationResponse.payload != null) {
+      final filePath = notificationResponse.payload;
+      final file = File(filePath!);
+      if (await file.exists()) {
+        await OpenFile.open(file.path);
+      } else {
+        print('File does not exist');
+      }
+    }
+  }
+
+  static Future<void> showDownloadCompletedNotification(File file) async {
+    String fileName = p.basename(file.path);
+    const AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
+      'download_channel',
+      'Download Notifications',
+      channelDescription: 'Notification when download completes',
+      importance: Importance.max,
+      priority: Priority.high,
+    );
+
+    const NotificationDetails notificationDetails = NotificationDetails(
+      android: androidDetails,
+    );
+
+    await _notificationsPlugin.show(
+      100,
+      'Download Complete',
+      '${fileName}',
+      notificationDetails,
+      payload: file.path,
+    );
   }
 }

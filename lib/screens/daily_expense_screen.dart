@@ -432,14 +432,17 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
             //   child: Icon(Icons.document_scanner_outlined),
             //   tooltip: 'Bill',
             // ),
-            FloatingActionButton(
-              onPressed: () async {
-                await _reportService.prepareDailyExpenseReport(_expenseService
-                    .getExpensesOfTheDay(_selectedDateNotifier.value));
-              },
-              child: Icon(Icons.download),
-              tooltip: 'Daily Expense Report',
-            ),
+            if (_expenseService
+                .getExpensesOfTheDay(_selectedDateNotifier.value)
+                .isNotEmpty)
+              FloatingActionButton(
+                onPressed: () async {
+                  await _reportService.prepareDailyExpenseReport(_expenseService
+                      .getExpensesOfTheDay(_selectedDateNotifier.value));
+                },
+                child: Icon(Icons.download),
+                tooltip: 'Daily Expense Report',
+              ),
             SizedBox(
               height: 10,
             ),

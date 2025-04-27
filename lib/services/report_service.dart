@@ -6,6 +6,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:flutter/services.dart' show rootBundle;
 import '../models/expense2.dart';
+import 'package:expense_log/services/notification_service.dart';
 
 class ReportService {
   const ReportService();
@@ -26,19 +27,50 @@ class ReportService {
     }
 
     String expenseDate =
-        '${expenses[0].date.day}/${expenses[0].date.month}/${expenses[0].date.year}';
+        '${expenses[0].date.day}-${expenses[0].date.month}-${expenses[0].date.year}';
 
     pdf.addPage(
-      pw.Page(
-          build: (context) => pw.Stack(children: [
-                pw.Positioned.fill(
-                    child: pw.Opacity(
-                        opacity: 0.05,
-                        child: pw.Center(
-                            child: pw.Image(pw.MemoryImage(logoBytes),
-                                width: 300,
-                                height: 300,
-                                fit: pw.BoxFit.contain)))),
+      pw.MultiPage(
+          pageTheme: pw.PageTheme(
+            buildBackground: (context) => pw.FullPage(
+              ignoreMargins: true,
+              child: pw.Opacity(
+                opacity: 0.1,
+                child: pw.Center(
+                  child: pw.Image(
+                    pw.MemoryImage(logoBytes),
+                    width: 300,
+                    height: 300,
+                    fit: pw.BoxFit.contain,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          footer: (context) {
+            return pw.Container(
+                alignment: pw.Alignment.center,
+                margin: const pw.EdgeInsets.only(top: 5),
+                child: pw.Column(children: [
+                  pw.Text(
+                    'Expense Log -  Daily Expense Report ${expenseDate}',
+                    style: pw.TextStyle(
+                      font: poppinsFont,
+                      fontSize: 12,
+                      color: PdfColors.grey600,
+                    ),
+                  ),
+                  pw.Text(
+                    'Generated at - ${DateTime.now().toString()}',
+                    style: pw.TextStyle(
+                      font: poppinsFont,
+                      fontSize: 8,
+                      color: PdfColors.grey600,
+                    ),
+                  ),
+                ]));
+          },
+          build: (context) => [
                 pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
@@ -149,46 +181,28 @@ class ReportService {
                             ),
                           ),
                         ]),
-                    pw.Spacer(),
-                    pw.Positioned(
-                      bottom: 50, // Distance from bottom
-                      left: 0,
-                      right: 0,
-                      child: pw.Center(
-                        child: pw.Text(
-                          'Expense Log -  Daily Expense Report ${DateTime.now().toString()}', // <-- Your report name
-                          style: pw.TextStyle(
-                            font: poppinsFont,
-                            fontSize: 12,
-                            color: PdfColors.grey600,
-                          ),
-                        ),
-                      ),
-                    ),
                   ],
                 ),
-              ])),
+              ]),
     );
-    final today = DateTime.now();
     final output = await getExternalStorageDirectory();
-    final filePath =
-        '${output!.path}/daily_expense_report_${today.toString()}.pdf';
+    final filePath = '${output!.path}/daily_expense_report_${expenseDate}.pdf';
     final file = File(filePath);
     await file.writeAsBytes(await pdf.save());
-
-    await OpenFile.open(filePath);
-    await downloadPdf(file);
+    await NotificationService.showDownloadCompletedNotification(file);
+    // await OpenFile.open(filePath);
+    // await downloadPdf(file);
   }
 
-  Future<void> downloadPdf(File file) async {
-    await FlutterDownloader.enqueue(
-      url: Uri.file(file.path).toString(), // local file path
-      savedDir: file.parent.path,
-      fileName: file.uri.pathSegments.last,
-      showNotification: true,
-      openFileFromNotification: true,
-    );
-  }
+  // Future<void> downloadPdf(File file) async {
+  //   await FlutterDownloader.enqueue(
+  //     url: Uri.file(file.path).toString(), // works for uri files
+  //     savedDir: file.parent.path,
+  //     fileName: file.uri.pathSegments.last,
+  //     showNotification: true,
+  //     openFileFromNotification: true,
+  //   );
+  // }
 
 // Future<void> downloadPdfInLayout(pw.Document pdf) async {
 //   await Printing.layoutPdf(
