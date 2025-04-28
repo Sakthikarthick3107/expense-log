@@ -7,6 +7,7 @@ import 'package:expense_log/services/ui_service.dart';
 import 'package:expense_log/widgets/expense_bar_chart.dart';
 import 'package:expense_log/widgets/expense_pie_chart.dart';
 import 'package:expense_log/widgets/message_widget.dart';
+import 'package:expense_log/widgets/warning_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:provider/provider.dart';
@@ -171,7 +172,7 @@ class _MetricsScreenState extends State<MetricsScreen> {
                   IconButton(
                     onPressed: () {},
                     color: Theme.of(context).scaffoldBackgroundColor,
-                    icon: const Icon(Icons.file_download),
+                    icon: const Icon(Icons.print),
                   ),
                   Expanded(
                     child: Align(
@@ -185,21 +186,36 @@ class _MetricsScreenState extends State<MetricsScreen> {
                   ),
                   IconButton(
                     onPressed: () async {
-                      MessageWidget.showToast(
+                      WarningDialog.showWarning(
                           context: context,
-                          message: 'Downloading in progress...');
-                      await _reportService.prepareMetricsReport(
-                          _expenseService.getExpensesOfSelectedDuration(
-                              _selectedDurationNotifier.value,
-                              customDateRange: selectedDateRange),
-                          _expenseTypesOfDuration
-                              .where((type) => !_unSelectedTypes.contains(type))
-                              .toList(),
-                          _expenseService.uiService.getDateRange(
-                              _selectedDurationNotifier.value!,
-                              customDateRange: selectedDateRange)!);
+                          title:
+                              'Metrics Report - ${_selectedDurationNotifier.value}',
+                          message: 'Proceed to download report ' +
+                              '\n' +
+                              'Selected Types : ' +
+                              '\n' +
+                              _expenseTypesOfDuration
+                                  .where((type) =>
+                                      !_unSelectedTypes.contains(type))
+                                  .join('\n'),
+                          onConfirmed: () async {
+                            MessageWidget.showToast(
+                                context: context,
+                                message: 'Downloading in progress...');
+                            await _reportService.prepareMetricsReport(
+                                _expenseService.getExpensesOfSelectedDuration(
+                                    _selectedDurationNotifier.value,
+                                    customDateRange: selectedDateRange),
+                                _expenseTypesOfDuration
+                                    .where((type) =>
+                                        !_unSelectedTypes.contains(type))
+                                    .toList(),
+                                _expenseService.uiService.getDateRange(
+                                    _selectedDurationNotifier.value!,
+                                    customDateRange: selectedDateRange)!);
+                          });
                     },
-                    icon: const Icon(Icons.file_download),
+                    icon: const Icon(Icons.print),
                   ),
                 ],
               ),

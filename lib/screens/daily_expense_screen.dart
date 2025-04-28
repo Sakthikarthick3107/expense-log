@@ -437,10 +437,21 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
                 .isNotEmpty)
               FloatingActionButton(
                 onPressed: () async {
-                  await _reportService.prepareDailyExpenseReport(_expenseService
-                      .getExpensesOfTheDay(_selectedDateNotifier.value));
+                  WarningDialog.showWarning(
+                      context: context,
+                      title: 'Daily Expense Report',
+                      message:
+                          'Proceed to download report for ${_uiService.displayDay(_selectedDateNotifier.value)}',
+                      onConfirmed: () async {
+                        MessageWidget.showToast(
+                            context: context,
+                            message: 'Downloading in progress...');
+                        await _reportService.prepareDailyExpenseReport(
+                            _expenseService.getExpensesOfTheDay(
+                                _selectedDateNotifier.value));
+                      });
                 },
-                child: Icon(Icons.download),
+                child: Icon(Icons.print),
                 tooltip: 'Daily Expense Report',
               ),
             SizedBox(
