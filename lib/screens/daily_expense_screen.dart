@@ -153,7 +153,7 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
           title: Text(
             expOfDay.name,
             style: const TextStyle(
-              fontSize: 18,
+              fontSize: 16,
               overflow: TextOverflow.ellipsis,
             ),
           ),

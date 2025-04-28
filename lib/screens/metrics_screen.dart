@@ -169,11 +169,14 @@ class _MetricsScreenState extends State<MetricsScreen> {
             Container(
               child: Row(
                 children: [
-                  IconButton(
-                    onPressed: () {},
-                    color: Theme.of(context).scaffoldBackgroundColor,
-                    icon: const Icon(Icons.print),
-                  ),
+                  if (_metricsData2.keys
+                      .where((metric) => metric.keys.first != 'Total')
+                      .isNotEmpty)
+                    IconButton(
+                      onPressed: () {},
+                      color: Theme.of(context).scaffoldBackgroundColor,
+                      icon: const Icon(Icons.print),
+                    ),
                   Expanded(
                     child: Align(
                       alignment: Alignment.center,
@@ -184,39 +187,42 @@ class _MetricsScreenState extends State<MetricsScreen> {
                       ),
                     ),
                   ),
-                  IconButton(
-                    onPressed: () async {
-                      WarningDialog.showWarning(
-                          context: context,
-                          title:
-                              'Metrics Report - ${_selectedDurationNotifier.value}',
-                          message: 'Proceed to download report ' +
-                              '\n' +
-                              'Selected Types : ' +
-                              '\n' +
-                              _expenseTypesOfDuration
-                                  .where((type) =>
-                                      !_unSelectedTypes.contains(type))
-                                  .join('\n'),
-                          onConfirmed: () async {
-                            MessageWidget.showToast(
-                                context: context,
-                                message: 'Downloading in progress...');
-                            await _reportService.prepareMetricsReport(
-                                _expenseService.getExpensesOfSelectedDuration(
-                                    _selectedDurationNotifier.value,
-                                    customDateRange: selectedDateRange),
+                  if (_metricsData2.keys
+                      .where((metric) => metric.keys.first != 'Total')
+                      .isNotEmpty)
+                    IconButton(
+                      onPressed: () async {
+                        WarningDialog.showWarning(
+                            context: context,
+                            title:
+                                'Metrics Report - ${_selectedDurationNotifier.value}',
+                            message: 'Proceed to download report ' +
+                                '\n' +
+                                'Selected Types : ' +
+                                '\n - ' +
                                 _expenseTypesOfDuration
                                     .where((type) =>
                                         !_unSelectedTypes.contains(type))
-                                    .toList(),
-                                _expenseService.uiService.getDateRange(
-                                    _selectedDurationNotifier.value!,
-                                    customDateRange: selectedDateRange)!);
-                          });
-                    },
-                    icon: const Icon(Icons.print),
-                  ),
+                                    .join('\n - '),
+                            onConfirmed: () async {
+                              MessageWidget.showToast(
+                                  context: context,
+                                  message: 'Downloading in progress...');
+                              await _reportService.prepareMetricsReport(
+                                  _expenseService.getExpensesOfSelectedDuration(
+                                      _selectedDurationNotifier.value,
+                                      customDateRange: selectedDateRange),
+                                  _expenseTypesOfDuration
+                                      .where((type) =>
+                                          !_unSelectedTypes.contains(type))
+                                      .toList(),
+                                  _expenseService.uiService.getDateRange(
+                                      _selectedDurationNotifier.value!,
+                                      customDateRange: selectedDateRange)!);
+                            });
+                      },
+                      icon: const Icon(Icons.print),
+                    ),
                 ],
               ),
             ),
@@ -299,7 +305,7 @@ class _MetricsScreenState extends State<MetricsScreen> {
                                         title: Text(
                                           key,
                                           style: TextStyle(
-                                              fontSize: 18,
+                                              fontSize: 16,
                                               fontWeight: _selectedKey == key
                                                   ? FontWeight.bold
                                                   : FontWeight.normal,
@@ -314,7 +320,7 @@ class _MetricsScreenState extends State<MetricsScreen> {
                                         trailing: Text(
                                           '₹${value.toStringAsFixed(2)}',
                                           style: TextStyle(
-                                              fontSize: 16,
+                                              fontSize: 14,
                                               fontWeight: _selectedKey == key
                                                   ? FontWeight.bold
                                                   : FontWeight.normal,
