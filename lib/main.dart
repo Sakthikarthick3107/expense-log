@@ -1,9 +1,12 @@
 import 'package:expense_log/models/expense2.dart';
 import 'package:expense_log/models/upi.dart';
 import 'package:expense_log/models/expense_type.dart';
+import 'package:expense_log/models/message.dart' as app_message;
+import 'package:expense_log/models/message.dart';
 import 'package:expense_log/screens/home_screen.dart';
 import 'package:expense_log/services/collection_service.dart';
 import 'package:expense_log/services/notification_service.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:expense_log/services/expense_service.dart';
 import 'package:expense_log/services/settings_service.dart';
 import 'package:expense_log/services/report_service.dart';
@@ -22,6 +25,9 @@ import 'package:provider/provider.dart';
 import 'package:expense_log/utility/pdf_helper.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import 'package:workmanager/workmanager.dart';
+import 'background/background_task.dart';
+import 'dart:async';
 
 import 'models/collection.dart';
 
@@ -44,6 +50,7 @@ void main() async {
   Hive.registerAdapter(Expense2Adapter());
   Hive.registerAdapter(CollectionAdapter());
   Hive.registerAdapter(UpiLogAdapter());
+  Hive.registerAdapter(MessageAdapter());
 
   // await Hive.openBox<Expense>('expenseBox');
   await Hive.openBox<Expense2>('expense2Box');
@@ -51,6 +58,18 @@ void main() async {
   await Hive.openBox('settingsBox');
   await Hive.openBox<Collection>('collectionBox');
   await Hive.openBox<UpiLog>('upiLogBox');
+  await Hive.openBox<app_message.Message>('messageBox');
+
+  await Workmanager().initialize(callbackDispatcher, isInDebugMode: false);
+
+  await Workmanager()
+      .registerPeriodicTask("dailyExpenseSummary", "dailyExpenseSummary",
+          frequency: Duration(hours: 1),
+          initialDelay: Duration(seconds: 5),
+          constraints: Constraints(
+            networkType: NetworkType.not_required,
+          ),
+          inputData: {'pass': 'Sample'});
 
   // await checkAndRunMigration();
   tz.initializeTimeZones(); // Initialize timezone

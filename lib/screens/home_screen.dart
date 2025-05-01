@@ -6,6 +6,7 @@ import 'package:expense_log/screens/collections_screen.dart';
 import 'package:expense_log/screens/daily_expense_screen.dart';
 import 'package:expense_log/screens/downloads_screen.dart';
 import 'package:expense_log/screens/expense_type_screen.dart';
+import 'package:expense_log/screens/message_screen.dart';
 import 'package:expense_log/screens/metrics_screen.dart';
 import 'package:expense_log/screens/settings_screen.dart';
 import 'package:expense_log/screens/upi_logs.dart';
@@ -18,6 +19,7 @@ import 'package:expense_log/updates/app_update.dart';
 import 'package:expense_log/widgets/app_drawer.dart';
 import 'package:expense_log/widgets/avatar_widget.dart';
 import 'package:expense_log/widgets/message_widget.dart';
+import 'package:expense_log/widgets/notification_button.dart';
 import 'package:expense_log/widgets/warning_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -307,6 +309,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
             actions: [
+              // NotificationButton(unreadCount: settingsService.getUnreadCount()),
               Tooltip(
                 key: _tooltipKey,
                 message: [

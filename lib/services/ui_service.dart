@@ -80,6 +80,34 @@ class UiService {
     return DateFormat('dd MMMM yyyy').format(selectedDate);
   }
 
+  String displayMessageTime(DateTime messageDate) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+
+    bool isSameDate(DateTime date1, DateTime date2) {
+      return date1.year == date2.year &&
+          date1.month == date2.month &&
+          date1.day == date2.day;
+    }
+
+    if (isSameDate(today, messageDate)) {
+      return DateFormat('h:mm a').format(messageDate);
+    } else if (isSameDate(yesterday, messageDate)) {
+      return 'Yesterday at ' + DateFormat('h:mm a').format(messageDate);
+    } else if (messageDate
+            .isAfter(today.subtract(Duration(days: today.weekday))) &&
+        messageDate.isBefore(today.add(Duration(days: 7 - today.weekday)))) {
+      return DateFormat('EEEE h:mm a').format(messageDate);
+    } else if (messageDate.month == now.month && messageDate.year == now.year) {
+      return DateFormat('d MMMM h:mm a').format(messageDate);
+    } else if (messageDate.year == now.year) {
+      return DateFormat('dd MMMM h:mm a').format(messageDate);
+    }
+
+    return DateFormat('dd MMMM yyyy h:mm a').format(messageDate);
+  }
+
   DateRange? getDateRange(String rangeType, {DateTimeRange? customDateRange}) {
     DateTime now = DateTime.now();
     DateTime startDate;

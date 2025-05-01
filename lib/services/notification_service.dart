@@ -8,7 +8,7 @@ import 'package:path/path.dart' as p;
 import 'package:open_file/open_file.dart';
 
 class NotificationService {
-  static final FlutterLocalNotificationsPlugin _notificationsPlugin =
+  static final FlutterLocalNotificationsPlugin notificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
   // Initialize the notification plugin
@@ -17,10 +17,14 @@ class NotificationService {
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    const InitializationSettings initializationSettings =
-        InitializationSettings(android: initializationSettingsAndroid);
+    const DarwinInitializationSettings iosSettings =
+        DarwinInitializationSettings();
 
-    await _notificationsPlugin.initialize(initializationSettings,
+    const InitializationSettings initializationSettings =
+        InitializationSettings(
+            android: initializationSettingsAndroid, iOS: iosSettings);
+
+    await notificationsPlugin.initialize(initializationSettings,
         onDidReceiveNotificationResponse: onSelectNotification);
   }
 
@@ -65,7 +69,7 @@ class NotificationService {
     const NotificationDetails platformChannelSpecifics =
         NotificationDetails(android: androidPlatformChannelSpecifics);
 
-    await _notificationsPlugin.zonedSchedule(
+    await notificationsPlugin.zonedSchedule(
       id,
       title,
       body,
@@ -122,7 +126,7 @@ class NotificationService {
       android: androidDetails,
     );
 
-    await _notificationsPlugin.show(
+    await notificationsPlugin.show(
       100,
       'Download Complete',
       '${fileName}',

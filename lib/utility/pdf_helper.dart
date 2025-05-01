@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:pdf/pdf.dart';
 import 'package:expense_log/models/expense2.dart';
@@ -96,8 +97,7 @@ class PdfHelper {
     );
   }
 
-  static List<pw.Widget> generateExpenseTableGrpByType(
-      List<Expense2> expenses) {
+  static List<pw.Widget> generateExpenseTableGrpByDay(List<Expense2> expenses) {
     final groupedExpenses = <String, List<Expense2>>{};
     for (var expense in expenses) {
       if (!groupedExpenses.containsKey(expense.expenseType.name)) {
@@ -166,6 +166,183 @@ class PdfHelper {
                   )),
             ],
           ),
+        ],
+      );
+    }).toList();
+  }
+
+  static List<pw.Widget> generateExpenseTableGrpByType(
+      List<Expense2> expenses) {
+    final groupedByDate = <DateTime, List<Expense2>>{};
+    for (var expense in expenses) {
+      DateTime expenseDate = expense.date;
+      if (!groupedByDate.containsKey(expenseDate)) {
+        groupedByDate[expenseDate] = [];
+      }
+      groupedByDate[expenseDate]?.add(expense);
+    }
+
+    final sortedGroupedByDate = Map.fromEntries(
+      groupedByDate.entries.toList()..sort((a, b) => a.key.compareTo(b.key)),
+    );
+
+    return sortedGroupedByDate.entries.map((entry) {
+      final expenseDay = entry.key;
+      final expenseList = entry.value;
+      final totalExpense =
+          expenseList.fold(0.0, (sum, item) => sum + item.price);
+
+      return pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Table(border: pw.TableBorder.all(), columnWidths: {
+            0: pw.FlexColumnWidth(2),
+            1: pw.FlexColumnWidth(1),
+          }, children: [
+            pw.TableRow(
+              decoration: pw.BoxDecoration(color: PdfColors.grey300),
+              children: [
+                pw.Padding(
+                  padding: const pw.EdgeInsets.all(8),
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      PdfHelper.text(
+                        DateFormat("d MMM yy").format(expenseDay),
+                        fontSize: 18,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
+                    ],
+                  ),
+                ),
+                pw.Padding(
+                  padding: const pw.EdgeInsets.all(8),
+                  child: PdfHelper.text('₹ ${totalExpense}'),
+                ),
+              ],
+            ),
+          ]),
+          pw.Table(
+            border: pw.TableBorder.all(),
+            columnWidths: {
+              0: pw.FlexColumnWidth(2),
+              1: pw.FlexColumnWidth(1),
+            },
+            children: [
+              ...expenseList.map((expense) => pw.TableRow(
+                    children: [
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: PdfHelper.text(expense.name),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: PdfHelper.text('₹${expense.price}'),
+                      ),
+                    ],
+                  )),
+            ],
+          ),
+        ],
+      );
+    }).toList();
+  }
+
+  static List<pw.Widget> generateExpenseTableGrpByTypeThenDay(
+      List<Expense2> expenses) {
+    final groupedByType = <String, List<Expense2>>{};
+
+    // First group by type
+    for (var expense in expenses) {
+      groupedByType
+          .putIfAbsent(expense.expenseType.name, () => [])
+          .add(expense);
+    }
+
+    return groupedByType.entries.map((typeEntry) {
+      final typeName = typeEntry.key;
+      final typeExpenses = typeEntry.value;
+      final typeDescription = typeExpenses.first.expenseType.description;
+
+      // Now group by day inside this type
+      final groupedByDay = <String, List<Expense2>>{};
+      for (var exp in typeExpenses) {
+        final dateKey = exp.date.toString().split(" ").first; // YYYY-MM-DD
+        groupedByDay.putIfAbsent(dateKey, () => []).add(exp);
+      }
+
+      final totalTypeExpense =
+          typeExpenses.fold(0.0, (sum, e) => sum + e.price);
+
+      return pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          // Type Header
+          pw.Table(border: pw.TableBorder.all(), columnWidths: {
+            0: pw.FlexColumnWidth(2),
+            1: pw.FlexColumnWidth(1)
+          }, children: [
+            pw.TableRow(
+              decoration: pw.BoxDecoration(color: PdfColors.grey300),
+              children: [
+                pw.Padding(
+                  padding: const pw.EdgeInsets.all(8),
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      PdfHelper.text('$typeName',
+                          fontSize: 18, fontWeight: pw.FontWeight.bold),
+                      PdfHelper.text(typeDescription ?? ''),
+                    ],
+                  ),
+                ),
+                pw.Padding(
+                  padding: const pw.EdgeInsets.all(8),
+                  child:
+                      PdfHelper.text('₹${totalTypeExpense.toStringAsFixed(2)}'),
+                ),
+              ],
+            ),
+          ]),
+
+          // For each day inside the type
+          ...groupedByDay.entries.map((dayEntry) {
+            final date = dayEntry.key;
+            final dailyExpenses = dayEntry.value;
+            final dailyTotal =
+                dailyExpenses.fold(0.0, (sum, e) => sum + e.price);
+
+            return pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.SizedBox(height: 6),
+                PdfHelper.text('📅 $date (₹${dailyTotal.toStringAsFixed(2)})',
+                    fontWeight: pw.FontWeight.bold, fontSize: 14),
+                pw.Table(
+                  border: pw.TableBorder.all(),
+                  columnWidths: {
+                    0: pw.FlexColumnWidth(2),
+                    1: pw.FlexColumnWidth(1),
+                  },
+                  children: [
+                    ...dailyExpenses.map((e) => pw.TableRow(
+                          children: [
+                            pw.Padding(
+                              padding: const pw.EdgeInsets.all(8),
+                              child: PdfHelper.text(e.name),
+                            ),
+                            pw.Padding(
+                              padding: const pw.EdgeInsets.all(8),
+                              child: PdfHelper.text(
+                                  '₹${e.price.toStringAsFixed(2)}'),
+                            ),
+                          ],
+                        )),
+                  ],
+                ),
+              ],
+            );
+          }).toList(),
         ],
       );
     }).toList();

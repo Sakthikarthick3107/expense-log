@@ -11,6 +11,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
+import 'package:expense_log/models/message.dart' as app_message;
 
 import '../models/expense2.dart';
 
@@ -365,6 +366,22 @@ class SettingsService with ChangeNotifier {
     await _settingsBox.put('metricChart', chart);
     notifyListeners();
     return true;
+  }
+
+  final _messageBox = Hive.box<app_message.Message>('messageBox');
+  int getUnreadCount() {
+    return _messageBox.values.where((msg) => !msg.isRead).length;
+  }
+
+  void readMessage(app_message.Message msg) {
+    _messageBox.put(msg.id, msg);
+    notifyListeners();
+  }
+
+  List<app_message.Message> getMessages() {
+    var messages = _messageBox.values.toList();
+    messages.sort((a, b) => b.date.compareTo(a.date));
+    return messages;
   }
 }
 

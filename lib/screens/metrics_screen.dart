@@ -203,7 +203,9 @@ class _MetricsScreenState extends State<MetricsScreen> {
                                 _expenseTypesOfDuration
                                     .where((type) =>
                                         !_unSelectedTypes.contains(type))
-                                    .join('\n - '),
+                                    .join('\n - ') +
+                                '\n' +
+                                'View : ${_selectedMetricBy.value}',
                             onConfirmed: () async {
                               MessageWidget.showToast(
                                   context: context,
@@ -216,6 +218,7 @@ class _MetricsScreenState extends State<MetricsScreen> {
                                       .where((type) =>
                                           !_unSelectedTypes.contains(type))
                                       .toList(),
+                                  _selectedMetricBy.value,
                                   _expenseService.uiService.getDateRange(
                                       _selectedDurationNotifier.value!,
                                       customDateRange: selectedDateRange)!);

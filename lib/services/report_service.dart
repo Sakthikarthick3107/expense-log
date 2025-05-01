@@ -9,6 +9,7 @@ import 'package:flutter/services.dart' show rootBundle;
 import '../models/expense2.dart';
 import 'package:expense_log/services/notification_service.dart';
 import 'dart:typed_data';
+import 'package:intl/intl.dart';
 
 class ReportService {
   const ReportService();
@@ -61,14 +62,18 @@ class ReportService {
         pdfBytes, 'daily_expense_report', expenseDate);
   }
 
-  Future<void> prepareMetricsReport(List<Expense2> expenses,
-      List<String> selectedTypes, DateRange selectedRange) async {
+  Future<void> prepareMetricsReport(
+      List<Expense2> expenses,
+      List<String> selectedTypes,
+      String viewBy,
+      DateRange selectedRange) async {
     final pdf = pw.Document();
     final filteredExpenses = expenses
         .where((expense) => selectedTypes.contains(expense.expenseType.name))
         .toList();
 
     final Map<String, double> typeTotals = {};
+    final Map<DateTime, double> dayTotals = {};
 
     for (var expense in filteredExpenses) {
       typeTotals.update(
@@ -76,7 +81,29 @@ class ReportService {
         (existing) => existing + expense.price,
         ifAbsent: () => expense.price,
       );
+
+      DateTime dateKey =
+          DateTime(expense.date.year, expense.date.month, expense.date.day);
+      dayTotals.update(
+        dateKey,
+        (existing) => existing + expense.price,
+        ifAbsent: () => expense.price,
+      );
     }
+
+    final sortedDayEntries = dayTotals.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
+
+    final summaryTotals = viewBy == 'type'
+        ? typeTotals
+        : Map.fromEntries(
+            sortedDayEntries.map(
+              (entry) => MapEntry(
+                DateFormat("d MMM yy").format(entry.key),
+                entry.value,
+              ),
+            ),
+          );
 
     String startDate =
         '${selectedRange.start.day}-${selectedRange.start.month}-${selectedRange.start.year}';
@@ -93,6 +120,15 @@ class ReportService {
         groupedByDate[expenseDate] = [];
       }
       groupedByDate[expenseDate]?.add(expense);
+    }
+
+    final groupedByType = <String, List<Expense2>>{};
+    for (var expense in filteredExpenses) {
+      String typeName = expense.expenseType.name;
+      if (!groupedByType.containsKey(typeName)) {
+        groupedByType[typeName] = [];
+      }
+      groupedByType[typeName]?.add(expense);
     }
 
     pdf.addPage(
@@ -113,7 +149,7 @@ class ReportService {
 
           widgets.add(
             pw.Text(
-              'Expense Type - Summary',
+              'Expense ${viewBy} - Summary',
               style: pw.TextStyle(fontSize: 17, fontWeight: pw.FontWeight.bold),
             ),
           );
@@ -123,7 +159,7 @@ class ReportService {
           widgets.add(
             pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
-              children: typeTotals.entries.map((entry) {
+              children: summaryTotals.entries.map((entry) {
                 return pw.Padding(
                   padding: const pw.EdgeInsets.symmetric(vertical: 2),
                   child: pw.Row(
@@ -146,26 +182,7 @@ class ReportService {
             ),
           );
 
-          widgets.add(pw.SizedBox(height: 20));
-
-          for (var entry in groupedByDate.entries) {
-            final dateExpenses = entry.value;
-            String dateTitle = entry.key;
-
-            widgets.add(
-              pw.Text(
-                '$dateTitle',
-                style:
-                    pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
-              ),
-            );
-
-            widgets
-                .addAll(PdfHelper.generateExpenseTableGrpByType(dateExpenses));
-            widgets.add(pw.SizedBox(height: 20));
-          }
-
-          // Add total at the end
+          widgets.add(pw.SizedBox(height: 5));
           widgets.add(
             pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.end,
@@ -178,6 +195,43 @@ class ReportService {
               ],
             ),
           );
+
+          widgets.add(pw.SizedBox(height: 20));
+
+          if (viewBy == 'By day') {
+            for (var entry in groupedByDate.entries) {
+              final dateExpenses = entry.value;
+              String dateTitle = entry.key;
+
+              widgets.add(
+                pw.Text(
+                  '$dateTitle',
+                  style: pw.TextStyle(
+                      fontSize: 18, fontWeight: pw.FontWeight.bold),
+                ),
+              );
+
+              widgets
+                  .addAll(PdfHelper.generateExpenseTableGrpByDay(dateExpenses));
+              widgets.add(pw.SizedBox(height: 20));
+            }
+          } else if (viewBy == 'By type') {
+            for (var entry in groupedByType.entries) {
+              final typeKey = entry.key;
+              final typeValue = entry.value;
+              widgets.add(
+                pw.Text(
+                  '$typeKey',
+                  style: pw.TextStyle(
+                      fontSize: 18, fontWeight: pw.FontWeight.bold),
+                ),
+              );
+
+              widgets
+                  .addAll(PdfHelper.generateExpenseTableGrpByType(typeValue));
+              widgets.add(pw.SizedBox(height: 20));
+            }
+          }
 
           return widgets;
         },
