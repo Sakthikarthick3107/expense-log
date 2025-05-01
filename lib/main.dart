@@ -71,6 +71,17 @@ void main() async {
           ),
           inputData: {'pass': 'Sample'});
 
+  await Workmanager().registerPeriodicTask(
+    "fetchLatest",
+    "fetchLatest",
+    frequency: Duration(days: 1),
+    initialDelay: Duration(seconds: 10),
+    constraints: Constraints(
+      networkType: NetworkType.connected,
+    ),
+    inputData: {'check': 'versionUpdate'},
+  );
+
   // await checkAndRunMigration();
   tz.initializeTimeZones(); // Initialize timezone
   await NotificationService.initialize();
