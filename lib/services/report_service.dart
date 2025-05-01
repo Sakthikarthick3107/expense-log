@@ -94,7 +94,7 @@ class ReportService {
     final sortedDayEntries = dayTotals.entries.toList()
       ..sort((a, b) => a.key.compareTo(b.key));
 
-    final summaryTotals = viewBy == 'type'
+    final summaryTotals = viewBy == 'By type'
         ? typeTotals
         : Map.fromEntries(
             sortedDayEntries.map(
