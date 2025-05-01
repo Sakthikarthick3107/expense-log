@@ -42,7 +42,7 @@ class ReportService {
                     ...PdfHelper.header(
                         reportTitle: 'Daily Expense Report',
                         subtitle: expenseDate),
-                    ...PdfHelper.generateExpenseTableGrpByType(expenses),
+                    ...PdfHelper.generateExpenseTableGrpByDay(expenses),
                     pw.SizedBox(height: 20),
                     pw.Row(
                         mainAxisAlignment: pw.MainAxisAlignment.end,

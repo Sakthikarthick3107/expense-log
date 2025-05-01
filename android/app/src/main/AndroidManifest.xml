@@ -62,6 +62,10 @@
                 <action android:name="android.provider.Telephony.SMS_RECEIVED"/>
             </intent-filter>
         </receiver>
+        <receiver android:name="be.tramckrijte.workmanager.WorkManagerBroadcastReceiver"
+    android:enabled="true"
+    android:exported="true"/>
+
 
 
         <provider

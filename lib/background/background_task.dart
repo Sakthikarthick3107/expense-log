@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:workmanager/workmanager.dart';
@@ -10,6 +11,7 @@ import 'package:dio/dio.dart';
 
 void callbackDispatcher() {
   Workmanager().executeTask((taskName, inputData) async {
+    WidgetsFlutterBinding.ensureInitialized();
     try {
       const AndroidNotificationDetails androidDetails =
           AndroidNotificationDetails(
