@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:expense_log/models/collection.dart';
 import 'package:expense_log/models/expense_type.dart';
 import 'package:expense_log/models/user.dart';
+import 'package:expense_log/services/audit_log_service.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
@@ -50,10 +51,12 @@ class SettingsService with ChangeNotifier {
         _settingsBox.put('image', googleUser.photoUrl);
         print('Signed in as: ${googleUser.displayName}');
         print('Email: ${googleUser.email}');
+        AuditLogService.writeLog('User signedin successfully');
         return 1;
       }
       return 0;
     } catch (error) {
+      AuditLogService.writeLog('User sign in error $error');
       print('Google Sign-In error: $error');
       return 0;
     }
@@ -112,12 +115,14 @@ class SettingsService with ChangeNotifier {
       var uploadedFile =
           await driveApi.files.create(driveFile, uploadMedia: media);
 
-      return uploadedFile.id != null
-          ? 1
-          : 0; // Return 1 if successful, 0 if failed
+      AuditLogService.writeLog(uploadedFile.id != null
+          ? 'Data backup to drive successfully!'
+          : 'Data backup failed while processing');
+      return uploadedFile.id != null ? 1 : 0;
     } catch (e) {
+      AuditLogService.writeLog('Error while backup $e');
       print("Backup Error: $e");
-      return 0; // Return 0 on error
+      return 0;
     }
   }
 
@@ -176,8 +181,11 @@ class SettingsService with ChangeNotifier {
         }
 
         print("✅ Backup restored successfully!");
+        AuditLogService.writeLog(
+            'File restored successfully from selected file');
         return 1;
       } catch (e) {
+        AuditLogService.writeLog(' Restore Error: $e');
         print("❌ Restore Error: $e");
         return 0;
       }
@@ -195,8 +203,10 @@ class SettingsService with ChangeNotifier {
       _settingsBox.delete('email');
       _settingsBox.delete('image');
       print('User signed out');
+      AuditLogService.writeLog('User Signout successfully ');
       return 1;
     } catch (error) {
+      AuditLogService.writeLog('User Signout error - $error ');
       print('Google Sign-Out error: $error');
       return 0;
     }
@@ -226,6 +236,8 @@ class SettingsService with ChangeNotifier {
 
   Future<void> setTheme(bool isDark) async {
     await _settingsBox.put('isDarkTheme', isDark);
+    AuditLogService.writeLog(
+        'App Theme changes to ${isDark ? 'dark' : 'light'}');
     notifyListeners();
   }
 
@@ -284,7 +296,7 @@ class SettingsService with ChangeNotifier {
       "Types",
       "Metrics",
       "Collections",
-      "UPI Logs",
+      "Audit Log",
       "Downloads"
     ];
 
@@ -297,8 +309,9 @@ class SettingsService with ChangeNotifier {
     if (screenOrders != null &&
         screenOrders is List &&
         screenOrders.length == defaultOrder.length) {
-      // Fix: Ensure all items are Strings
-      return screenOrders.map((e) => e.toString()).toList();
+      return screenOrders
+          .map((e) => e.toString() == 'UPI Logs' ? 'Audit Log' : e.toString())
+          .toList();
     }
 
     return defaultOrder;
@@ -307,17 +320,17 @@ class SettingsService with ChangeNotifier {
   Future<void> saveScreenOrder(List<String> updatedOrder) async {
     try {
       await _settingsBox.put('screenOrder', updatedOrder);
-      print(
-        'Saved',
-      );
+      AuditLogService.writeLog('App screen order is changed');
     } catch (e) {
-      print('Error while saving order');
+      AuditLogService.writeLog('Error while saving app screen order');
     }
     notifyListeners();
   }
 
   Future<bool> enableElevation(bool isEnable) async {
     await _settingsBox.put('elevation', isEnable);
+    AuditLogService.writeLog(
+        'App list elevation is ${isEnable ? 'enabled' : 'disabled'}');
     notifyListeners();
     return true;
   }
@@ -342,6 +355,7 @@ class SettingsService with ChangeNotifier {
 
   Future<bool> setLandingMetric(String duration) async {
     await _settingsBox.put('landingMetric', duration);
+    AuditLogService.writeLog('Metrics landing duration is set to $duration');
     notifyListeners();
     return true;
   }
@@ -352,6 +366,7 @@ class SettingsService with ChangeNotifier {
 
   Future<bool> setPrimaryColor(String color) async {
     await _settingsBox.put('primaryColor', color);
+    AuditLogService.writeLog('App primary color is set to $color');
     notifyListeners();
     return true;
   }
@@ -364,6 +379,7 @@ class SettingsService with ChangeNotifier {
 
   Future<bool> setMetricChart(String chart) async {
     await _settingsBox.put('metricChart', chart);
+    AuditLogService.writeLog('App metric chart is set to $chart');
     notifyListeners();
     return true;
   }

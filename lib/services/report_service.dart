@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:expense_log/models/date_range.dart';
+import 'package:expense_log/services/audit_log_service.dart';
 import 'package:expense_log/utility/pdf_helper.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:open_file/open_file.dart';
@@ -60,6 +61,9 @@ class ReportService {
     final pdfBytes = await pdf.save();
     await savePdfAndShowNotification(
         pdfBytes, 'daily_expense_report', expenseDate);
+
+    AuditLogService.writeLog(
+        'Downloaded Daily expense report for $expenseDate');
   }
 
   Future<void> prepareTypeReport(List<Expense2> expenses,
@@ -172,6 +176,9 @@ class ReportService {
         pdfBytes,
         'type_${expenses.first.expenseType.name}_report',
         '${startDate}_to_${endDate}');
+
+    AuditLogService.writeLog(
+        'Downloaded Expense typee report for ${expenses.first.expenseType.name} - duration ${startDate}_to_${endDate}');
   }
 
   Future<void> prepareMetricsReport(
@@ -353,6 +360,9 @@ class ReportService {
     final pdfBytes = await pdf.save();
     await savePdfAndShowNotification(
         pdfBytes, 'metrics_report', '${startDate}_to_${endDate}');
+
+    AuditLogService.writeLog(
+        'Downloaded Metrics report with ${viewBy} for duration ${startDate}_to_${endDate}');
   }
 
   Future<void> savePdfAndShowNotification(

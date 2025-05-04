@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:expense_log/services/audit_log_service.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:expense_log/widgets/message_widget.dart';
 import 'package:flutter/cupertino.dart';
@@ -16,12 +17,13 @@ import 'package:url_launcher/url_launcher.dart';
 // import 'package:restart_app/restart_app.dart';
 // import 'package:apk_installer/apk_installer.dart';
 
-class AppUpdate{
+class AppUpdate {
   final String owner = 'Sakthikarthick3107';
   final String repo = 'expense-log';
   String downloadProgress = '-1';
 
-  Future<void> downloadAndInstallApk(BuildContext context, String downloadUrl) async {
+  Future<void> downloadAndInstallApk(
+      BuildContext context, String downloadUrl) async {
     try {
       // Request permission to access storage
       // PermissionStatus status = await Permission.storage.request();
@@ -38,18 +40,23 @@ class AppUpdate{
       final dio = Dio();
       final appDir = await getExternalStorageDirectory();
       if (appDir == null) {
-        MessageWidget.showToast(context: context, message: 'Could not get storage directory', status: 0);
+        MessageWidget.showToast(
+            context: context,
+            message: 'Could not get storage directory',
+            status: 0);
         return;
       }
-      final apkPath = '${appDir.path}/expense_log_${DateTime.now().millisecondsSinceEpoch}.apk'; // Unique file name
+      final apkPath =
+          '${appDir.path}/expense_log_${DateTime.now().millisecondsSinceEpoch}.apk'; // Unique file name
 
       // Download APK
-      await dio.download(
-          downloadUrl, apkPath, onReceiveProgress: (received, total) {
+      await dio.download(downloadUrl, apkPath,
+          onReceiveProgress: (received, total) {
         if (total != -1) {
-          double progress = ((received / total )* 100);
+          double progress = ((received / total) * 100);
           print('Downloading ${progress}');
-          EasyLoading.showProgress(progress / 100, status: 'Downloading: ${progress.toStringAsFixed(0)}%');
+          EasyLoading.showProgress(progress / 100,
+              status: 'Downloading: ${progress.toStringAsFixed(0)}%');
           // MessageWidget.showSnackBar(context: context,
           //     message: 'Downloading: ${progress.toStringAsFixed(2)}%',
           //     status: 1);
@@ -59,19 +66,20 @@ class AppUpdate{
       // Check if the APK is downloaded successfully
       final file = File(apkPath);
       if (!file.existsSync()) {
-        MessageWidget.showToast(context: context, message: 'Failed to download APK.', status: 0);
+        MessageWidget.showToast(
+            context: context, message: 'Failed to download APK.', status: 0);
         return;
       }
       debugPrint('Finished');
-      bool installSuccess = await installApk(context , apkPath);
+      bool installSuccess = await installApk(context, apkPath);
 
       if (installSuccess) {
-        MessageWidget.showToast(context: context,
+        MessageWidget.showToast(
+            context: context,
             message: 'Update installed successfully!',
             status: 1);
 
-        await Future.delayed(
-            Duration(seconds: 2));
+        await Future.delayed(Duration(seconds: 2));
       } else {
         debugPrint('Failed');
         MessageWidget.showToast(
@@ -79,17 +87,20 @@ class AppUpdate{
       }
     } catch (e) {
       debugPrint('Failed');
-      MessageWidget.showToast(context: context,
+      MessageWidget.showToast(
+          context: context,
           message: 'Failed to download or install APK: $e',
           status: 0);
       print(e);
     }
   }
 
-  Future<bool> installApk(BuildContext context , String apkPath) async {
+  Future<bool> installApk(BuildContext context, String apkPath) async {
     const platform = MethodChannel('com.expenseapp.expense_log/install');
     try {
-      final bool success = await platform.invokeMethod('installApk', {'apkPath': apkPath});
+      final bool success =
+          await platform.invokeMethod('installApk', {'apkPath': apkPath});
+      AuditLogService.writeLog('New version of app is updated');
       return success;
     } on PlatformException catch (e) {
       print("Failed to install APK: ${e.message}");
@@ -97,16 +108,15 @@ class AppUpdate{
     }
   }
 
-
-
-  Future<void> checkForUpdates(BuildContext context) async{
-    final url = Uri.parse('https://api.github.com/repos/$owner/$repo/releases/latest');
-    try{
+  Future<void> checkForUpdates(BuildContext context) async {
+    final url =
+        Uri.parse('https://api.github.com/repos/$owner/$repo/releases/latest');
+    try {
       final packageInfo = await PackageInfo.fromPlatform();
       final currentVersion = packageInfo.version;
-      
+
       final response = await http.get(url);
-      if(response.statusCode == 200){
+      if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
         final latestVersion = jsonData['tag_name'];
 
@@ -115,23 +125,22 @@ class AppUpdate{
 
         // print('Url downlpad - $downloadUrl');
         if (isNewVersion(latestVersion, currentVersion)) {
-          // print('New version available: $latestVersion');
-          showUpdateDialog(context, downloadUrl, releaseNotes , latestVersion);
-        }
-        else {
+          AuditLogService.writeLog(
+              'New version of app is found ${latestVersion}');
+          showUpdateDialog(context, downloadUrl, releaseNotes, latestVersion);
+        } else {
           // print('App is up-to-date!');
           // MessageWidget.showSnackBar(context: context, message: 'App is upto date', status: 1);
-
         }
+      } else {
+        AuditLogService.writeLog('Failed to fetch updates');
+        MessageWidget.showToast(
+            context: context, message: 'Failed to fetch release', status: 0);
       }
-      else {
-        MessageWidget.showToast(context: context, message: 'Failed to fetch release', status: 0);
-
-      }
-    }
-    catch(e){
-      // print('Error checking for updates: $e');
-      MessageWidget.showToast(context: context, message: 'Error while checking updates', status: 0);
+    } catch (e) {
+      AuditLogService.writeLog('Failed to fetch updates - $e');
+      MessageWidget.showToast(
+          context: context, message: 'Error while checking updates', status: 0);
     }
   }
 
@@ -171,54 +180,54 @@ class AppUpdate{
     return false;
   }
 
-
   List<int> _parseVersion(String version) {
     return version.split(RegExp(r'[.+]')).map(int.parse).toList();
   }
 
-  void showUpdateDialog(BuildContext context, String downloadUrl, String releaseNotes , String latestVersion) {
+  void showUpdateDialog(BuildContext context, String downloadUrl,
+      String releaseNotes, String latestVersion) {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) {
         return AlertDialog(
-          title:const Text('Update Available'),
+          title: const Text('Update Available'),
           content: SingleChildScrollView(
-            child: ListBody(
-
-              children: [
-                Text('A new version  $latestVersion is available.\nIf you face any difficulties in updating, kindly tap on the Copy link and paste it in your browser or contact developer!'),
-                const SizedBox(height: 4),
-                const Text('Release Notes:'),
-                Text(releaseNotes),
+              child: ListBody(
+            children: [
+              Text(
+                  'A new version  $latestVersion is available.\nIf you face any difficulties in updating, kindly tap on the Copy link and paste it in your browser or contact developer!'),
+              const SizedBox(height: 4),
+              const Text('Release Notes:'),
+              Text(releaseNotes),
               InkWell(
-                onTap:() {
-                  _copyLinkToClipboard(context,downloadUrl);
+                onTap: () {
+                  _copyLinkToClipboard(context, downloadUrl);
                   Navigator.pop(context);
                 }, // Call the launch function when tapped
-                child:  Text(
+                child: Text(
                   'Copy link',
                   style: TextStyle(
                     color: Colors.blue,
-                    decoration: TextDecoration.underline, // Make it look like a link
+                    decoration:
+                        TextDecoration.underline, // Make it look like a link
                   ),
                 ),
               ),
-                const SizedBox(height: 10),
-                Text(releaseNotes),
-              ],
-            )
-          ),
+              const SizedBox(height: 10),
+              Text(releaseNotes),
+            ],
+          )),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: Text('Later'),
             ),
             TextButton(
-              onPressed: () async{
-                Navigator.pop(context,true);
+              onPressed: () async {
+                Navigator.pop(context, true);
                 // await _launchUrl(downloadUrl);
-                downloadAndInstallApk(context , downloadUrl);
+                downloadAndInstallApk(context, downloadUrl);
               },
               child: Text('Update'),
             ),
@@ -228,26 +237,24 @@ class AppUpdate{
     );
   }
 
-  Future<void> _copyLinkToClipboard(BuildContext context , String url) async {
+  Future<void> _copyLinkToClipboard(BuildContext context, String url) async {
     await Clipboard.setData(ClipboardData(text: url));
-    MessageWidget.showToast(context: context, message: 'Link copied to clipboard!');
+    MessageWidget.showToast(
+        context: context, message: 'Link copied to clipboard!');
   }
 
   Future<void> _launchUrl(String url) async {
-      final Uri uri = Uri.parse(url);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri,
-          mode: LaunchMode.externalApplication
+    final Uri uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication
           //   mode: LaunchMode.inAppBrowserView,
           // webViewConfiguration: const WebViewConfiguration(
           //   enableJavaScript: true, // Enable JavaScript if needed
           //   enableDomStorage: true, // Enable DOM storage for advanced web features
           // ),
-        );
-      } else {
-        // MessageWidget.showToast(context: context ,message: 'Could not launch the update', status: 1);
-      }
-
+          );
+    } else {
+      // MessageWidget.showToast(context: context ,message: 'Could not launch the update', status: 1);
+    }
   }
-
 }

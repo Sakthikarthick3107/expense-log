@@ -10,6 +10,7 @@ import 'package:expense_log/screens/message_screen.dart';
 import 'package:expense_log/screens/metrics_screen.dart';
 import 'package:expense_log/screens/settings_screen.dart';
 import 'package:expense_log/screens/upi_logs.dart';
+import 'package:expense_log/screens/audit_log_screen.dart';
 import 'package:expense_log/services/expense_service.dart';
 import 'package:expense_log/services/notification_service.dart';
 import 'package:expense_log/services/settings_service.dart';
@@ -96,7 +97,7 @@ class _HomeScreenState extends State<HomeScreen> {
     const ExpenseTypeScreen(),
     const MetricsScreen(),
     const CollectionsScreen(),
-    const UpiLogs(),
+    const AuditLogScreen(),
     const DownloadsScreen(),
     const SettingsScreen()
   ];

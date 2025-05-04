@@ -12,7 +12,7 @@ import java.io.FileOutputStream
 class SmsReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (Telephony.Sms.Intents.SMS_RECEIVED_ACTION == intent.action) {
-            val bundle = intent.extras
+            val bundle = intent.extras  
             if (bundle != null) {
                 val pdus = bundle.get("pdus") as Array<*>
                 val format = bundle.getString("format")

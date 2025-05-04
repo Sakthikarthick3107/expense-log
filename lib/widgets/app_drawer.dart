@@ -60,7 +60,7 @@ class _AppDrawerState extends State<AppDrawer> {
     "Types": Icons.category_outlined,
     "Collections": Icons.collections_bookmark_rounded,
     "Metrics": Icons.auto_graph_outlined,
-    "UPI Logs": Icons.payment,
+    "Audit Log": Icons.history,
     "Downloads": Icons.download
   };
 

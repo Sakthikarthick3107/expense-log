@@ -2,6 +2,7 @@ import 'package:expense_log/models/collection.dart';
 import 'package:expense_log/models/date_range.dart';
 import 'package:expense_log/models/expense2.dart';
 import 'package:expense_log/models/expense_type.dart';
+import 'package:expense_log/services/audit_log_service.dart';
 import 'package:expense_log/services/settings_service.dart';
 import 'package:expense_log/services/ui_service.dart';
 import 'package:flutter/material.dart';
@@ -82,6 +83,9 @@ class ExpenseService {
         return 0;
       } else {
         _expenseTypeBox.put(type.id, type);
+        AuditLogService.writeLog(
+            'Created/edited type - ${type.name} ${type.limit! > 0 ? 'with limit of ${type.limit}/${type.limitBy}' : ' without limit set '}');
+
         return 1;
       }
     } else {
@@ -141,6 +145,8 @@ class ExpenseService {
           return -1;
         }
       }
+      AuditLogService.writeLog(
+          'Created/edited type - ${type.name} ${type.limit! > 0 ? 'with limit of ${type.limit}/${type.limitBy}' : ' without limit set '}');
       _expenseTypeBox.put(type.id, type);
       _expenseBox2.values
           .where((expense) => expense.expenseType.id == type.id)
@@ -161,6 +167,9 @@ class ExpenseService {
     // }
     // else{
     _expenseBox2.put(expense.id, expense);
+    AuditLogService.writeLog(
+        'Created/edited expense - ${expense.name} ₹${expense.price} ${expense.expenseType.name} for day ${expense.date.day}-${expense.date.month}-${expense.date.year}');
+
     return 1;
     // }
   }
@@ -242,6 +251,7 @@ class ExpenseService {
         exceededList.add('${type.name} exceeded by ₹$exceededBy');
       }
     });
+    AuditLogService.writeLog('Type Limit exceeds - ${exceededList.join(',')} ');
     return exceededList.isEmpty ? null : exceededList;
   }
 
@@ -343,7 +353,8 @@ class ExpenseService {
         createExpense(newExpense);
         // }
       }
-
+      AuditLogService.writeLog(
+          'Copied all expenses from ${copyFromDate.day}-${copyFromDate.month}-${copyFromDate.year} to ${pasteToDate.day}-${pasteToDate.month}-${pasteToDate.year}');
       return skipped;
     } catch (e) {
       print('Error copying expenses: $e');
@@ -351,11 +362,14 @@ class ExpenseService {
     }
   }
 
-  void deleteExpense(Map<int, Expense2> expenses) => {
-        expenses.forEach((id, expense) {
-          _expenseBox2.delete(expense.id);
-        })
-      };
+  void deleteExpense(Map<int, Expense2> expenses) {
+    DateTime expenseDay = expenses.entries.first.value.date;
+    expenses.forEach((id, expense) {
+      _expenseBox2.delete(expense.id);
+    });
+    AuditLogService.writeLog(
+        'Deleted ${expenses.length} expenses of ${expenseDay.day}-${expenseDay.month}-${expenseDay.year}');
+  }
 
   List<Expense2> getExpensesOfTheDay(DateTime selectedDate) {
     return getExpenses().where((expense) {
