@@ -8,7 +8,8 @@ class AuditLogService {
 
   static Future<void> writeLog(String message) async {
     final file = await _getLogFile();
-    final timestamp = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+    final timestamp =
+        DateFormat('yyyy-MM-dd hh:mm:ss a').format(DateTime.now());
     await file.writeAsString('$timestamp - $message\n', mode: FileMode.append);
   }
 

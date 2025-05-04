@@ -45,15 +45,49 @@ class _AuditLogScreenState extends State<AuditLogScreen> {
                   padding: const EdgeInsets.all(12),
                   itemCount: _logs.length,
                   itemBuilder: (context, index) {
-                    return Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-                      child: Text(
-                        _logs[index],
-                        style: TextStyle(fontSize: 10),
+                    final log = _logs[index];
+                    final regex = RegExp(
+                      r'^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?: [AP]M)?) - (.*)$',
+                    );
+
+                    final match = regex.firstMatch(log);
+
+                    String timestamp = 'Unknown Time';
+                    String message = log;
+
+                    if (match != null && match.groupCount == 2) {
+                      timestamp = match.group(1)!;
+                      message = match.group(2)!;
+                    }
+
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 6, horizontal: 8),
+                      // decoration: BoxDecoration(
+                      //   border: Border(
+                      //       bottom: BorderSide(color: Colors.grey.shade300)),
+                      // ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(
+                            width: 80,
+                            child: Text(
+                              timestamp,
+                              style: const TextStyle(fontSize: 8),
+                            ),
+                          ),
+                          const SizedBox(width: 1),
+                          Expanded(
+                            child: Text(
+                              message,
+                              style: const TextStyle(fontSize: 10),
+                            ),
+                          ),
+                        ],
                       ),
                     );
-                  },
-                ),
+                  }),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           WarningDialog.showWarning(
