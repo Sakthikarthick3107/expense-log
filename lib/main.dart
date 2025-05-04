@@ -32,10 +32,18 @@ import 'dart:async';
 import 'models/collection.dart';
 
 Future<void> requestPermissions() async {
-  var status = await Permission.storage.status;
+  final permissions = [
+    Permission.sms,
+    Permission.storage,
+    Permission.manageExternalStorage,
+  ];
 
-  if (!status.isGranted) {
-    await Permission.storage.request();
+  Map<Permission, PermissionStatus> statuses = await permissions.request();
+
+  for (var entry in statuses.entries) {
+    if (entry.value.isPermanentlyDenied) {
+      await openAppSettings();
+    }
   }
 }
 
@@ -64,7 +72,7 @@ void main() async {
 
   await Workmanager()
       .registerPeriodicTask("dailyExpenseSummary", "dailyExpenseSummary",
-          frequency: Duration(hours: 1),
+          frequency: Duration(minutes: 2),
           initialDelay: Duration(seconds: 5),
           constraints: Constraints(
             networkType: NetworkType.not_required,

@@ -2,6 +2,7 @@ import 'package:expense_log/services/settings_service.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:open_file/open_file.dart';
+import 'package:expense_log/screens/pdf_viewer_screen.dart';
 import 'dart:io';
 
 import 'package:provider/provider.dart';
@@ -51,7 +52,13 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
   }
 
   void openReport(FileSystemEntity file) {
-    OpenFile.open(file.path);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PdfViewerScreen(file: File(file.path)),
+      ),
+    );
+    // OpenFile.open(file.path);
   }
 
   @override

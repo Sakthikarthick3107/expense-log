@@ -146,7 +146,7 @@ class PdfHelper {
             ),
           ]),
           pw.Table(
-            border: pw.TableBorder.all(),
+            // border: pw.TableBorder.all(),
             columnWidths: {
               0: pw.FlexColumnWidth(2),
               1: pw.FlexColumnWidth(1),
@@ -223,7 +223,7 @@ class PdfHelper {
             ),
           ]),
           pw.Table(
-            border: pw.TableBorder.all(),
+            // border: pw.TableBorder.all(),
             columnWidths: {
               0: pw.FlexColumnWidth(2),
               1: pw.FlexColumnWidth(1),

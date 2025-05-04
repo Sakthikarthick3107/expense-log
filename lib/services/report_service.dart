@@ -62,6 +62,118 @@ class ReportService {
         pdfBytes, 'daily_expense_report', expenseDate);
   }
 
+  Future<void> prepareTypeReport(List<Expense2> expenses,
+      List<String> selectedTypes, DateRange selectedRange) async {
+    final pdf = pw.Document();
+    final filteredExpenses = expenses
+        .where((expense) => selectedTypes.contains(expense.expenseType.name))
+        .toList();
+
+    final Map<String, double> typeTotals = {};
+
+    for (var expense in filteredExpenses) {
+      typeTotals.update(
+        expense.expenseType.name,
+        (existing) => existing + expense.price,
+        ifAbsent: () => expense.price,
+      );
+    }
+
+    String startDate =
+        '${selectedRange.start.day}-${selectedRange.start.month}-${selectedRange.start.year}';
+    String endDate =
+        '${selectedRange.end.day}-${selectedRange.end.month}-${selectedRange.end.year}';
+
+    filteredExpenses.sort((a, b) => a.date.compareTo(b.date));
+
+    final groupedByDate = <String, List<Expense2>>{};
+    for (var expense in filteredExpenses) {
+      String expenseDate =
+          '${expense.date.day}-${expense.date.month}-${expense.date.year}';
+      if (!groupedByDate.containsKey(expenseDate)) {
+        groupedByDate[expenseDate] = [];
+      }
+      groupedByDate[expenseDate]?.add(expense);
+    }
+
+    final groupedByType = <String, List<Expense2>>{};
+    for (var expense in filteredExpenses) {
+      String typeName = expense.expenseType.name;
+      if (!groupedByType.containsKey(typeName)) {
+        groupedByType[typeName] = [];
+      }
+      groupedByType[typeName]?.add(expense);
+    }
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageTheme: PdfHelper.pageBackground(),
+        footer: (context) {
+          return PdfHelper.footer(
+            footerTitle:
+                'Expense Log - Type ${expenses.first.expenseType.name} Report',
+          );
+        },
+        build: (context) {
+          List<pw.Widget> widgets = [];
+
+          widgets.addAll(PdfHelper.header(
+            reportTitle: 'Type Report',
+            subtitle: '${startDate} to ${endDate}',
+          ));
+
+          widgets.add(
+            pw.Text(
+              'Expense Type - ${expenses.first.expenseType.name}',
+              style: pw.TextStyle(fontSize: 17, fontWeight: pw.FontWeight.bold),
+            ),
+          );
+
+          widgets.add(pw.SizedBox(height: 5));
+
+          widgets.add(pw.SizedBox(height: 5));
+          widgets.add(
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.end,
+              children: [
+                PdfHelper.text(
+                  'Total: ₹${filteredExpenses.fold(0.0, (sum, item) => sum + item.price)}',
+                  fontSize: 20,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ],
+            ),
+          );
+
+          widgets.add(pw.SizedBox(height: 20));
+
+          for (var entry in groupedByType.entries) {
+            final typeKey = entry.key;
+            final typeValue = entry.value;
+            widgets.add(
+              pw.Text(
+                '$typeKey',
+                style:
+                    pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
+              ),
+            );
+
+            widgets.addAll(PdfHelper.generateExpenseTableGrpByType(typeValue));
+            widgets.add(pw.SizedBox(height: 20));
+          }
+
+          return widgets;
+        },
+      ),
+    );
+
+    final pdfBytes = await pdf.save();
+    await savePdfAndShowNotification(
+        pdfBytes,
+        'type_${expenses.first.expenseType.name}_report',
+        '${startDate}_to_${endDate}');
+  }
+
   Future<void> prepareMetricsReport(
       List<Expense2> expenses,
       List<String> selectedTypes,

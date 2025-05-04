@@ -82,11 +82,9 @@ class NotificationService {
     );
   }
 
-  // Helper method to calculate the next notification time
   static tz.TZDateTime _scheduleDailyTime(int hour, int minute) {
     tz.initializeTimeZones();
-    tz.setLocalLocation(
-        tz.getLocation('Asia/Kolkata')); // Set timezone as needed
+    tz.setLocalLocation(tz.getLocation('Asia/Kolkata'));
 
     final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
     final tz.TZDateTime scheduledDate =
