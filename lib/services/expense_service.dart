@@ -251,7 +251,9 @@ class ExpenseService {
         exceededList.add('${type.name} exceeded by ₹$exceededBy');
       }
     });
-    AuditLogService.writeLog('Type Limit exceeds - ${exceededList.join(',')} ');
+    if(exceededList.isNotEmpty){
+         AuditLogService.writeLog('Type Limit exceeds - ${exceededList.join(',')} ');
+    }
     return exceededList.isEmpty ? null : exceededList;
   }
 
