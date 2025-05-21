@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:hive_flutter/adapters.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -7,6 +8,10 @@ class AuditLogService {
   static const _fileName = 'audit_log.txt';
 
   static Future<void> writeLog(String message) async {
+    final _settingsBox = Hive.box('settingsBox');
+    final isAuditEnabled =
+        _settingsBox.get('isAuditEnabled', defaultValue: true);
+    if (!isAuditEnabled && !message.contains('AuditLog Tracker')) return;
     final file = await _getLogFile();
     final timestamp =
         DateFormat('yyyy-MM-dd hh:mm:ss a').format(DateTime.now());

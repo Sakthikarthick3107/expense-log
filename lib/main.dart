@@ -18,15 +18,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_log/utility/pdf_helper.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
-import 'package:workmanager/workmanager.dart';
-import 'background/background_task.dart';
 import 'dart:async';
 
 import 'models/collection.dart';
@@ -68,27 +65,8 @@ void main() async {
   await Hive.openBox<UpiLog>('upiLogBox');
   await Hive.openBox<app_message.Message>('messageBox');
 
-  await Workmanager().initialize(callbackDispatcher, isInDebugMode: false);
 
-  await Workmanager()
-      .registerPeriodicTask("dailyExpenseSummary", "dailyExpenseSummary",
-          frequency: Duration(minutes: 2),
-          initialDelay: Duration(seconds: 5),
-          constraints: Constraints(
-            networkType: NetworkType.not_required,
-          ),
-          inputData: {'pass': 'Sample'});
 
-  await Workmanager().registerPeriodicTask(
-    "fetchLatest",
-    "fetchLatest",
-    frequency: Duration(days: 1),
-    initialDelay: Duration(seconds: 10),
-    constraints: Constraints(
-      networkType: NetworkType.connected,
-    ),
-    inputData: {'check': 'versionUpdate'},
-  );
 
   // await checkAndRunMigration();
   tz.initializeTimeZones(); // Initialize timezone

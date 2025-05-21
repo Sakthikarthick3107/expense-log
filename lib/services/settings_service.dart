@@ -384,6 +384,21 @@ class SettingsService with ChangeNotifier {
     return true;
   }
 
+  bool isAuditEnabled() {
+    bool getIsAuditEnabled =
+        _settingsBox.get('isAuditEnabled', defaultValue: true);
+    return getIsAuditEnabled;
+  }
+
+  Future<bool> setAuditEnable(bool isEnable) async {
+    await _settingsBox.put('isAuditEnabled', isEnable);
+    AuditLogService.writeLog(
+        'AuditLog Tracker is ${isEnable ? 'enabled' : 'disabled'}');
+
+    notifyListeners();
+    return true;
+  }
+
   final _messageBox = Hive.box<app_message.Message>('messageBox');
   int getUnreadCount() {
     return _messageBox.values.where((msg) => !msg.isRead).length;
