@@ -46,26 +46,26 @@ class _AuditLogScreenState extends State<AuditLogScreen> {
           Consumer<SettingsService>(builder: (context, settingsService, child) {
         return Container(
           child: Column(children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Text('Logging'),
-                Transform.scale(
-                  scale: 0.75,
-                  child: Switch(
-                      value: settingsService.isAuditEnabled(),
-                      onChanged: (bool newValue) async {
-                        bool res =
-                            await settingsService.setAuditEnable(newValue);
-                        MessageWidget.showToast(
-                            context: context,
-                            message:
-                                'Audit Log Tracker is ${newValue ? 'enabled' : 'disabled'}');
-                        await _loadLogs();
-                      }),
-                ),
-              ],
-            ),
+            // Row(
+            //   mainAxisAlignment: MainAxisAlignment.end,
+            //   children: [
+            //     Text('Logging'),
+            //     Transform.scale(
+            //       scale: 0.75,
+            //       child: Switch(
+            //           value: settingsService.isAuditEnabled(),
+            //           onChanged: (bool newValue) async {
+            //             bool res =
+            //                 await settingsService.setAuditEnable(newValue);
+            //             MessageWidget.showToast(
+            //                 context: context,
+            //                 message:
+            //                     'Audit Log Tracker is ${newValue ? 'enabled' : 'disabled'}');
+            //             await _loadLogs();
+            //           }),
+            //     ),
+            //   ],
+            // ),
             _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _logs.isEmpty

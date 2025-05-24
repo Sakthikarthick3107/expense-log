@@ -5,10 +5,12 @@ import 'package:expense_log/models/user.dart';
 import 'package:expense_log/services/settings_service.dart';
 import 'package:expense_log/updates/app_update.dart';
 import 'package:expense_log/widgets/color_selector.dart';
+import 'package:expense_log/widgets/info_dialog.dart';
 import 'package:expense_log/widgets/message_widget.dart';
 import 'package:expense_log/widgets/warning_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -28,7 +30,6 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   late SettingsService _settingsService;
 
-  int settingIndex = 0;
   String version = '';
   int downloads = 0;
   User? user;
@@ -47,19 +48,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() {
       downloads = count;
     });
-  }
-
-  Future<void> _copyLinkToClipboard(
-      BuildContext context, String version) async {
-    String getDownloadLink = await _settingsService.downloadUrl(version);
-    if (getDownloadLink.length > 0) {
-      await Clipboard.setData(ClipboardData(text: getDownloadLink));
-      MessageWidget.showToast(
-          context: context, message: 'Link copied to clipboard!', status: 1);
-    } else {
-      MessageWidget.showToast(
-          context: context, message: 'Issue in getting link', status: 0);
-    }
   }
 
   Future<void> _fetchVersion() async {
@@ -105,9 +93,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       appBar: !Platform.isWindows
           ? AppBar(
-              title: Text(
-                user != null ? user!.userName : 'Settings',
+              title: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Settings'),
+                  Text(
+                    user != null ? user!.userName : 'User',
+                    style: TextStyle(fontSize: 10, fontStyle: FontStyle.italic),
+                  )
+                ],
               ),
+              actions: [
+                IconButton(
+                    onPressed: () async {
+                      String getDownloadLink =
+                          await _settingsService.downloadUrl("v" + version);
+                      Share.share(getDownloadLink);
+                    },
+                    icon: Icon(Icons.share_sharp)),
+                SizedBox(
+                  width: 10,
+                )
+              ],
             )
           : null,
       body: Container(
@@ -119,230 +127,136 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Text('General'),
               ListTile(
                 onTap: () {
-                  setState(() {
-                    settingIndex = settingIndex == 1 ? 0 : 1;
-                  });
-                },
-                title: Text('About'),
-              ),
-              AnimatedSize(
-                  duration: const Duration(milliseconds: 200),
-                  curve: Curves.easeInOut,
-                  child: settingIndex == 1
-                      ? Consumer<SettingsService>(
-                          builder: (context, settingsService, child) {
-                          return Container(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 20, vertical: 0),
-                            child: Column(
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text('Downloads'),
-                                    Text(downloads.toString())
-                                  ],
-                                ),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [Text('Version'), Text(version)],
-                                )
-                              ],
-                            ),
-                          );
-                        })
-                      : SizedBox.shrink()),
-              ListTile(
-                onTap: () {
-                  setState(() {
-                    settingIndex = settingIndex == 3 ? 0 : 3;
-                  });
                   final appUpdate = AppUpdate();
                   appUpdate.checkForUpdates(context);
+                  InfoDialog.showInfo(
+                    title: 'App updates',
+                    context: context,
+                    content: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Downloads'),
+                          Text(downloads.toString())
+                        ],
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [Text('Current Version'), Text(version)],
+                      ),
+                      SizedBox(height: 5),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Stable Releases'),
+                        ],
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('2.2.0'),
+                          GestureDetector(
+                            onTap: () {
+                              _settingsService.copyLinkToClipboard(
+                                  context, 'v2.2.0');
+                            },
+                            child: Text(
+                              'Copy Link',
+                              style: TextStyle(
+                                color: Colors.blue,
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('2.1.3'),
+                          GestureDetector(
+                            onTap: () {
+                              _settingsService.copyLinkToClipboard(
+                                  context, 'v2.1.3');
+                            },
+                            child: Text(
+                              'Copy Link',
+                              style: TextStyle(
+                                color: Colors.blue,
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('1.2.5'),
+                          GestureDetector(
+                            onTap: () {
+                              _settingsService.copyLinkToClipboard(
+                                  context, 'v1.2.5');
+                            },
+                            child: Text(
+                              'Copy Link',
+                              style: TextStyle(
+                                color: Colors.blue,
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
+                    ],
+                  );
                 },
-                title: Text('Updates'),
-              ),
-              AnimatedSize(
-                duration: const Duration(milliseconds: 200),
-                curve: Curves.easeInOut,
-                child: settingIndex == 3
-                    ? Container(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 40, vertical: 0),
-                        child: Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text('Current Version'),
-                                Text(version)
-                              ],
-                            ),
-                            SizedBox(height: 5),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text('Stable Releases'),
-                              ],
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text('2.1.14'),
-                                GestureDetector(
-                                  onTap: () {
-                                    _copyLinkToClipboard(context, 'v2.1.14');
-                                  },
-                                  child: Text(
-                                    'Copy Link',
-                                    style: TextStyle(
-                                      color: Colors.blue,
-                                      decoration: TextDecoration.underline,
-                                    ),
-                                  ),
-                                )
-                              ],
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text('2.1.3'),
-                                GestureDetector(
-                                  onTap: () {
-                                    _copyLinkToClipboard(context, 'v2.1.3');
-                                  },
-                                  child: Text(
-                                    'Copy Link',
-                                    style: TextStyle(
-                                      color: Colors.blue,
-                                      decoration: TextDecoration.underline,
-                                    ),
-                                  ),
-                                )
-                              ],
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text('1.2.5'),
-                                GestureDetector(
-                                  onTap: () {
-                                    _copyLinkToClipboard(context, 'v1.2.5');
-                                  },
-                                  child: Text(
-                                    'Copy Link',
-                                    style: TextStyle(
-                                      color: Colors.blue,
-                                      decoration: TextDecoration.underline,
-                                    ),
-                                  ),
-                                )
-                              ],
-                            ),
-                          ],
-                        ))
-                    : SizedBox.shrink(),
-              ),
-              ListTile(
-                onTap: () async {
-                  // setState(() {
-                  //   _copyLinkToClipboard(context);
-                  // });
-                  String getDownloadLink =
-                      await _settingsService.downloadUrl("v" + version);
-                  Share.share(getDownloadLink);
-                },
-                title: Text('Share App'),
+                title: Text('App Updates'),
               ),
               ListTile(
                 onTap: () {
-                  setState(() {
-                    settingIndex = settingIndex == 4 ? 0 : 4;
-                  });
-                },
-                title: Text('Developer Info'),
-              ),
-              AnimatedSize(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-                child: settingIndex == 4
-                    ? Container(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                  InfoDialog.showInfo(
+                      context: context,
+                      title: 'Developer',
+                      content: [
+                        Text(
+                          'Sakthikarthick Nagendran',
+                          style: TextStyle(fontSize: 18),
+                        ),
+                        Text(
+                          'Chennai',
+                          style: TextStyle(fontSize: 14),
+                        ),
+                        SizedBox(height: 20),
+                        Wrap(
+                          spacing: 10,
+                          runSpacing: 10,
                           children: [
-                            Text(
-                              'Sakthikarthick Nagendran',
-                              style: TextStyle(fontSize: 18),
+                            InkWell(
+                              onTap: () {
+                                _launchMail('sakthikarthick3107@gmail.com');
+                              },
+                              child: Icon(Icons.mail),
                             ),
-                            Text(
-                              'Chennai',
-                              style: TextStyle(fontSize: 14),
+                            InkWell(
+                              onTap: () {
+                                _launchURL(
+                                    'https://sakthikarthick3107.netlify.app');
+                              },
+                              child: Icon(FontAwesomeIcons.addressCard),
                             ),
-                            SizedBox(height: 20),
-                            Wrap(
-                              spacing: 6,
-                              runSpacing: 10,
-                              children: [
-                                InkWell(
-                                  onTap: () {
-                                    _launchMail('sakthikarthick3107@gmail.com');
-                                  },
-                                  child: Container(
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: 15, vertical: 6),
-                                      decoration: BoxDecoration(
-                                        border: Border.all(
-                                            color: Colors.orange, width: 2),
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                      child: Text('Mail')),
-                                ),
-                                SizedBox(
-                                  width: 10,
-                                ),
-                                InkWell(
-                                  onTap: () {
-                                    _launchURL(
-                                        'https://sakthikarthick3107.netlify.app');
-                                  },
-                                  child: Container(
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: 15, vertical: 6),
-                                      decoration: BoxDecoration(
-                                        border: Border.all(
-                                            color: Colors.orange, width: 2),
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                      child: Text('Portfolio')),
-                                ),
-                                SizedBox(
-                                  width: 10,
-                                ),
-                                InkWell(
-                                  onTap: () {
-                                    _launchURL(
-                                        'https://www.instagram.com/__intelligent__psycho__/');
-                                  },
-                                  child: Container(
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: 15, vertical: 6),
-                                      decoration: BoxDecoration(
-                                        border: Border.all(
-                                            color: Colors.orange, width: 2),
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                      child: Text('Instagram')),
-                                ),
-                              ],
-                            ),
+                            InkWell(
+                              onTap: () {
+                                _launchURL(
+                                    'https://www.instagram.com/__intelligent__psycho__/');
+                              },
+                              child: Icon(FontAwesomeIcons.instagram),
+                            )
                           ],
                         ),
-                      )
-                    : SizedBox.shrink(),
+                      ]);
+                },
+                title: Text('Developer Info'),
               ),
               if (user == null && !Platform.isWindows)
                 ListTile(
@@ -397,11 +311,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Text('Display'),
               ListTile(
                 title: Text(_settingsService.isDarkTheme() ? 'Dark' : 'Light'),
-                trailing: Switch(
-                  value: _settingsService.isDarkTheme(),
-                  onChanged: (value) {
-                    _settingsService.setTheme(value);
-                  },
+                trailing: Transform.scale(
+                  scale: 0.75,
+                  child: Switch(
+                    value: _settingsService.isDarkTheme(),
+                    onChanged: (value) {
+                      _settingsService.setTheme(value);
+                    },
+                  ),
                 ),
                 onTap: () {
                   final current = _settingsService.isDarkTheme();
@@ -410,11 +327,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               ListTile(
                 title: Text('List Elevation'),
-                trailing: Switch(
-                  value: _settingsService.getElevation(),
-                  onChanged: (value) {
-                    _settingsService.enableElevation(value);
-                  },
+                trailing: Transform.scale(
+                  scale: 0.75,
+                  child: Switch(
+                    value: _settingsService.getElevation(),
+                    onChanged: (value) {
+                      _settingsService.enableElevation(value);
+                    },
+                  ),
                 ),
                 onTap: () {
                   final current = _settingsService.getElevation();
@@ -480,6 +400,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 },
                 title: Text('Customize Navigation'),
               ),
+              Text('Background'),
+              ListTile(
+                  title: Text('Activity Logging'),
+                  onTap: () async {
+                    bool getAuditSetup = _settingsService.isAuditEnabled();
+                    bool res =
+                        await _settingsService.setAuditEnable(!getAuditSetup);
+                    MessageWidget.showToast(
+                        context: context,
+                        message:
+                            'Audit Log Tracker is ${!getAuditSetup ? 'enabled' : 'disabled'}');
+                  },
+                  trailing: Transform.scale(
+                    scale: 0.75,
+                    child: Switch(
+                        value: _settingsService.isAuditEnabled(),
+                        onChanged: (bool newValue) async {
+                          bool res =
+                              await _settingsService.setAuditEnable(newValue);
+                          MessageWidget.showToast(
+                              context: context,
+                              message:
+                                  'Audit Log Tracker is ${newValue ? 'enabled' : 'disabled'}');
+                        }),
+                  )),
               Text('Data'),
               ListTile(
                 onTap: () async {

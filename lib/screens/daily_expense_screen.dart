@@ -3,12 +3,14 @@ import 'package:expense_log/models/expense2.dart';
 import 'package:expense_log/models/expense_type.dart';
 import 'package:expense_log/screens/expense_type_screen.dart';
 import 'package:expense_log/screens/home_screen.dart';
+import 'package:expense_log/services/audit_log_service.dart';
 import 'package:expense_log/services/collection_service.dart';
 import 'package:expense_log/services/expense_service.dart';
 import 'package:expense_log/services/settings_service.dart';
 import 'package:expense_log/services/report_service.dart';
 import 'package:expense_log/services/ui_service.dart';
 import 'package:expense_log/widgets/expense_form.dart';
+import 'package:expense_log/widgets/info_dialog.dart';
 import 'package:expense_log/widgets/message_widget.dart';
 import 'package:expense_log/widgets/view_collection_modal.dart';
 import 'package:expense_log/widgets/warning_dialog.dart';
@@ -405,7 +407,6 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-
             if (_expenseService
                 .getExpensesOfTheDay(_selectedDateNotifier.value)
                 .isNotEmpty)
@@ -490,11 +491,11 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
                               message: 'Copied successfully',
                               status: 1);
                           if (getExceedList.isNotEmpty) {
-                            WarningDialog.showWarning(
+                            InfoDialog.showInfo(
                                 context: context,
-                                title: 'Info',
-                                message: getExceedList.join('\n'),
-                                onConfirmed: () {});
+                                content: [Text(getExceedList.join('\n'))]);
+                            AuditLogService.writeLog(
+                                'Limit Summary - ${getExceedList.join(',')}');
                           }
                         } else if (createCopiedExpenses == -1) {
                           MessageWidget.showToast(

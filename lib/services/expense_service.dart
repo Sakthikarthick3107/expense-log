@@ -23,6 +23,19 @@ class ExpenseService {
     return expenseTypes;
   }
 
+  Map<String, dynamic> getExpenseTypeUsageSummary(ExpenseType type) {
+    final getTypeUsage =
+        getExpenses().where((e) => e.expenseType.id == type.id);
+    String usageTypeName = type.name;
+    int usageCount = getTypeUsage.length;
+    double usageValue = getTypeUsage.fold(0.0, (act, exp) => act + exp.price);
+    return {
+      'usageType': usageTypeName,
+      'usageCount': usageCount,
+      'usageValue': usageValue
+    };
+  }
+
   double getTypeLimitUsage(ExpenseType type) {
     DateTime startDate;
     DateTime endDate;
@@ -126,7 +139,8 @@ class ExpenseService {
         DateTime startDate;
         DateTime endDate;
 
-        DateRange? getRange = uiService.getDateRange(type.limitBy ?? '');
+        DateRange? getRange =
+            uiService.getDateRange(checkIfExist.limitBy ?? '');
         if (getRange != null) {
           startDate = getRange.start;
           endDate = getRange.end;
@@ -146,7 +160,7 @@ class ExpenseService {
         }
       }
       AuditLogService.writeLog(
-          'Created/edited type - ${type.name} ${type.limit! > 0 ? 'with limit of ${type.limit}/${type.limitBy}' : ' without limit set '}');
+          'Created/edited type - ${type.name} ${type.limit != null ? 'with limit of ${type.limit}/${type.limitBy}' : ' without limit set '}');
       _expenseTypeBox.put(type.id, type);
       _expenseBox2.values
           .where((expense) => expense.expenseType.id == type.id)
@@ -297,8 +311,16 @@ class ExpenseService {
   }
 
   Future<int> createCollectionExpense(
-      {required List<Expense2> expenses, required DateTime expenseDate}) async {
+      {required List<Expense2> expenses,
+      required DateTime expenseDate,
+      List<String>? exceedList}) async {
     try {
+      if (exceedList != null) {
+        var exceedStatus = exceededExpenses(expenses);
+        if (exceedStatus != null) {
+          exceedList.addAll(exceedStatus);
+        }
+      }
       SettingsService settingsService = SettingsService();
       int skipped = 0;
       for (Expense2 exp in expenses) {
@@ -308,11 +330,7 @@ class ExpenseService {
           created: DateTime.now(),
           updated: null,
         );
-        if (isTypeLimitExceeded(newExpense)) {
-          skipped++;
-        } else {
-          createExpense(newExpense);
-        }
+        createExpense(newExpense);
       }
       return skipped;
     } catch (e) {
@@ -339,7 +357,6 @@ class ExpenseService {
           exceedList.addAll(exceedStatus);
         }
       }
-      // print('Selected expenses: $getExpensesOfTheSelectedDate');
       SettingsService settingsService = SettingsService();
 
       for (Expense2 exp in getExpensesOfTheSelectedDate) {
@@ -349,12 +366,7 @@ class ExpenseService {
           created: DateTime.now(),
           updated: null,
         );
-        // if(isTypeLimitExceeded(newExpense)){
-        //   skipped ++;
-        // }
-        // else{
         createExpense(newExpense);
-        // }
       }
       AuditLogService.writeLog(
           'Copied all expenses from ${copyFromDate.day}-${copyFromDate.month}-${copyFromDate.year} to ${pasteToDate.day}-${pasteToDate.month}-${pasteToDate.year}');

@@ -4,6 +4,7 @@ import 'package:expense_log/models/collection.dart';
 import 'package:expense_log/models/expense_type.dart';
 import 'package:expense_log/models/user.dart';
 import 'package:expense_log/services/audit_log_service.dart';
+import 'package:expense_log/widgets/message_widget.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
@@ -12,6 +13,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
+import 'package:flutter/services.dart';
 import 'package:expense_log/models/message.dart' as app_message;
 
 import '../models/expense2.dart';
@@ -413,6 +415,20 @@ class SettingsService with ChangeNotifier {
     var messages = _messageBox.values.toList();
     messages.sort((a, b) => b.date.compareTo(a.date));
     return messages;
+  }
+
+  Future<void> copyLinkToClipboard(BuildContext context, String version) async {
+    String getDownloadLink = await downloadUrl(version);
+    if (getDownloadLink.length > 0) {
+      await Clipboard.setData(ClipboardData(text: getDownloadLink));
+      MessageWidget.showToast(
+          context: context, message: 'Link copied to clipboard!', status: 1);
+      AuditLogService.writeLog('Link copied to clipboard $getDownloadLink');
+    } else {
+      MessageWidget.showToast(
+          context: context, message: 'Issue in getting link', status: 0);
+      AuditLogService.writeLog('Error occured in copying link $version');
+    }
   }
 }
 

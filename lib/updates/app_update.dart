@@ -138,7 +138,7 @@ class AppUpdate {
             context: context, message: 'Failed to fetch release', status: 0);
       }
     } catch (e) {
-      AuditLogService.writeLog('Failed to fetch updates - $e');
+      AuditLogService.writeLog('Failed to fetch updates');
       MessageWidget.showToast(
           context: context, message: 'Error while checking updates', status: 0);
     }

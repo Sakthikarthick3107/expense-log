@@ -2,25 +2,22 @@ import 'package:expense_log/models/expense2.dart';
 import 'package:expense_log/services/expense_service.dart';
 import 'package:expense_log/services/settings_service.dart';
 import 'package:expense_log/services/ui_service.dart';
+import 'package:expense_log/widgets/info_dialog.dart';
 import 'package:expense_log/widgets/message_widget.dart';
 import 'package:expense_log/widgets/warning_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-
 class ExpenseForm extends StatefulWidget {
-
-
   final DateTime expenseDate;
   final Expense2? expense;
   final bool? isFromCollection;
 
-  const ExpenseForm({
-    super.key,
-    required this.expenseDate,
-    this.expense,
-    this.isFromCollection
-  });
+  const ExpenseForm(
+      {super.key,
+      required this.expenseDate,
+      this.expense,
+      this.isFromCollection});
 
   @override
   State<ExpenseForm> createState() => _ExpenseFormState();
@@ -35,38 +32,35 @@ class _ExpenseFormState extends State<ExpenseForm> {
 
   late ExpenseService _expenseService;
   late SettingsService _settingsService;
-  late UiService  _uiService;
+  late UiService _uiService;
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
-    _expenseService = Provider.of<ExpenseService>(context , listen: false);
-    _settingsService =Provider.of<SettingsService>(context , listen : false);
-    _uiService = Provider.of<UiService>(context,listen: false);
-    _nameController.addListener((){
-      setState(() {
-
-      });
+    _expenseService = Provider.of<ExpenseService>(context, listen: false);
+    _settingsService = Provider.of<SettingsService>(context, listen: false);
+    _uiService = Provider.of<UiService>(context, listen: false);
+    _nameController.addListener(() {
+      setState(() {});
     });
-    _priceController.addListener((){
-      setState(() {
-
-      });
+    _priceController.addListener(() {
+      setState(() {});
     });
 
-    if(widget.expense != null){
+    if (widget.expense != null) {
       _nameController.text = widget.expense!.name;
       _priceController.text = widget.expense!.price.toString();
       selectedExpenseTypeId = widget.expense!.expenseType.id;
       // _isReturnable = widget.expense!.isReturnable ?? false;
-    }
-    else{
-      selectedExpenseTypeId = _expenseService.getExpenseTypes().isNotEmpty ? _expenseService.getExpenseTypes().first.id : -1 ;
+    } else {
+      selectedExpenseTypeId = _expenseService.getExpenseTypes().isNotEmpty
+          ? _expenseService.getExpenseTypes().first.id
+          : -1;
     }
   }
 
   @override
-  void dispose(){
+  void dispose() {
     super.dispose();
     _nameController.dispose();
     _priceController.dispose();
@@ -75,8 +69,9 @@ class _ExpenseFormState extends State<ExpenseForm> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-
-      title: Text(widget.expense != null ? 'Edit ${widget.expense?.name}' : 'New Expense'),
+      title: Text(widget.expense != null
+          ? 'Edit ${widget.expense?.name}'
+          : 'New Expense'),
       content: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -93,11 +88,12 @@ class _ExpenseFormState extends State<ExpenseForm> {
                   return null;
                 },
               ),
-          
+
               TextFormField(
                 controller: _priceController,
                 decoration: const InputDecoration(labelText: 'Price'),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Price is mandatory';
@@ -105,30 +101,30 @@ class _ExpenseFormState extends State<ExpenseForm> {
                   return null;
                 },
               ),
-              selectedExpenseTypeId == -1 ?
-                  Container(
-                    padding: EdgeInsets.symmetric(vertical: 10,horizontal: 4),
-                    alignment: Alignment.center,
-                    child:const Text(
-                      'Create a type from expense type screen'
+              selectedExpenseTypeId == -1
+                  ? Container(
+                      padding:
+                          EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+                      alignment: Alignment.center,
+                      child:
+                          const Text('Create a type from expense type screen'),
+                    )
+                  : DropdownButtonFormField<int>(
+                      value: selectedExpenseTypeId,
+                      items: _expenseService.getExpenseTypes().map((expType) {
+                        return DropdownMenuItem<int>(
+                          value: expType.id,
+                          child: Text(expType.name),
+                        );
+                      }).toList(),
+                      onChanged: (int? newValue) {
+                        setState(() {
+                          selectedExpenseTypeId = newValue!;
+                        });
+                      },
+                      decoration:
+                          const InputDecoration(labelText: "Expense Type"),
                     ),
-                  )
-                  :
-              DropdownButtonFormField<int>(
-                value: selectedExpenseTypeId,
-                items: _expenseService.getExpenseTypes().map((expType) {
-                  return DropdownMenuItem<int>(
-                    value: expType.id,
-                    child: Text(expType.name),
-                  );
-                }).toList(),
-                onChanged: (int? newValue) {
-                  setState(() {
-                    selectedExpenseTypeId = newValue!;
-                  });
-                },
-                decoration: const InputDecoration(labelText: "Expense Type"),
-              ),
               // if (widget.isFromCollection != true)
               // CheckboxListTile(
               //     title: Text('Refundable?'),
@@ -143,95 +139,94 @@ class _ExpenseFormState extends State<ExpenseForm> {
         ),
       ),
       actions: [
-        if(widget.expense != null &&
-            ( widget.expense?.name == _nameController.text &&
-                widget.expense?.price ==  double.tryParse(_priceController.text) &&
+        if (widget.expense != null &&
+            (widget.expense?.name == _nameController.text &&
+                widget.expense?.price ==
+                    double.tryParse(_priceController.text) &&
                 widget.expense?.expenseType.id == selectedExpenseTypeId
-                // && widget.expense?.isReturnable == _isReturnable
-            ) )
+            // && widget.expense?.isReturnable == _isReturnable
+            ))
           Column(
             // mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Created - ${_uiService.displayDay(widget.expense!.created)}'),
-              if(widget.expense?.updated != null)
-              Text('Updated - ${_uiService.displayDay(widget.expense!.updated!)}')
+              Text(
+                  'Created - ${_uiService.displayDay(widget.expense!.created)}'),
+              if (widget.expense?.updated != null)
+                Text(
+                    'Updated - ${_uiService.displayDay(widget.expense!.updated!)}')
             ],
           ),
-        if(
-            ( widget.expense?.name != _nameController.text ||
-                widget.expense?.price !=  double.tryParse(_priceController.text) ||
+        if ((widget.expense?.name != _nameController.text ||
+                widget.expense?.price !=
+                    double.tryParse(_priceController.text) ||
                 widget.expense?.expenseType.id != selectedExpenseTypeId
-                // || widget.expense?.isReturnable == _isReturnable
-            ) )
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
-        ),
-        if(
-            ( widget.expense?.name != _nameController.text ||
-                widget.expense?.price !=  double.tryParse(_priceController.text) ||
+            // || widget.expense?.isReturnable == _isReturnable
+            ))
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+        if ((widget.expense?.name != _nameController.text ||
+                widget.expense?.price !=
+                    double.tryParse(_priceController.text) ||
                 widget.expense?.expenseType.id != selectedExpenseTypeId
-                // || widget.expense?.isReturnable == _isReturnable
-            ) )
-        ElevatedButton(
+            // || widget.expense?.isReturnable == _isReturnable
+            ))
+          ElevatedButton(
+            onPressed: () async {
+              if (_formKey.currentState?.validate() ?? false) {
+                final name = _nameController.text;
+                final price = double.parse(_priceController.text);
 
-          onPressed: () async {
-            if (_formKey.currentState?.validate() ?? false) {
-              final name = _nameController.text;
-              final price = double.parse(_priceController.text);
+                final selectedExpenseType =
+                    _expenseService.getExpenseTypes().firstWhere(
+                          (expType) => expType.id == selectedExpenseTypeId,
+                        );
 
-              final selectedExpenseType = _expenseService.getExpenseTypes().firstWhere(
-                    (expType) => expType.id == selectedExpenseTypeId,
-              );
-
-
-              final exp = Expense2(
-                id: widget.expense?.id ?? await _settingsService.getBoxKey('expenseId'),
-                name: name,
-                price: price,
-                date: widget.expenseDate,
-                created: widget.expense?.created ?? DateTime.now(),
-                expenseType: selectedExpenseType,
-                updated: widget.expense != null ? DateTime.now() : null
-                // isReturnable: widget.expense?.isReturnable ?? _isReturnable
-              );
-
-              if (widget.isFromCollection == true) {
-                exp.id = -1;
-                Navigator.pop(context, exp);
-              }
-              else{
-                var getExceedList  = _expenseService.exceededExpenses([exp]);
-                int result = _expenseService.createExpense(exp);
-
-                if(result == 1){
-                  Navigator.pop(context,true);
-                  if(getExceedList != null){
-                    WarningDialog.showWarning(
-                        context: context,
-                        title: 'Info',
-                        message: getExceedList.join('\n'),
-                        onConfirmed: (){
-                          Navigator.pop(context);
-                        }
+                final exp = Expense2(
+                    id: widget.expense?.id ??
+                        await _settingsService.getBoxKey('expenseId'),
+                    name: name,
+                    price: price,
+                    date: widget.expenseDate,
+                    created: widget.expense?.created ?? DateTime.now(),
+                    expenseType: selectedExpenseType,
+                    updated: widget.expense != null ? DateTime.now() : null
+                    // isReturnable: widget.expense?.isReturnable ?? _isReturnable
                     );
+
+                if (widget.isFromCollection == true) {
+                  exp.id = -1;
+                  Navigator.pop(context, exp);
+                } else {
+                  var getExceedList = _expenseService.exceededExpenses([exp]);
+                  int result = _expenseService.createExpense(exp);
+
+                  if (result == 1) {
+                    Navigator.pop(context, true);
+                    if (getExceedList != null) {
+                      InfoDialog.showInfo(
+                          title: 'Limit Info',
+                          context: context,
+                          content: [Text(getExceedList.join('\n'))]);
+                    }
+                    MessageWidget.showToast(
+                        context: context,
+                        message:
+                            ' ${widget.expense == null ? 'Created' : 'Edited'} expense ${exp.name}',
+                        status: 1);
+                  } else {
+                    MessageWidget.showToast(
+                        context: context,
+                        message: 'Error while creating expense',
+                        status: 0);
                   }
-                  MessageWidget.showToast(context:context ,message: ' ${widget.expense ==null ? 'Created' : 'Edited' } expense ${exp.name}',status: 1);
-                }
-                else{
-                  MessageWidget.showToast(
-                      context: context,
-                      message: 'Error while creating expense',
-                      status: 0);
                 }
               }
-
-
-            }
-          },
-          child: Text(widget.expense != null ? 'Update' : 'Create'),
-        ),
+            },
+            child: Text(widget.expense != null ? 'Update' : 'Create'),
+          ),
       ],
     );
   }

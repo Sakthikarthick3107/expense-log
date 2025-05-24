@@ -189,8 +189,7 @@ class _CollectionFormModalState extends State<CollectionFormModal> {
                             updated: widget.collection?.created != null
                                 ? DateTime.now()
                                 : null);
-                        List<String>? exceedList = _expenseService
-                            .exceededExpenses(newCollection.expenseList);
+
                         int status = await _collectionService
                             .createCollection(newCollection);
                         final action =
@@ -201,13 +200,7 @@ class _CollectionFormModalState extends State<CollectionFormModal> {
                               context: context,
                               message: 'Successfully $action collection',
                               status: 1);
-                          if (exceedList != null && exceedList.isNotEmpty) {
-                            WarningDialog.showWarning(
-                                context: context,
-                                title: 'Info',
-                                message: exceedList.join('\n'),
-                                onConfirmed: () {});
-                          }
+
                           addedExpenseNotifier.value.clear();
                         } else {
                           Navigator.pop(context);
