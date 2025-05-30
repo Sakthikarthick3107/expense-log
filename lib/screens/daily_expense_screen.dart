@@ -1,7 +1,4 @@
-import 'package:expense_log/models/expense.dart';
 import 'package:expense_log/models/expense2.dart';
-import 'package:expense_log/models/expense_type.dart';
-import 'package:expense_log/screens/expense_type_screen.dart';
 import 'package:expense_log/screens/home_screen.dart';
 import 'package:expense_log/services/audit_log_service.dart';
 import 'package:expense_log/services/collection_service.dart';
@@ -18,6 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
 import '../models/collection.dart';
 
@@ -402,162 +400,160 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
           ],
         ),
       ),
-      floatingActionButton: Container(
-        margin: EdgeInsets.symmetric(vertical: 50, horizontal: 30),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            if (_expenseService
-                .getExpensesOfTheDay(_selectedDateNotifier.value)
-                .isNotEmpty)
-              FloatingActionButton(
-                onPressed: () async {
-                  WarningDialog.showWarning(
-                      context: context,
-                      title: 'Daily Expense Report',
-                      message:
-                          'Proceed to download report for ${_uiService.displayDay(_selectedDateNotifier.value)}',
-                      onConfirmed: () async {
-                        MessageWidget.showToast(
-                            context: context,
-                            message: 'Downloading in progress...');
-                        await _reportService.prepareDailyExpenseReport(
-                            _expenseService.getExpensesOfTheDay(
-                                _selectedDateNotifier.value));
-                      });
-                },
-                child: Icon(Icons.print),
-                tooltip: 'Daily Expense Report',
-              ),
-            SizedBox(
-              height: 10,
-            ),
-            if (availableCollections.isNotEmpty)
-              FloatingActionButton(
-                onPressed: () {
-                  showModalBottomSheet(
-                      isScrollControlled: true,
-                      showDragHandle: true,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.vertical(top: Radius.circular(20)),
-                      ),
-                      context: context,
-                      builder: (context) {
-                        return ViewCollectionModal(
-                          collections: availableCollections,
-                          expenseDate: _selectedDateNotifier.value,
-                        );
-                      });
-                },
-                child: Icon(Icons.collections_bookmark_rounded),
-                tooltip: 'Load from Collection',
-              ),
-            SizedBox(
-              height: 10,
-            ),
-            FloatingActionButton(
-              tooltip: 'Copy',
-              onPressed: () async {
-                DateTime? copyFromDate = await _uiService.selectDate(context,
-                    last: DateTime.now(),
-                    current: _selectedDateNotifier.value,
-                    title: 'Select a date to copy expenses');
+      floatingActionButton: SpeedDial(
+        icon: Icons.menu,
+        activeIcon: Icons.close,
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Colors.white,
+        activeBackgroundColor: Colors.redAccent,
+        spacing: 10,
+        spaceBetweenChildren: 10,
+        childrenButtonSize: const Size(45, 45),
+        buttonSize: const Size(50, 50),
+        overlayOpacity: 0.1,
+        elevation: 8.0,
+        children: [
+          if (_expenseService
+              .getExpensesOfTheDay(_selectedDateNotifier.value)
+              .isNotEmpty)
+            SpeedDialChild(
+              child: const Icon(Icons.print),
+              label: 'Daily Expense Report',
+              labelBackgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              onTap: () {
                 WarningDialog.showWarning(
                     context: context,
-                    title: 'Confirm',
-                    message: 'Are you '
-                        'sure to copy expenses of '
-                        '${_uiService.displayDay(copyFromDate)} '
-                        'to ${_uiService.displayDay(_selectedDateNotifier.value)}',
+                    title: 'Daily Expense Report',
+                    message:
+                        'Proceed to download report for ${_uiService.displayDay(_selectedDateNotifier.value)}',
                     onConfirmed: () async {
-                      if (copyFromDate != null) {
-                        List<String> getExceedList = [];
-                        int createCopiedExpenses =
-                            await _expenseService.copyAndSaveExpenses(
-                                copyFromDate: copyFromDate,
-                                pasteToDate: _selectedDateNotifier.value,
-                                exceedList: getExceedList);
-                        if (createCopiedExpenses == 0) {
-                          setState(() {
-                            totalExpense =
-                                _expenseService.selectedDayTotalExpense(
-                                    _selectedDateNotifier.value);
-                            _metricsData = _expenseService
-                                .getMetrics('This month', 'By type', []);
-                          });
-                          MessageWidget.showToast(
+                      MessageWidget.showToast(
+                          context: context,
+                          message: 'Downloading in progress...');
+                      await _reportService.prepareDailyExpenseReport(
+                        _expenseService
+                            .getExpensesOfTheDay(_selectedDateNotifier.value),
+                      );
+                    });
+              },
+            ),
+          if (availableCollections.isNotEmpty)
+            SpeedDialChild(
+              child: const Icon(Icons.collections_bookmark_rounded),
+              label: 'Load from Collection',
+              labelBackgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              onTap: () {
+                showModalBottomSheet(
+                    isScrollControlled: true,
+                    showDragHandle: true,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.vertical(top: Radius.circular(20)),
+                    ),
+                    context: context,
+                    builder: (context) {
+                      return ViewCollectionModal(
+                        collections: availableCollections,
+                        expenseDate: _selectedDateNotifier.value,
+                      );
+                    });
+              },
+            ),
+          SpeedDialChild(
+            child: const Icon(Icons.copy),
+            label: 'Copy expense from other day',
+            labelBackgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            onTap: () async {
+              DateTime? copyFromDate = await _uiService.selectDate(context,
+                  last: DateTime.now(),
+                  current: _selectedDateNotifier.value,
+                  title: 'Select a date to copy expenses');
+              WarningDialog.showWarning(
+                  context: context,
+                  title: 'Confirm',
+                  message: 'Are you sure to copy expenses of '
+                      '${_uiService.displayDay(copyFromDate)} '
+                      'to ${_uiService.displayDay(_selectedDateNotifier.value)}',
+                  onConfirmed: () async {
+                    if (copyFromDate != null) {
+                      List<String> getExceedList = [];
+                      int createCopiedExpenses =
+                          await _expenseService.copyAndSaveExpenses(
+                              copyFromDate: copyFromDate,
+                              pasteToDate: _selectedDateNotifier.value,
+                              exceedList: getExceedList);
+                      if (createCopiedExpenses == 0) {
+                        setState(() {
+                          totalExpense =
+                              _expenseService.selectedDayTotalExpense(
+                                  _selectedDateNotifier.value);
+                          _metricsData = _expenseService
+                              .getMetrics('This month', 'By type', []);
+                        });
+                        MessageWidget.showToast(
+                            context: context,
+                            message: 'Copied successfully',
+                            status: 1);
+                        if (getExceedList.isNotEmpty) {
+                          InfoDialog.showInfo(
                               context: context,
-                              message: 'Copied successfully',
-                              status: 1);
-                          if (getExceedList.isNotEmpty) {
-                            InfoDialog.showInfo(
-                                context: context,
-                                content: [Text(getExceedList.join('\n'))]);
-                            AuditLogService.writeLog(
-                                'Limit Summary - ${getExceedList.join(',')}');
-                          }
-                        } else if (createCopiedExpenses == -1) {
-                          MessageWidget.showToast(
-                              context: context,
-                              message: 'No expenses in the selected date!',
-                              status: 0);
-                        } else if (createCopiedExpenses > 0) {
-                          MessageWidget.showToast(
-                              context: context,
-                              message:
-                                  '${createCopiedExpenses} expenses exceeded their limits and were skipped.');
-                        } else if (createCopiedExpenses == -2) {
-                          MessageWidget.showToast(
-                              context: context,
-                              message: 'Error when copying expenses',
-                              status: 0);
+                              content: [Text(getExceedList.join('\n'))]);
+                          AuditLogService.writeLog(
+                              'Limit Summary - ${getExceedList.join(',')}');
                         }
+                      } else if (createCopiedExpenses == -1) {
+                        MessageWidget.showToast(
+                            context: context,
+                            message: 'No expenses in the selected date!',
+                            status: 0);
+                      } else if (createCopiedExpenses > 0) {
+                        MessageWidget.showToast(
+                            context: context,
+                            message:
+                                '${createCopiedExpenses} expenses exceeded their limits and were skipped.');
+                      } else if (createCopiedExpenses == -2) {
+                        MessageWidget.showToast(
+                            context: context,
+                            message: 'Error when copying expenses',
+                            status: 0);
                       }
-                    });
-              },
-              child: const Icon(Icons.copy),
-            ),
-            SizedBox(
-              height: 10,
-            ),
-            FloatingActionButton(
-              tooltip: 'Create',
-              onPressed: () async {
-                final getTypes = _expenseService.getExpenseTypes();
-                if (getTypes.isNotEmpty) {
-                  final result = await showDialog<bool>(
-                      context: context,
-                      builder: (context) => ExpenseForm(
-                          expenseDate: _selectedDateNotifier.value));
-                  if (result == true) {
-                    setState(() {
-                      totalExpense = _expenseService
-                          .selectedDayTotalExpense(_selectedDateNotifier.value);
-                      _metricsData = _expenseService
-                          .getMetrics('This month', 'By type', []);
-                    });
-                  }
-                } else {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => HomeScreen(
-                                initialIndex: 1,
-                              )));
-                  MessageWidget.showToast(
-                      context: context,
-                      message:
-                          'Create your expense type for adding your expense and keep track of it');
+                    }
+                  });
+            },
+          ),
+          SpeedDialChild(
+            child: const Icon(Icons.add),
+            label: 'Create New Expense',
+            labelBackgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            onTap: () async {
+              final getTypes = _expenseService.getExpenseTypes();
+              if (getTypes.isNotEmpty) {
+                final result = await showDialog<bool>(
+                    context: context,
+                    builder: (context) =>
+                        ExpenseForm(expenseDate: _selectedDateNotifier.value));
+                if (result == true) {
+                  setState(() {
+                    totalExpense = _expenseService
+                        .selectedDayTotalExpense(_selectedDateNotifier.value);
+                    _metricsData =
+                        _expenseService.getMetrics('This month', 'By type', []);
+                  });
                 }
-              },
-              child: const Icon(
-                Icons.add,
-                size: 30,
-              ),
-            ),
-          ],
-        ),
+              } else {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            const HomeScreen(initialIndex: 1)));
+                MessageWidget.showToast(
+                    context: context,
+                    message:
+                        'Create your expense type for adding your expense and keep track of it');
+              }
+            },
+          ),
+        ],
       ),
     );
   }

@@ -115,36 +115,45 @@ class PdfHelper {
       return pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
-          pw.Table(border: pw.TableBorder.all(), columnWidths: {
-            0: pw.FlexColumnWidth(2),
-            1: pw.FlexColumnWidth(1)
-          }, children: [
-            pw.TableRow(
-              decoration: pw.BoxDecoration(color: PdfColors.grey300),
+          // _buildDashedLine(),
+          pw.Table(
+              // border: pw.TableBorder.all(),
+              columnWidths: {
+                0: pw.FlexColumnWidth(2),
+                1: pw.FlexColumnWidth(1)
+              },
               children: [
-                pw.Padding(
-                  padding: const pw.EdgeInsets.all(8),
-                  child: pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      PdfHelper.text(
-                        '$expenseType',
-                        fontSize: 18,
+                pw.TableRow(
+                  decoration: pw.BoxDecoration(color: PdfColors.grey300),
+                  children: [
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(8),
+                      child: pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          PdfHelper.text(
+                            '$expenseType',
+                            fontSize: 14,
+                            fontWeight: pw.FontWeight.bold,
+                          ),
+                          PdfHelper.text(
+                            '${expenseList[0].expenseType.description}',
+                          ),
+                        ],
+                      ),
+                    ),
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(8),
+                      child: PdfHelper.text(
+                        '₹ ${totalExpense}',
+                        fontSize: 14,
                         fontWeight: pw.FontWeight.bold,
                       ),
-                      PdfHelper.text(
-                        '${expenseList[0].expenseType.description}',
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                pw.Padding(
-                  padding: const pw.EdgeInsets.all(8),
-                  child: PdfHelper.text('₹ ${totalExpense}'),
-                ),
-              ],
-            ),
-          ]),
+              ]),
+          // _buildDashedLine(),
           pw.Table(
             // border: pw.TableBorder.all(),
             columnWidths: {
@@ -155,11 +164,13 @@ class PdfHelper {
               ...expenseList.map((expense) => pw.TableRow(
                     children: [
                       pw.Padding(
-                        padding: const pw.EdgeInsets.all(8),
+                        padding: const pw.EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 1),
                         child: PdfHelper.text(expense.name),
                       ),
                       pw.Padding(
-                        padding: const pw.EdgeInsets.all(8),
+                        padding: const pw.EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 1),
                         child: PdfHelper.text('₹${expense.price}'),
                       ),
                     ],
@@ -195,33 +206,42 @@ class PdfHelper {
       return pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
-          pw.Table(border: pw.TableBorder.all(), columnWidths: {
-            0: pw.FlexColumnWidth(2),
-            1: pw.FlexColumnWidth(1),
-          }, children: [
-            pw.TableRow(
-              decoration: pw.BoxDecoration(color: PdfColors.grey300),
+          // _buildDashedLine(),
+          pw.Table(
+              // border: pw.TableBorder.all(),
+              columnWidths: {
+                0: pw.FlexColumnWidth(2),
+                1: pw.FlexColumnWidth(1),
+              },
               children: [
-                pw.Padding(
-                  padding: const pw.EdgeInsets.all(8),
-                  child: pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      PdfHelper.text(
-                        DateFormat("d MMM yy").format(expenseDay),
-                        fontSize: 12,
+                pw.TableRow(
+                  decoration: pw.BoxDecoration(color: PdfColors.grey300),
+                  children: [
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(8),
+                      child: pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          PdfHelper.text(
+                            DateFormat("d MMM yy").format(expenseDay),
+                            fontSize: 12,
+                            fontWeight: pw.FontWeight.bold,
+                          ),
+                        ],
+                      ),
+                    ),
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(8),
+                      child: PdfHelper.text(
+                        '₹ ${totalExpense}',
+                        fontSize: 14,
                         fontWeight: pw.FontWeight.bold,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                pw.Padding(
-                  padding: const pw.EdgeInsets.all(8),
-                  child: PdfHelper.text('₹ ${totalExpense}'),
-                ),
-              ],
-            ),
-          ]),
+              ]),
+          // _buildDashedLine(),
           pw.Table(
             // border: pw.TableBorder.all(),
             columnWidths: {
@@ -232,11 +252,13 @@ class PdfHelper {
               ...expenseList.map((expense) => pw.TableRow(
                     children: [
                       pw.Padding(
-                        padding: const pw.EdgeInsets.all(8),
+                        padding: const pw.EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 1),
                         child: PdfHelper.text(expense.name),
                       ),
                       pw.Padding(
-                        padding: const pw.EdgeInsets.all(8),
+                        padding: const pw.EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 1),
                         child: PdfHelper.text('₹${expense.price}'),
                       ),
                     ],
@@ -246,5 +268,23 @@ class PdfHelper {
         ],
       );
     }).toList();
+  }
+
+  static pw.Widget _buildDashedLine({
+    double dashWidth = 5,
+    double dashSpace = 3,
+    double totalWidth = 500,
+  }) {
+    final dashCount = (totalWidth / (dashWidth + dashSpace)).floor();
+    return pw.Wrap(
+      spacing: dashSpace,
+      children: List.generate(dashCount, (_) {
+        return pw.Container(
+          width: dashWidth,
+          height: 1,
+          color: PdfColors.grey700,
+        );
+      }),
+    );
   }
 }
