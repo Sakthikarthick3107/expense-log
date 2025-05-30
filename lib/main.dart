@@ -20,6 +20,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:expense_log/services/telegram_service.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_log/utility/pdf_helper.dart';
 import 'package:timezone/data/latest.dart' as tz;
@@ -27,6 +28,16 @@ import 'package:timezone/timezone.dart' as tz;
 import 'dart:async';
 
 import 'models/collection.dart';
+
+void startTelegramPolling() {
+  Timer.periodic(Duration(seconds: 5), (timer) async {
+    try {
+      await TelegramService.checkForUpdates();
+    } catch (e) {
+      print('Telegram polling error: $e');
+    }
+  });
+}
 
 Future<void> requestPermissions() async {
   final permissions = [
@@ -65,9 +76,6 @@ void main() async {
   await Hive.openBox<UpiLog>('upiLogBox');
   await Hive.openBox<app_message.Message>('messageBox');
 
-
-
-
   // await checkAndRunMigration();
   tz.initializeTimeZones(); // Initialize timezone
   await NotificationService.initialize();
@@ -77,7 +85,7 @@ void main() async {
     debug: true,
     ignoreSsl: true,
   );
-
+  startTelegramPolling();
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (_) => SettingsService()),
