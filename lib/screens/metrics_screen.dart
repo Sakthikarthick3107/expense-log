@@ -4,6 +4,7 @@ import 'package:expense_log/services/expense_service.dart';
 import 'package:expense_log/services/report_service.dart';
 import 'package:expense_log/services/settings_service.dart';
 import 'package:expense_log/services/ui_service.dart';
+import 'package:expense_log/widgets/calendar_chart_widget.dart';
 import 'package:expense_log/widgets/expense_bar_chart.dart';
 import 'package:expense_log/widgets/expense_pie_chart.dart';
 import 'package:expense_log/widgets/message_widget.dart';
@@ -38,6 +39,7 @@ class _MetricsScreenState extends State<MetricsScreen> {
       ValueNotifier<String>('By type');
   late Map<String, double> _metricsData = {};
   late Map<String, double> _barCharData = {};
+  late Map<DateTime, double> _calendarChartData = {};
   DateTimeRange? selectedDateRange;
   late List<String> _expenseTypesOfDuration;
   late List<String> _unSelectedTypes = [];
@@ -65,6 +67,9 @@ class _MetricsScreenState extends State<MetricsScreen> {
     _barCharData = _expenseService.getMetrics(
         _selectedDurationNotifier.value, 'By type', _unSelectedTypes,
         customDateRange: selectedDateRange);
+    _calendarChartData = _expenseService.getMetrics<DateTime>(
+        _selectedDurationNotifier.value, 'By day', _unSelectedTypes,
+        customDateRange: selectedDateRange);
     _selectedDurationNotifier.addListener(() {
       _expenseTypesOfDuration = _expenseService.expenseTypesOfSelectedDuration(
           _selectedDurationNotifier.value,
@@ -80,6 +85,9 @@ class _MetricsScreenState extends State<MetricsScreen> {
       _barCharData = _expenseService.getMetrics(
           _selectedDurationNotifier.value, 'By type', _unSelectedTypes,
           customDateRange: selectedDateRange);
+      _calendarChartData = _expenseService.getMetrics(
+          _selectedDurationNotifier.value, 'By day', _unSelectedTypes,
+          customDateRange: selectedDateRange);
     });
     _selectedMetricBy.addListener(() {
       _metricsData = _expenseService.getMetrics(_selectedDurationNotifier.value,
@@ -92,6 +100,9 @@ class _MetricsScreenState extends State<MetricsScreen> {
           customDateRange: selectedDateRange);
       _barCharData = _expenseService.getMetrics(
           _selectedDurationNotifier.value, 'By type', _unSelectedTypes,
+          customDateRange: selectedDateRange);
+      _calendarChartData = _expenseService.getMetrics(
+          _selectedDurationNotifier.value, 'By day', _unSelectedTypes,
           customDateRange: selectedDateRange);
     });
   }
@@ -146,6 +157,11 @@ class _MetricsScreenState extends State<MetricsScreen> {
                         'By type',
                         _unSelectedTypes,
                         customDateRange: selectedDateRange);
+                    _calendarChartData = _expenseService.getMetrics(
+                        _selectedDurationNotifier.value,
+                        'By day',
+                        _unSelectedTypes,
+                        customDateRange: selectedDateRange);
                   });
                 },
                 child: Text("OK"),
@@ -183,7 +199,7 @@ class _MetricsScreenState extends State<MetricsScreen> {
                       child: Text(
                         '₹ ${_metricsData2.keys.first['Total']?.toStringAsFixed(2)}',
                         style: const TextStyle(
-                            fontSize: 35, fontWeight: FontWeight.bold),
+                            fontSize: 28, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),
@@ -273,11 +289,27 @@ class _MetricsScreenState extends State<MetricsScreen> {
                                       ? ExpenseBarChart(
                                           expenseData: Map.from(_barCharData)
                                             ..remove('Total'))
-                                      : SingleChildScrollView(
-                                          child: ExpensePieChart(
-                                              expenseData:
-                                                  Map.from(_barCharData)
-                                                    ..remove('Total'))),
+                                      : settingsService.getMetricChart() ==
+                                              'Pie Chart'
+                                          ? SingleChildScrollView(
+                                              child: ExpensePieChart(
+                                                  expenseData:
+                                                      Map.from(_barCharData)
+                                                        ..remove('Total')))
+                                          : Container(
+                                              height: 200,
+                                              child: SingleChildScrollView(
+                                                child: CalendarChartWidget(
+                                                  dayAmountMap:
+                                                      _calendarChartData,
+                                                  durationType:
+                                                      _selectedDurationNotifier
+                                                          .value, // e.g. 'This week', 'Month', 'Custom', etc.
+                                                  customDateRange:
+                                                      selectedDateRange,
+                                                ),
+                                              ),
+                                            ),
                                 ),
                               ),
                               ...primaryMetric

@@ -429,20 +429,22 @@ class ExpenseService {
     return usedTypes;
   }
 
-  Map<String, double> getMetrics(
-      String duration, String metricBy, List<String> unselectedTypes,
-      {DateTimeRange? customDateRange}) {
+  Map<K, double> getMetrics<K>(
+    String duration,
+    String metricBy,
+    List<String> unselectedTypes, {
+    DateTimeRange? customDateRange,
+  }) {
     final expenseTypes = getExpenseTypes();
     final expenses = getExpenses();
-    Map<String, double> metricData = {'Total': 0.0};
+    final uiService = UiService();
 
-    DateTime startDate;
-    DateTime endDate;
-    DateRange? getRange =
-        uiService.getDateRange(duration, customDateRange: customDateRange);
+    Map<K, double> metricData = {};
 
-    startDate = getRange!.start;
-    endDate = getRange.end;
+    final range =
+        uiService.getDateRange(duration, customDateRange: customDateRange)!;
+    final startDate = range.start;
+    final endDate = range.end;
 
     if (metricBy == 'By type') {
       for (var expenseType in expenseTypes) {
@@ -450,38 +452,35 @@ class ExpenseService {
             .where((expense) =>
                 expense.expenseType.id == expenseType.id &&
                 !expense.date.isBefore(startDate) &&
-                expense.date.isBefore(endDate.add(Duration(days: 1))) &&
+                expense.date.isBefore(endDate.add(const Duration(days: 1))) &&
                 !unselectedTypes.contains(expenseType.name))
             .fold(0.0, (sum, expense) => sum + expense.price);
 
         if (total != 0) {
-          metricData[expenseType.name] = total;
-          metricData['Total'] = (metricData['Total'] ?? 0.0) + total;
+          metricData[expenseType.name as K] = total;
         }
       }
     } else if (metricBy == 'By day') {
-      UiService uiService = UiService();
-      Map<DateTime, double> tempMetricsData = {};
-      double overallTotal = 0.0;
+      final Map<K, double> tempMetricsData = {};
+
       for (var expense in expenses.where((exp) =>
           !unselectedTypes.contains(exp.expenseType.name) &&
           !exp.date.isBefore(startDate) &&
-          exp.date.isBefore(endDate.add(Duration(days: 1))))) {
-        DateTime day =
+          exp.date.isBefore(endDate.add(const Duration(days: 1))))) {
+        final DateTime day =
             DateTime(expense.date.year, expense.date.month, expense.date.day);
-        tempMetricsData[day] = (tempMetricsData[day] ?? 0.0) + expense.price;
-        overallTotal += expense.price;
-      }
-      List<DateTime> sortedDays = tempMetricsData.keys.toList();
-      sortedDays.sort((a, b) => b.compareTo(a));
-      Map<String, double> sortedMetricsData = {'Total': overallTotal};
 
-      for (DateTime day in sortedDays) {
-        String dayString = uiService.displayDay(day);
-        double dailyTotal = tempMetricsData[day]!;
-        sortedMetricsData[dayString] = dailyTotal;
+        final key = (K == DateTime ? day : day.toString()) as K;
+
+        tempMetricsData[key] = (tempMetricsData[key] ?? 0.0) + expense.price;
       }
-      metricData = sortedMetricsData;
+
+      final sortedKeys = tempMetricsData.keys.toList()
+        ..sort((a, b) => b.toString().compareTo(a.toString()));
+
+      for (final key in sortedKeys) {
+        metricData[key] = tempMetricsData[key]!;
+      }
     }
 
     return metricData;

@@ -283,7 +283,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           settingsService.setMetricChart(newValue);
                         }
                       },
-                      items: ['Bar Chart', 'Pie Chart']
+                      items: ['Bar Chart', 'Pie Chart', 'Calendar Chart']
                           .map<DropdownMenuItem<String>>((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
