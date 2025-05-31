@@ -198,8 +198,8 @@ class AppUpdate {
               Text(
                   'A new version  $latestVersion is available.\nIf you face any difficulties in updating, kindly tap on the Copy link and paste it in your browser or contact developer!'),
               const SizedBox(height: 4),
-              const Text('Release Notes:'),
               Text(releaseNotes),
+              const Text('Release Notes:'),
               InkWell(
                 onTap: () {
                   _copyLinkToClipboard(context, downloadUrl);
@@ -214,8 +214,6 @@ class AppUpdate {
                   ),
                 ),
               ),
-              const SizedBox(height: 10),
-              Text(releaseNotes),
             ],
           )),
           actions: [
