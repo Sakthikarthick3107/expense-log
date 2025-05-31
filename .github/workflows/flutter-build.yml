@@ -91,7 +91,7 @@ jobs:
           name: upload_url_file
           path: upload_url.txt
 
- build-ios:
+  build-ios:
    name: Build iOS
    runs-on: macos-latest
    needs: build-apk  # Optional: Only if you want APK to build first
