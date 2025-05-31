@@ -407,7 +407,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _launchURL('http://t.me/ExpenseChatterBot');
                 },
                 subtitle: Text(
-                  'Chat with ExpenseLog Telegram bot .Please keep expense log open while chatting with Telegram bot for getting replies.',
+                  'Chat with ExpenseLog Telegram bot .Keep expense log open while chatting with Telegram bot for getting replies.',
                   style: TextStyle(fontSize: 8),
                 ),
               ),

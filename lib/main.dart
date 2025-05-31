@@ -15,6 +15,7 @@ import 'package:expense_log/services/upi_service.dart';
 import 'package:expense_log/themes/app_theme.dart';
 import 'package:expense_log/widgets/message_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -26,6 +27,7 @@ import 'package:expense_log/utility/pdf_helper.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'dart:async';
+import 'package:device_preview/device_preview.dart';
 
 import 'models/collection.dart';
 
@@ -85,24 +87,27 @@ void main() async {
     debug: true,
     ignoreSsl: true,
   );
-  startTelegramPolling();
-  runApp(MultiProvider(
-    providers: [
-      ChangeNotifierProvider(create: (_) => SettingsService()),
-      Provider(create: (_) => UiService()),
-      ProxyProvider<UiService, ExpenseService>(
-        update: (_, uiService, __) => ExpenseService(uiService: uiService),
-      ),
-      Provider(
-        create: (_) => CollectionService(),
-      ),
-      Provider(create: (_) => UpiService()),
-      Provider(create: (_) => ReportService())
-      // ProxyProvider2<ExpenseService,SettingsService,UiService>(
-      //     update: (_,expenseService,settingsService,__)=> UiService(expenseService, settingsService)
-      // )
-    ],
-    child: const MyApp(),
+  // startTelegramPolling();
+  runApp(DevicePreview(
+    enabled: !kReleaseMode,
+    builder: (context) => MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => SettingsService()),
+        Provider(create: (_) => UiService()),
+        ProxyProvider<UiService, ExpenseService>(
+          update: (_, uiService, __) => ExpenseService(uiService: uiService),
+        ),
+        Provider(
+          create: (_) => CollectionService(),
+        ),
+        Provider(create: (_) => UpiService()),
+        Provider(create: (_) => ReportService())
+        // ProxyProvider2<ExpenseService,SettingsService,UiService>(
+        //     update: (_,expenseService,settingsService,__)=> UiService(expenseService, settingsService)
+        // )
+      ],
+      child: const MyApp(),
+    ),
   ));
 }
 
