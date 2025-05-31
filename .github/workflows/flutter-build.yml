@@ -1,4 +1,4 @@
-name: Flutter APK Build and Deploy
+name: Flutter Build and Deploy
 
 on:
   push:
@@ -82,14 +82,62 @@ jobs:
       - name: Output Upload URL
         run: echo "UPLOAD_URL=${{ steps.create_release.outputs.upload_url }}" >> $GITHUB_ENV
 
-#      - name: Save upload_url to file
-#        run: echo "${{ steps.create_release.outputs.upload_url }}" > upload_url.txt
-#
-#      - name: Upload upload_url.txt
-#        uses: actions/upload-artifact@v3
-#        with:
-#          name: upload_url_file
-#          path: upload_url.txt
+      - name: Save upload_url to file
+        run: echo "${{ steps.create_release.outputs.upload_url }}" > upload_url.txt
+
+      - name: Upload upload_url.txt
+        uses: actions/upload-artifact@v3
+        with:
+         name: upload_url_file
+         path: upload_url.txt
+  build-ios:
+    name: Build iOS and Upload IPA
+    runs-on: macos-latest
+    needs: build-apk
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.3'  # Use your specific Flutter version
+
+      - name: Install CocoaPods
+        run: |
+          sudo gem install cocoapods
+          pod setup
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Install iOS dependencies
+        run: |
+          cd ios
+          pod install
+          cd ..
+
+      - name: Build iOS
+        run: flutter build ios --release --no-codesign
+
+      - name: Archive to IPA
+        run: |
+          mkdir Payload
+          cp -r build/ios/iphoneos/Runner.app Payload/
+          cd Payload
+          zip -r ../Runner.ipa .
+          cd ..
+
+      - name: Upload IPA to GitHub Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.build-apk.outputs.upload_url }}
+          asset_path: Runner.ipa
+          asset_name: expense_log_ios.ipa
+          asset_content_type: application/octet-stream
 
 #  build-ios:
 #    name: Build iOS
