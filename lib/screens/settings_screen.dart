@@ -401,16 +401,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: Text('Customize Navigation'),
               ),
               Text('Background'),
-              ListTile(
-                title: Text("Telegram Chat"),
-                onTap: () async {
-                  _launchURL('http://t.me/ExpenseChatterBot');
-                },
-                subtitle: Text(
-                  'Chat with ExpenseLog Telegram bot .Keep expense log open while chatting with Telegram bot for getting replies.',
-                  style: TextStyle(fontSize: 8),
-                ),
-              ),
+              // ListTile(
+              //   title: Text("Telegram Chat"),
+              //   onTap: () async {
+              //     _launchURL('http://t.me/ExpenseChatterBot');
+              //   },
+              //   subtitle: Text(
+              //     'Chat with ExpenseLog Telegram bot .Keep expense log open while chatting with Telegram bot for getting replies.',
+              //     style: TextStyle(fontSize: 8),
+              //   ),
+              // ),
               ListTile(
                   title: Text('Activity Logging'),
                   onTap: () async {

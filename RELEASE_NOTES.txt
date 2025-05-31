@@ -1,6 +1,14 @@
-Version: 1.0.15
-Date : 28 -12-2024
+## 📦 Release Notes - v2.2.4
 
-New Features:
- - Update inside the app
- - Share app with your friends
+### 🛠 Bug Fixes & UI Improvements
+
+#### 🐞 Bug Fixes
+- Fixed report spacing and layout issues
+- Resolved icon alignment problems on the **Expense** screen
+
+#### 🎨 UI Updates
+- Improved **Expense Types** UI for better user experience
+- Enhanced **Release Notes** display for updates clarity
+
+---
+_Thank you for using Expense Log! Your feedback helps us improve._
