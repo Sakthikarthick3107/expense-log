@@ -1,17 +1,16 @@
-## 📦 Release Notes - v2.2.5
-#### Released on: 2025-06-01 12:45 AM
+## 📦 Release Notes - v2.2.6  
+#### Released on: 2025-06-01 3:20 PM
 
 ### 🚀 Enhancements & UI Improvements
 
 #### ✨ New Features
 
-* Added a new **Calendar Chart** in the **Metrics** screen for better visual insights
-* Introduced **Daily Usage Heat Map** to easily track activity intensity over time
+* Added **Expense Type History** visualization using an **Area Chart** for clearer trend analysis
 
 #### 🎨 UI Updates
 
-* Improved overall user experience with refined visuals and smoother interactions
+* Reduced font size in reports for improved readability and better layout
 
 ---
 
-*Thank you for using Expense Log! Your feedback helps us grow and improve.*
+*Thank you for using Expense Log! Your feedback drives our continuous improvement.*

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:expense_log/services/audit_log_service.dart';
+import 'package:expense_log/updates/ShowReleaseNotes.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:expense_log/widgets/message_widget.dart';
 import 'package:flutter/cupertino.dart';
@@ -123,7 +124,6 @@ class AppUpdate {
         final releaseNotes = jsonData['body'] ?? 'No release notes provided.';
         final downloadUrl = jsonData['assets'][0]['browser_download_url'];
 
-        // print('Url downlpad - $downloadUrl');
         if (isNewVersion(latestVersion, currentVersion)) {
           AuditLogService.writeLog(
               'New version of app is found ${latestVersion}');
@@ -197,9 +197,6 @@ class AppUpdate {
             children: [
               Text(
                   'A new version  $latestVersion is available.\nIf you face any difficulties in updating, kindly tap on the Copy link and paste it in your browser or contact developer!'),
-              const SizedBox(height: 4),
-              Text(releaseNotes),
-              const Text('Release Notes:'),
               InkWell(
                 onTap: () {
                   _copyLinkToClipboard(context, downloadUrl);
@@ -214,6 +211,12 @@ class AppUpdate {
                   ),
                 ),
               ),
+              const SizedBox(height: 4),
+              TextButton(
+                  onPressed: () {
+                    showReleaseNotesBottomSheet(context, releaseNotes);
+                  },
+                  child: Text('Show Release Notes 📋'))
             ],
           )),
           actions: [
@@ -221,7 +224,7 @@ class AppUpdate {
               onPressed: () => Navigator.pop(context),
               child: Text('Later'),
             ),
-            TextButton(
+            ElevatedButton(
               onPressed: () async {
                 Navigator.pop(context, true);
                 // await _launchUrl(downloadUrl);

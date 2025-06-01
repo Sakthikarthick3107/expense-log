@@ -41,7 +41,7 @@ class PdfHelper {
       pw.Center(
         child: text(
           reportTitle,
-          fontSize: 24,
+          fontSize: 18,
           fontWeight: pw.FontWeight.bold,
         ),
       ),
@@ -49,11 +49,11 @@ class PdfHelper {
       pw.Center(
         child: text(
           subtitle,
-          fontSize: 18,
+          fontSize: 14,
           fontWeight: pw.FontWeight.bold,
         ),
       ),
-      pw.SizedBox(height: 20),
+      pw.SizedBox(height: 14),
     ];
   }
 
@@ -84,7 +84,7 @@ class PdfHelper {
         children: [
           text(
             footerTitle,
-            fontSize: 12,
+            fontSize: 10,
             color: PdfColors.grey600,
           ),
           text(
@@ -133,7 +133,7 @@ class PdfHelper {
                         children: [
                           PdfHelper.text(
                             '$expenseType',
-                            fontSize: 14,
+                            fontSize: 12,
                             fontWeight: pw.FontWeight.bold,
                           ),
                           PdfHelper.text(
@@ -146,7 +146,7 @@ class PdfHelper {
                       padding: const pw.EdgeInsets.all(8),
                       child: PdfHelper.text(
                         '₹ ${totalExpense}',
-                        fontSize: 14,
+                        fontSize: 12,
                         fontWeight: pw.FontWeight.bold,
                       ),
                     ),
@@ -166,12 +166,13 @@ class PdfHelper {
                       pw.Padding(
                         padding: const pw.EdgeInsets.symmetric(
                             horizontal: 8, vertical: 1),
-                        child: PdfHelper.text(expense.name),
+                        child: PdfHelper.text(expense.name, fontSize: 10),
                       ),
                       pw.Padding(
                         padding: const pw.EdgeInsets.symmetric(
                             horizontal: 8, vertical: 1),
-                        child: PdfHelper.text('₹${expense.price}'),
+                        child:
+                            PdfHelper.text('₹${expense.price}', fontSize: 10),
                       ),
                     ],
                   )),
@@ -234,7 +235,7 @@ class PdfHelper {
                       padding: const pw.EdgeInsets.all(8),
                       child: PdfHelper.text(
                         '₹ ${totalExpense}',
-                        fontSize: 14,
+                        fontSize: 12,
                         fontWeight: pw.FontWeight.bold,
                       ),
                     ),
@@ -254,12 +255,13 @@ class PdfHelper {
                       pw.Padding(
                         padding: const pw.EdgeInsets.symmetric(
                             horizontal: 8, vertical: 1),
-                        child: PdfHelper.text(expense.name),
+                        child: PdfHelper.text(expense.name, fontSize: 10),
                       ),
                       pw.Padding(
                         padding: const pw.EdgeInsets.symmetric(
                             horizontal: 8, vertical: 1),
-                        child: PdfHelper.text('₹${expense.price}'),
+                        child:
+                            PdfHelper.text('₹${expense.price}', fontSize: 10),
                       ),
                     ],
                   )),

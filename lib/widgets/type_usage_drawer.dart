@@ -3,6 +3,7 @@ import 'package:expense_log/models/expense2.dart';
 import 'package:expense_log/services/report_service.dart';
 import 'package:expense_log/services/settings_service.dart';
 import 'package:expense_log/widgets/message_widget.dart';
+import 'package:expense_log/widgets/type_usage_chart.dart';
 import 'package:expense_log/widgets/warning_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -16,6 +17,8 @@ class TypeUsageDrawer extends StatefulWidget {
 }
 
 class _TypeUsageDrawerState extends State<TypeUsageDrawer> {
+  GroupBy _currentGroupBy = GroupBy.Week; // default value
+
   DateRange getTypeUsageRange(List<Expense2> expenses) {
     if (expenses.isEmpty) {
       return DateRange(
@@ -63,16 +66,34 @@ class _TypeUsageDrawerState extends State<TypeUsageDrawer> {
           return Container(
             color: Theme.of(context).scaffoldBackgroundColor,
             child: FractionallySizedBox(
-              heightFactor: 0.9,
+              heightFactor: 1,
               child: Column(
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      IconButton(
-                        onPressed: () async {},
-                        color: Theme.of(context).scaffoldBackgroundColor,
-                        icon: const Icon(Icons.print),
+                      Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: DropdownButton<GroupBy>(
+                          style: TextStyle(fontSize: 14),
+                          value: _currentGroupBy,
+                          items: [
+                            DropdownMenuItem(
+                              value: GroupBy.Week,
+                              child: Text('Week'),
+                            ),
+                            DropdownMenuItem(
+                              value: GroupBy.Month,
+                              child: Text('Month'),
+                            ),
+                          ],
+                          onChanged: (GroupBy? newValue) {
+                            if (newValue == null) return;
+                            setState(() {
+                              _currentGroupBy = newValue;
+                            });
+                          },
+                        ),
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 16.0),
@@ -82,7 +103,7 @@ class _TypeUsageDrawerState extends State<TypeUsageDrawer> {
                               widget.expenses
                                   .fold(0.0, (act, exp) => act + exp.price)
                                   .toStringAsFixed(2),
-                          style: TextStyle(fontSize: 20),
+                          style: TextStyle(fontSize: 18),
                         ),
                       ),
                       IconButton(
@@ -105,6 +126,18 @@ class _TypeUsageDrawerState extends State<TypeUsageDrawer> {
                         icon: const Icon(Icons.print),
                       ),
                     ],
+                  ),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: SizedBox(
+                      width: widget.expenses.length *
+                          40, // or any logic to set width
+                      child: TypeUsageChart(
+                        key: ValueKey(_currentGroupBy),
+                        expenses: widget.expenses,
+                        groupBy: _currentGroupBy,
+                      ),
+                    ),
                   ),
                   Expanded(
                     child: ListView(
