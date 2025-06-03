@@ -458,6 +458,7 @@ class ExpenseService {
 
         if (total != 0) {
           metricData[expenseType.name as K] = total;
+          metricData['Total' as K] = (metricData['Total'] ?? 0.0) + total;
         }
       }
     } else if (metricBy == 'By day') {

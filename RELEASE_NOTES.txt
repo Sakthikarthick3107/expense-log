@@ -1,16 +1,10 @@
-## 📦 Release Notes - v2.2.6  
-#### Released on: 2025-06-01 3:20 PM
+## 📦 Release Notes - v2.2.7  
+#### Released on: 2025-06-03 11:00 PM
 
-### 🚀 Enhancements & UI Improvements
+### 🛠️ Bug Fixes
 
-#### ✨ New Features
-
-* Added **Expense Type History** visualization using an **Area Chart** for clearer trend analysis
-
-#### 🎨 UI Updates
-
-* Reduced font size in reports for improved readability and better layout
+* Fixed an issue where **"This Month"** was displaying as **null** in Info Icon - **"Breakage"**
 
 ---
 
-*Thank you for using Expense Log! Your feedback drives our continuous improvement.*
+*Thank you for using Expense Log! Every bug report helps us deliver a better experience.*

@@ -488,7 +488,7 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
                               _expenseService.selectedDayTotalExpense(
                                   _selectedDateNotifier.value);
                           _metricsData = _expenseService
-                              .getMetrics('This month', 'By type', []);
+                              .getMetrics<String>('This month', 'By type', []);
                         });
                         MessageWidget.showToast(
                             context: context,
