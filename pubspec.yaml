@@ -46,8 +46,6 @@ dependencies:
   table_calendar: ^3.0.8
   flutter_markdown: ^0.6.11
   workmanager: ^0.6.0
-  device_info_plus: ^9.0.0  
-  android_intent_plus: ^4.0.0
 
 
 dev_dependencies:
