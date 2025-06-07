@@ -3,7 +3,7 @@
 
 ### ✨ New Features
 
-* **Schedule Module** introduced:
+**Schedule Module** introduced:
   * Users can now **schedule expenses** that are entered **automatically** at the specified time.
   * Users can also **schedule reminders** to remind themselves any specific events via push notifications.
 
