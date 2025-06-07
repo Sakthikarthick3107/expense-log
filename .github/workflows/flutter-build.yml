@@ -16,9 +16,11 @@ jobs:
       - name: Read Release Notes
         id: notes
         run: |
-            echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
-            cat RELEASE_NOTES.txt >> $GITHUB_ENV
-            echo "EOF" >> $GITHUB_ENV
+          RELEASE_NOTES=$(cat RELEASE_NOTES.txt)
+          echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
+          echo "$RELEASE_NOTES" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
