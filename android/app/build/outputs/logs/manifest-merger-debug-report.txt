@@ -51,8 +51,6 @@ INJECTED from D:\expense_log\android\app\src\debug\AndroidManifest.xml:1:1-7:12
 INJECTED from D:\expense_log\android\app\src\debug\AndroidManifest.xml:1:1-7:12
 INJECTED from D:\expense_log\android\app\src\debug\AndroidManifest.xml:1:1-7:12
 MERGED from [:android_alarm_manager_plus] D:\expense_log\build\android_alarm_manager_plus\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-7:12
-MERGED from [:android_intent_plus] D:\expense_log\build\android_intent_plus\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-7:12
-MERGED from [:device_info_plus] D:\expense_log\build\device_info_plus\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-7:12
 MERGED from [:file_picker] D:\expense_log\build\file_picker\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-17:12
 MERGED from [:flutter_downloader] D:\expense_log\build\flutter_downloader\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-16:12
 MERGED from [:flutter_local_notifications] D:\expense_log\build\flutter_local_notifications\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-10:12
@@ -300,10 +298,6 @@ INJECTED from D:\expense_log\android\app\src\debug\AndroidManifest.xml
 INJECTED from D:\expense_log\android\app\src\debug\AndroidManifest.xml
 MERGED from [:android_alarm_manager_plus] D:\expense_log\build\android_alarm_manager_plus\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
 MERGED from [:android_alarm_manager_plus] D:\expense_log\build\android_alarm_manager_plus\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
-MERGED from [:android_intent_plus] D:\expense_log\build\android_intent_plus\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
-MERGED from [:android_intent_plus] D:\expense_log\build\android_intent_plus\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
-MERGED from [:device_info_plus] D:\expense_log\build\device_info_plus\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
-MERGED from [:device_info_plus] D:\expense_log\build\device_info_plus\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
 MERGED from [:file_picker] D:\expense_log\build\file_picker\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
 MERGED from [:file_picker] D:\expense_log\build\file_picker\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
 MERGED from [:flutter_downloader] D:\expense_log\build\flutter_downloader\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
