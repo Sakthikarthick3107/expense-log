@@ -30,10 +30,6 @@ import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'dart:async';
 import 'package:device_preview/device_preview.dart';
-import 'package:device_info_plus/device_info_plus.dart';
-import 'package:android_intent_plus/android_intent.dart';
-import 'package:android_intent_plus/flag.dart';
-
 import 'models/collection.dart';
 
 void startTelegramPolling() {
@@ -44,59 +40,6 @@ void startTelegramPolling() {
       print('Telegram polling error: $e');
     }
   });
-}
-
-Future<void> disableBatteryOptimizations() async {
-  try {
-    const package = "com.expenseapp.expense_log";
-    final androidInfo = await DeviceInfoPlugin().androidInfo;
-
-    // For Android 6-9 (API 23-28)
-    if (androidInfo.version.sdkInt <= 28) {
-      final intent = AndroidIntent(
-        action: "android.settings.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS",
-        data: "package:$package",
-      );
-      await intent.launch();
-    }
-    // For Android 10+ and OEM devices
-    else {
-      await _openManufacturerSpecificSettings();
-    }
-  } catch (e) {
-    print('Failed to open battery optimization settings: $e');
-    await openAppSettings(); // Fallback
-  }
-}
-
-Future<void> _openManufacturerSpecificSettings() async {
-  const package =
-      "com.expenseapp.expense_log"; // REPLACE WITH YOUR ACTUAL PACKAGE NAME
-  final androidInfo = await DeviceInfoPlugin().androidInfo;
-  final manufacturer = androidInfo.manufacturer.toLowerCase();
-
-  try {
-    if (manufacturer.contains('xiaomi') || manufacturer.contains('redmi')) {
-      await AndroidIntent(
-        action: "miui.intent.action.APP_AUTOSTART_MANAGE",
-        data: "package:$package",
-      ).launch();
-    } else if (manufacturer.contains('huawei')) {
-      await AndroidIntent(
-        action: "com.huawei.systemmanager",
-        data: "package:$package",
-      ).launch();
-    } else if (manufacturer.contains('oppo')) {
-      await AndroidIntent(
-        action: "com.oppo.safe",
-        data: "package:$package",
-      ).launch();
-    } else {
-      await openAppSettings();
-    }
-  } catch (e) {
-    await openAppSettings();
-  }
 }
 
 Future<void> requestPermissions() async {
