@@ -29,6 +29,10 @@ jobs:
 
       - name: Install dependencies
         run: flutter pub get
+      
+      - name: Clean Flutter build
+        run: flutter clean
+
 
       - name: Extract version from pubspec.yaml
         id: extract_version
