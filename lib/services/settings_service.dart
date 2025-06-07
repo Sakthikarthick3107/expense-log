@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:expense_log/models/collection.dart';
 import 'package:expense_log/models/expense_type.dart';
+import 'package:expense_log/models/schedule.dart';
 import 'package:expense_log/models/user.dart';
 import 'package:expense_log/services/audit_log_service.dart';
 import 'package:expense_log/widgets/message_widget.dart';
@@ -98,11 +99,13 @@ class SettingsService with ChangeNotifier {
       final expenseTypeBox = Hive.box<ExpenseType>('expenseTypeBox');
       final collectionBox = Hive.box<Collection>('collectionBox');
       final settingsBox = Hive.box('settingsBox');
+      final scheduleBox = Hive.box<Schedule>('scheduleBox');
 
       Map<String, dynamic> backupData = {
         "Expense2": expense2Box.values.map((e) => e.toJson()).toList(),
         "ExpenseType": expenseTypeBox.values.map((e) => e.toJson()).toList(),
         "Collection": collectionBox.values.map((e) => e.toJson()).toList(),
+        "Schedule": scheduleBox.values.map((e) => e.toJson()).toList(),
         "Settings":
             settingsBox.toMap(), // If it's a simple map, no conversion needed
       };
@@ -145,12 +148,14 @@ class SettingsService with ChangeNotifier {
         var expense2Box = Hive.box<Expense2>('expense2Box');
         var expenseTypeBox = Hive.box<ExpenseType>('expenseTypeBox');
         var collectionBox = Hive.box<Collection>('collectionBox');
+        var scheduleBox = Hive.box<Schedule>('scheduleBox');
         var settingsBox = Hive.box('settingsBox');
 
         // Clear existing data before restoring
         expense2Box.clear();
         expenseTypeBox.clear();
         collectionBox.clear();
+        scheduleBox.clear();
         settingsBox.clear();
 
         // Restore Expense2
@@ -174,6 +179,14 @@ class SettingsService with ChangeNotifier {
           for (var entry in backupData["Collection"]) {
             collectionBox.put(
                 Collection.fromJson(entry).id, Collection.fromJson(entry));
+          }
+        }
+
+        //Restore Schedule
+        if (backupData.containsKey("Schedule")) {
+          for (var entry in backupData["Schedule"]) {
+            scheduleBox.put(
+                Schedule.fromJson(entry).id, Schedule.fromJson(entry));
           }
         }
 
@@ -215,7 +228,7 @@ class SettingsService with ChangeNotifier {
   }
 
   Future<int> getBoxKey(String key) async {
-    int currentId = await _settingsBox.get(key, defaultValue: 0) as int;
+    int currentId = await _settingsBox.get(key, defaultValue: 1) as int;
     int nextId = currentId + 1;
     await _settingsBox.put(key, nextId);
     return nextId;
@@ -299,7 +312,8 @@ class SettingsService with ChangeNotifier {
       "Metrics",
       "Collections",
       "Audit Log",
-      "Downloads"
+      "Downloads",
+      "Schedules"
     ];
 
     if (getDefault) {

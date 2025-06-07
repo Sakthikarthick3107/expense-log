@@ -1,10 +1,11 @@
-## 📦 Release Notes - v2.2.7  
-#### Released on: 2025-06-03 11:00 PM
+## 📦 Release Notes - v3.3.0  
+#### Released on: 7-06-2025 11:00 PM
 
-### 🛠️ Bug Fixes
+### ✨ New Features
 
-* Fixed an issue where **"This Month"** was displaying as **null** in Info Icon - **"Breakage"**
+* **Schedule Module** introduced:
+  * Users can now **schedule expenses** that are entered **automatically** at the specified time.
+  * Users can also **schedule reminders** to remind themselves any specific events via push notifications.
 
----
 
-*Thank you for using Expense Log! Every bug report helps us deliver a better experience.*
+*Thank you for using Expense Log! Your feedback helps us keep improving and delivering a seamless experience.*

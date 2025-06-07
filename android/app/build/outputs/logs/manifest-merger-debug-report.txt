@@ -1,6 +1,6 @@
 -- Merging decision tree log ---
 application
-INJECTED from D:\expense_log\android\app\src\main\AndroidManifest.xml:30:5-135:19
+INJECTED from D:\expense_log\android\app\src\main\AndroidManifest.xml:32:5-137:19
 INJECTED from D:\expense_log\android\app\src\debug\AndroidManifest.xml
 MERGED from [:image_picker_android] D:\expense_log\build\image_picker_android\intermediates\merged_manifest\debug\AndroidManifest.xml:8:5-32:19
 MERGED from [:image_picker_android] D:\expense_log\build\image_picker_android\intermediates\merged_manifest\debug\AndroidManifest.xml:8:5-32:19
@@ -45,12 +45,14 @@ MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] C:\Users\sa
 	android:name
 		INJECTED from D:\expense_log\android\app\src\main\AndroidManifest.xml
 manifest
-ADDED from D:\expense_log\android\app\src\main\AndroidManifest.xml:1:1-155:12
-MERGED from D:\expense_log\android\app\src\main\AndroidManifest.xml:1:1-155:12
+ADDED from D:\expense_log\android\app\src\main\AndroidManifest.xml:1:1-157:12
+MERGED from D:\expense_log\android\app\src\main\AndroidManifest.xml:1:1-157:12
 INJECTED from D:\expense_log\android\app\src\debug\AndroidManifest.xml:1:1-7:12
 INJECTED from D:\expense_log\android\app\src\debug\AndroidManifest.xml:1:1-7:12
 INJECTED from D:\expense_log\android\app\src\debug\AndroidManifest.xml:1:1-7:12
 MERGED from [:android_alarm_manager_plus] D:\expense_log\build\android_alarm_manager_plus\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-7:12
+MERGED from [:android_intent_plus] D:\expense_log\build\android_intent_plus\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-7:12
+MERGED from [:device_info_plus] D:\expense_log\build\device_info_plus\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-7:12
 MERGED from [:file_picker] D:\expense_log\build\file_picker\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-17:12
 MERGED from [:flutter_downloader] D:\expense_log\build\flutter_downloader\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-16:12
 MERGED from [:flutter_local_notifications] D:\expense_log\build\flutter_local_notifications\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-10:12
@@ -67,6 +69,7 @@ MERGED from [:permission_handler_android] D:\expense_log\build\permission_handle
 MERGED from [:share_plus] D:\expense_log\build\share_plus\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-35:12
 MERGED from [:shared_preferences_android] D:\expense_log\build\shared_preferences_android\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-7:12
 MERGED from [:url_launcher_android] D:\expense_log\build\url_launcher_android\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-14:12
+MERGED from [:workmanager] D:\expense_log\build\workmanager\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-9:12
 MERGED from [androidx.work:work-runtime:2.9.0] C:\Users\sakth\.gradle\caches\transforms-3\fe7566c97fcfa5b937d0159c252d5d7b\transformed\work-runtime-2.9.0\AndroidManifest.xml:17:1-145:12
 MERGED from [androidx.room:room-ktx:2.5.0] C:\Users\sakth\.gradle\caches\transforms-3\bc19c12130f9d1bdd88e7a5b5120d990\transformed\jetified-room-ktx-2.5.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.room:room-runtime:2.5.0] C:\Users\sakth\.gradle\caches\transforms-3\3585f217fa100159b0ec78284afb9c2f\transformed\room-runtime-2.5.0\AndroidManifest.xml:17:1-31:12
@@ -121,8 +124,8 @@ MERGED from [androidx.lifecycle:lifecycle-viewmodel-savedstate:2.7.0] C:\Users\s
 MERGED from [androidx.core:core-ktx:1.13.1] C:\Users\sakth\.gradle\caches\transforms-3\14f2975595e3c42144ae6ff5c7ecac91\transformed\jetified-core-ktx-1.13.1\AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.sqlite:sqlite-framework:2.3.0] C:\Users\sakth\.gradle\caches\transforms-3\fa80bee2ff9328155f5e10339d3b2829\transformed\sqlite-framework-2.3.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.exifinterface:exifinterface:1.3.7] C:\Users\sakth\.gradle\caches\transforms-3\9bb8c39288e6e2aeebcca1554d2947a2\transformed\exifinterface-1.3.7\AndroidManifest.xml:17:1-24:12
-MERGED from [androidx.cursoradapter:cursoradapter:1.0.0] C:\Users\sakth\.gradle\caches\transforms-3\94b8726d85cfbacb427204362b7499e9\transformed\cursoradapter-1.0.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\sakth\.gradle\caches\transforms-3\415d08fcb226153f9bef83af06767ed8\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:17:1-55:12
+MERGED from [androidx.cursoradapter:cursoradapter:1.0.0] C:\Users\sakth\.gradle\caches\transforms-3\94b8726d85cfbacb427204362b7499e9\transformed\cursoradapter-1.0.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\sakth\.gradle\caches\transforms-3\2f687b2cf8211d287dbd95eb88daa39f\transformed\jetified-startup-runtime-1.1.1\AndroidManifest.xml:17:1-33:12
 MERGED from [androidx.tracing:tracing:1.2.0] C:\Users\sakth\.gradle\caches\transforms-3\357e85769eb78f54540635a8dac26b7e\transformed\jetified-tracing-1.2.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.interpolator:interpolator:1.0.0] C:\Users\sakth\.gradle\caches\transforms-3\9f15ce8c81ddd2be505c967b2b0fae55\transformed\interpolator-1.0.0\AndroidManifest.xml:17:1-22:12
@@ -241,6 +244,8 @@ MERGED from [:flutter_downloader] D:\expense_log\build\flutter_downloader\interm
 MERGED from [:flutter_downloader] D:\expense_log\build\flutter_downloader\intermediates\merged_manifest\debug\AndroidManifest.xml:14:5-77
 MERGED from [:flutter_local_notifications] D:\expense_log\build\flutter_local_notifications\intermediates\merged_manifest\debug\AndroidManifest.xml:8:5-77
 MERGED from [:flutter_local_notifications] D:\expense_log\build\flutter_local_notifications\intermediates\merged_manifest\debug\AndroidManifest.xml:8:5-77
+MERGED from [:workmanager] D:\expense_log\build\workmanager\intermediates\merged_manifest\debug\AndroidManifest.xml:7:5-77
+MERGED from [:workmanager] D:\expense_log\build\workmanager\intermediates\merged_manifest\debug\AndroidManifest.xml:7:5-77
 	android:name
 		ADDED from D:\expense_log\android\app\src\main\AndroidManifest.xml:24:22-74
 uses-permission#android.permission.RECEIVE_SMS
@@ -251,38 +256,54 @@ uses-permission#android.permission.READ_SMS
 ADDED from D:\expense_log\android\app\src\main\AndroidManifest.xml:26:5-66
 	android:name
 		ADDED from D:\expense_log\android\app\src\main\AndroidManifest.xml:26:22-64
+uses-permission#android.permission.SCHEDULE_EXACT_ALARM
+ADDED from D:\expense_log\android\app\src\main\AndroidManifest.xml:27:5-79
+	android:name
+		ADDED from D:\expense_log\android\app\src\main\AndroidManifest.xml:27:22-76
+uses-permission#android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
+ADDED from D:\expense_log\android\app\src\main\AndroidManifest.xml:28:5-94
+	android:name
+		ADDED from D:\expense_log\android\app\src\main\AndroidManifest.xml:28:22-92
+uses-permission#android.permission.ACCESS_BACKGROUND_SERVICES
+ADDED from D:\expense_log\android\app\src\main\AndroidManifest.xml:29:5-84
+	android:name
+		ADDED from D:\expense_log\android\app\src\main\AndroidManifest.xml:29:22-82
 queries
-ADDED from D:\expense_log\android\app\src\main\AndroidManifest.xml:143:5-153:15
+ADDED from D:\expense_log\android\app\src\main\AndroidManifest.xml:145:5-155:15
 MERGED from [:file_picker] D:\expense_log\build\file_picker\intermediates\merged_manifest\debug\AndroidManifest.xml:9:5-15:15
 MERGED from [:file_picker] D:\expense_log\build\file_picker\intermediates\merged_manifest\debug\AndroidManifest.xml:9:5-15:15
 MERGED from [:flutter_downloader] D:\expense_log\build\flutter_downloader\intermediates\merged_manifest\debug\AndroidManifest.xml:8:5-12:15
 MERGED from [:flutter_downloader] D:\expense_log\build\flutter_downloader\intermediates\merged_manifest\debug\AndroidManifest.xml:8:5-12:15
 intent#action:name:android.intent.action.PROCESS_TEXT+data:mimeType:text/plain
-ADDED from D:\expense_log\android\app\src\main\AndroidManifest.xml:144:9-147:18
+ADDED from D:\expense_log\android\app\src\main\AndroidManifest.xml:146:9-149:18
 action#android.intent.action.PROCESS_TEXT
-ADDED from D:\expense_log\android\app\src\main\AndroidManifest.xml:145:13-72
+ADDED from D:\expense_log\android\app\src\main\AndroidManifest.xml:147:13-72
 	android:name
-		ADDED from D:\expense_log\android\app\src\main\AndroidManifest.xml:145:21-70
+		ADDED from D:\expense_log\android\app\src\main\AndroidManifest.xml:147:21-70
 data
-ADDED from D:\expense_log\android\app\src\main\AndroidManifest.xml:146:13-50
+ADDED from D:\expense_log\android\app\src\main\AndroidManifest.xml:148:13-50
 	android:mimeType
-		ADDED from D:\expense_log\android\app\src\main\AndroidManifest.xml:146:19-48
+		ADDED from D:\expense_log\android\app\src\main\AndroidManifest.xml:148:19-48
 intent#action:name:android.intent.action.SEND+category:name:android.intent.category.DEFAULT+data:mimeType:*/*
-ADDED from D:\expense_log\android\app\src\main\AndroidManifest.xml:148:9-152:18
+ADDED from D:\expense_log\android\app\src\main\AndroidManifest.xml:150:9-154:18
 action#android.intent.action.SEND
-ADDED from D:\expense_log\android\app\src\main\AndroidManifest.xml:149:13-65
+ADDED from D:\expense_log\android\app\src\main\AndroidManifest.xml:151:13-65
 	android:name
-		ADDED from D:\expense_log\android\app\src\main\AndroidManifest.xml:149:21-62
+		ADDED from D:\expense_log\android\app\src\main\AndroidManifest.xml:151:21-62
 category#android.intent.category.DEFAULT
-ADDED from D:\expense_log\android\app\src\main\AndroidManifest.xml:150:13-72
+ADDED from D:\expense_log\android\app\src\main\AndroidManifest.xml:152:13-72
 	android:name
-		ADDED from D:\expense_log\android\app\src\main\AndroidManifest.xml:150:23-69
+		ADDED from D:\expense_log\android\app\src\main\AndroidManifest.xml:152:23-69
 uses-sdk
 INJECTED from D:\expense_log\android\app\src\debug\AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from D:\expense_log\android\app\src\debug\AndroidManifest.xml
 INJECTED from D:\expense_log\android\app\src\debug\AndroidManifest.xml
 MERGED from [:android_alarm_manager_plus] D:\expense_log\build\android_alarm_manager_plus\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
 MERGED from [:android_alarm_manager_plus] D:\expense_log\build\android_alarm_manager_plus\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [:android_intent_plus] D:\expense_log\build\android_intent_plus\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [:android_intent_plus] D:\expense_log\build\android_intent_plus\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [:device_info_plus] D:\expense_log\build\device_info_plus\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [:device_info_plus] D:\expense_log\build\device_info_plus\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
 MERGED from [:file_picker] D:\expense_log\build\file_picker\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
 MERGED from [:file_picker] D:\expense_log\build\file_picker\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
 MERGED from [:flutter_downloader] D:\expense_log\build\flutter_downloader\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
@@ -315,6 +336,8 @@ MERGED from [:shared_preferences_android] D:\expense_log\build\shared_preference
 MERGED from [:shared_preferences_android] D:\expense_log\build\shared_preferences_android\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
 MERGED from [:url_launcher_android] D:\expense_log\build\url_launcher_android\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
 MERGED from [:url_launcher_android] D:\expense_log\build\url_launcher_android\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [:workmanager] D:\expense_log\build\workmanager\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [:workmanager] D:\expense_log\build\workmanager\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
 MERGED from [androidx.work:work-runtime:2.9.0] C:\Users\sakth\.gradle\caches\transforms-3\fe7566c97fcfa5b937d0159c252d5d7b\transformed\work-runtime-2.9.0\AndroidManifest.xml:21:5-44
 MERGED from [androidx.work:work-runtime:2.9.0] C:\Users\sakth\.gradle\caches\transforms-3\fe7566c97fcfa5b937d0159c252d5d7b\transformed\work-runtime-2.9.0\AndroidManifest.xml:21:5-44
 MERGED from [androidx.room:room-ktx:2.5.0] C:\Users\sakth\.gradle\caches\transforms-3\bc19c12130f9d1bdd88e7a5b5120d990\transformed\jetified-room-ktx-2.5.0\AndroidManifest.xml:20:5-44
@@ -423,10 +446,10 @@ MERGED from [androidx.sqlite:sqlite-framework:2.3.0] C:\Users\sakth\.gradle\cach
 MERGED from [androidx.sqlite:sqlite-framework:2.3.0] C:\Users\sakth\.gradle\caches\transforms-3\fa80bee2ff9328155f5e10339d3b2829\transformed\sqlite-framework-2.3.0\AndroidManifest.xml:20:5-44
 MERGED from [androidx.exifinterface:exifinterface:1.3.7] C:\Users\sakth\.gradle\caches\transforms-3\9bb8c39288e6e2aeebcca1554d2947a2\transformed\exifinterface-1.3.7\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.exifinterface:exifinterface:1.3.7] C:\Users\sakth\.gradle\caches\transforms-3\9bb8c39288e6e2aeebcca1554d2947a2\transformed\exifinterface-1.3.7\AndroidManifest.xml:20:5-22:41
-MERGED from [androidx.cursoradapter:cursoradapter:1.0.0] C:\Users\sakth\.gradle\caches\transforms-3\94b8726d85cfbacb427204362b7499e9\transformed\cursoradapter-1.0.0\AndroidManifest.xml:20:5-44
-MERGED from [androidx.cursoradapter:cursoradapter:1.0.0] C:\Users\sakth\.gradle\caches\transforms-3\94b8726d85cfbacb427204362b7499e9\transformed\cursoradapter-1.0.0\AndroidManifest.xml:20:5-44
 MERGED from [androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\sakth\.gradle\caches\transforms-3\415d08fcb226153f9bef83af06767ed8\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:21:5-44
 MERGED from [androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\sakth\.gradle\caches\transforms-3\415d08fcb226153f9bef83af06767ed8\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:21:5-44
+MERGED from [androidx.cursoradapter:cursoradapter:1.0.0] C:\Users\sakth\.gradle\caches\transforms-3\94b8726d85cfbacb427204362b7499e9\transformed\cursoradapter-1.0.0\AndroidManifest.xml:20:5-44
+MERGED from [androidx.cursoradapter:cursoradapter:1.0.0] C:\Users\sakth\.gradle\caches\transforms-3\94b8726d85cfbacb427204362b7499e9\transformed\cursoradapter-1.0.0\AndroidManifest.xml:20:5-44
 MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\sakth\.gradle\caches\transforms-3\2f687b2cf8211d287dbd95eb88daa39f\transformed\jetified-startup-runtime-1.1.1\AndroidManifest.xml:21:5-23:41
 MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\sakth\.gradle\caches\transforms-3\2f687b2cf8211d287dbd95eb88daa39f\transformed\jetified-startup-runtime-1.1.1\AndroidManifest.xml:21:5-23:41
 MERGED from [androidx.tracing:tracing:1.2.0] C:\Users\sakth\.gradle\caches\transforms-3\357e85769eb78f54540635a8dac26b7e\transformed\jetified-tracing-1.2.0\AndroidManifest.xml:20:5-44

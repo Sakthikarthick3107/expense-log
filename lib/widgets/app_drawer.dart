@@ -61,7 +61,8 @@ class _AppDrawerState extends State<AppDrawer> {
     "Collections": Icons.collections_bookmark_rounded,
     "Metrics": Icons.auto_graph_outlined,
     "Audit Log": Icons.history,
-    "Downloads": Icons.download
+    "Downloads": Icons.download,
+    "Schedules": Icons.schedule
   };
 
   @override

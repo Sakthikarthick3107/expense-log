@@ -154,11 +154,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('2.2.0'),
+                          Text('2.2.7'),
                           GestureDetector(
                             onTap: () {
                               _settingsService.copyLinkToClipboard(
-                                  context, 'v2.2.0');
+                                  context, 'v2.2.7');
                             },
                             child: Text(
                               'Copy Link',

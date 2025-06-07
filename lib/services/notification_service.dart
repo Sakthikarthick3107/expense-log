@@ -109,6 +109,37 @@ class NotificationService {
     }
   }
 
+  static Future<void> showInstantNotification({
+    required int id,
+    required String title,
+    required String body,
+  }) async {
+    const AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
+      'instant_channel',
+      'Instant Notifications',
+      channelDescription: 'Notifications shown immediately',
+      importance: Importance.max,
+      priority: Priority.high,
+      playSound: true,
+      enableVibration: true,
+      enableLights: true,
+      ticker: 'ticker',
+      styleInformation: BigTextStyleInformation(''),
+    );
+
+    const NotificationDetails notificationDetails = NotificationDetails(
+      android: androidDetails,
+    );
+
+    await notificationsPlugin.show(
+      id,
+      title,
+      body,
+      notificationDetails,
+    );
+  }
+
   static Future<void> showDownloadCompletedNotification(File file) async {
     String fileName = p.basename(file.path);
     const AndroidNotificationDetails androidDetails =

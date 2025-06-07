@@ -231,6 +231,21 @@ ThemeData appTheme(bool isDarkTheme, String appPrimary) {
         foregroundColor: MaterialStateProperty.all(primaryColor),
       ),
     ),
+    timePickerTheme: TimePickerThemeData(
+      backgroundColor: isDarkTheme ? Colors.black : Colors.white,
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      hintStyle: TextStyle(
+        fontSize: 12,
+        color: Colors.grey,
+      ),
+      labelStyle: TextStyle(
+        fontSize: 12,
+      ),
+      helperStyle: TextStyle(
+        fontSize: 12,
+      ),
+    ),
     useMaterial3: true,
   );
 }
