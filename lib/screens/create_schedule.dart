@@ -309,21 +309,27 @@ class _CreateScheduleScreenState extends State<CreateScheduleScreen> {
                     final settingsService =
                         Provider.of<SettingsService>(context, listen: false);
                     if (widget.schedule == null) {
-                      // Create new schedule
                       final newSchedule = Schedule(
-                        id: widget.schedule?.id ??
-                            await settingsService
-                                .getBoxKey('scheduleId'), // better unique ID
-                        name: name,
-                        description: description,
-                        scheduleType: scheduleType,
-                        data: selectedExpenses,
-                        hour: selectedTime.hour,
-                        minute: selectedTime.minute,
-                        repeatOption: repeatOption,
-                        customDays: customDays.isEmpty ? null : customDays,
-                        isActive: isActive,
-                      );
+                          id: widget.schedule?.id ??
+                              await settingsService.getBoxKey('scheduleId'),
+                          name: name,
+                          description: description,
+                          scheduleType: scheduleType,
+                          data: selectedExpenses,
+                          hour: selectedTime.hour,
+                          minute: selectedTime.minute,
+                          repeatOption: repeatOption,
+                          customDays: customDays.isEmpty ? null : customDays,
+                          isActive: isActive,
+                          customByType: customDaysType);
+                      if (scheduleType == ScheduleType.AutoExpense &&
+                          selectedExpenses.isEmpty) {
+                        MessageWidget.showToast(
+                            context: context,
+                            message:
+                                'Add some expense for AutoExpense Scheduling');
+                        return;
+                      }
 
                       await _scheduleService.createSchedule(newSchedule);
                     } else {
@@ -339,6 +345,14 @@ class _CreateScheduleScreenState extends State<CreateScheduleScreen> {
                           customDays: customDays.isEmpty ? null : customDays,
                           isActive: isActive,
                           customByType: customDaysType);
+                      if (scheduleType == ScheduleType.AutoExpense &&
+                          selectedExpenses.isEmpty) {
+                        MessageWidget.showToast(
+                            context: context,
+                            message:
+                                'Add some expense for AutoExpense Scheduling');
+                        return;
+                      }
 
                       await _scheduleService.editSchedule(editedSchedule);
                     }

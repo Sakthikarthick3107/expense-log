@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:expense_log/services/notification_service.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import 'package:expense_log/utility/schedule_utils.dart';
 
 class ScheduleService extends ChangeNotifier {
   final _scheduleBox = Hive.box<Schedule>('scheduleBox');
@@ -55,81 +56,20 @@ class ScheduleService extends ChangeNotifier {
   }
 
   Future<void> _registerAlarm(Schedule schedule) async {
-    DateTime now = DateTime.now();
-    DateTime? scheduledTime;
-    DateTime baseTime = DateTime(
-      now.year,
-      now.month,
-      now.day,
-      schedule.hour,
-      schedule.minute,
-    );
+    DateTime? nextTrigger =
+        ScheduleUtils.findNextTriggerTime(schedule, DateTime.now());
 
-    int mapToCustomWeekday(int dartWeekday) {
-      return dartWeekday % 7;
-    }
-
-    int daysToAdd = 0;
-    bool foundNext = false;
-
-    while (daysToAdd <= 7 && !foundNext) {
-      DateTime potentialTime = baseTime.add(Duration(days: daysToAdd));
-      int weekday = mapToCustomWeekday(potentialTime.weekday);
-
-      switch (schedule.repeatOption) {
-        case RepeatOption.Once:
-          foundNext = daysToAdd == 0;
-          break;
-
-        case RepeatOption.Everyday:
-          foundNext = true;
-          break;
-
-        case RepeatOption.Weekdays:
-          foundNext = weekday >= 1 && weekday <= 5;
-          break;
-
-        case RepeatOption.Weekends:
-          foundNext = weekday == 0 || weekday == 6;
-          break;
-
-        case RepeatOption.CustomDays:
-          foundNext = schedule.customDays != null &&
-              (() {
-                if (schedule.customByType == CustomByType.Week) {
-                  return schedule.customDays!.contains(weekday);
-                } else if (schedule.customByType == CustomByType.Month) {
-                  return schedule.customDays!.contains(potentialTime.day);
-                }
-                return false;
-              })();
-
-          break;
-      }
-
-      if (foundNext) {
-        scheduledTime = baseTime.add(Duration(days: daysToAdd));
-        final _scheduleEditBox = Hive.box<Schedule>('scheduleBox');
-        schedule.nextTriggerAt = scheduledTime;
-        _scheduleEditBox.put(schedule.id, schedule);
-        if (daysToAdd == 0 && potentialTime.isBefore(now)) {
-          foundNext = false;
-          daysToAdd++;
-        } else {
-          break;
-        }
-      } else {
-        daysToAdd++;
-      }
-    }
-
-    if (!foundNext) {
+    if (nextTrigger == null) {
       print('No valid day found for schedule id ${schedule.id}');
       return;
     }
 
+    final _scheduleEditBox = Hive.box<Schedule>('scheduleBox');
+    schedule.nextTriggerAt = nextTrigger;
+    _scheduleEditBox.put(schedule.id, schedule);
+
     await AndroidAlarmManager.oneShotAt(
-      scheduledTime!,
+      nextTrigger,
       schedule.id,
       alarmCallback,
       exact: true,
@@ -137,7 +77,7 @@ class ScheduleService extends ChangeNotifier {
       rescheduleOnReboot: true,
     );
 
-    print('Alarm registered for schedule id ${schedule.id} at $scheduledTime');
+    print('Alarm registered for schedule id ${schedule.id} at $nextTrigger');
   }
 
   Future<void> _cancelAlarm(int alarmId) async {
@@ -230,50 +170,10 @@ Future<void> alarmCallback(int alarmId) async {
 
     // ---- Handle repeat ----
     if (schedule.repeatOption != RepeatOption.Once && schedule.isActive) {
-      DateTime nextScheduledTime = DateTime(
-          now.year, now.month, now.day + 1, schedule.hour, schedule.minute, 0);
+      DateTime? nextScheduledTime =
+          ScheduleUtils.findNextTriggerTime(schedule, DateTime.now());
 
-      bool foundNext = false;
-
-      for (int i = 0; i <= 31; i++) {
-        if (i > 0) {
-          nextScheduledTime = nextScheduledTime.add(Duration(days: 1));
-        }
-        // if (nextScheduledTime.isBefore(now) ||
-        //     nextScheduledTime.isAtSameMomentAs(now)) {
-        //   continue;
-        // }
-        int nextWeekday = mapToCustomWeekday(nextScheduledTime.weekday);
-        int nextDayOfMonth = nextScheduledTime.day;
-
-        switch (schedule.repeatOption) {
-          case RepeatOption.Everyday:
-            foundNext = true;
-            break;
-          case RepeatOption.Weekdays:
-            if (nextWeekday >= 1 && nextWeekday <= 5) foundNext = true;
-            break;
-          case RepeatOption.Weekends:
-            if (nextWeekday == 0 || nextWeekday == 6) foundNext = true;
-            break;
-          case RepeatOption.CustomDays:
-            if (schedule.customDays != null) {
-              if (schedule.customByType == CustomByType.Week &&
-                  schedule.customDays!.contains(nextWeekday)) {
-                foundNext = true;
-              } else if (schedule.customByType == CustomByType.Month &&
-                  schedule.customDays!.contains(nextDayOfMonth)) {
-                foundNext = true;
-              }
-            }
-          default:
-            break;
-        }
-
-        if (foundNext) break;
-      }
-
-      if (foundNext) {
+      if (nextScheduledTime != null) {
         schedule.nextTriggerAt = nextScheduledTime;
         await scheduleBox.put(schedule.id, schedule);
         await AndroidAlarmManager.oneShotAt(
@@ -285,14 +185,11 @@ Future<void> alarmCallback(int alarmId) async {
           allowWhileIdle: true,
           rescheduleOnReboot: true,
         );
-
-        print(
-            'Next alarm scheduled for schedule id ${schedule.id} at $nextScheduledTime');
       }
     }
   }
-}
 
-int mapToCustomWeekday(int dartWeekday) {
-  return dartWeekday % 7;
+  int mapToCustomWeekday(int dartWeekday) {
+    return dartWeekday % 7;
+  }
 }
