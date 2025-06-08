@@ -29,6 +29,7 @@ class _CreateScheduleScreenState extends State<CreateScheduleScreen> {
   List<Expense2> selectedExpenses = [];
   TimeOfDay selectedTime = TimeOfDay.now();
   bool isActive = true;
+  CustomByType? customDaysType = CustomByType.Week;
 
   @override
   void initState() {
@@ -43,6 +44,7 @@ class _CreateScheduleScreenState extends State<CreateScheduleScreen> {
       selectedTime = TimeOfDay(
           hour: widget.schedule!.hour, minute: widget.schedule!.minute);
       isActive = widget.schedule!.isActive;
+      customDaysType = widget.schedule!.customByType;
     }
   }
 
@@ -167,57 +169,115 @@ class _CreateScheduleScreenState extends State<CreateScheduleScreen> {
                     ),
                   ],
                 ),
-              DropdownButtonFormField<RepeatOption>(
-                value: repeatOption,
-                decoration: InputDecoration(labelText: 'Repeat Option'),
-                items: RepeatOption.values.map((option) {
-                  return DropdownMenuItem(
-                    value: option,
-                    child: Text(option.toString().split('.').last,
-                        style: TextStyle(fontSize: 14)),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    repeatOption = value!;
-                  });
-                },
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: DropdownButtonFormField<RepeatOption>(
+                      value: repeatOption,
+                      decoration: InputDecoration(labelText: 'Repeat Option'),
+                      items: RepeatOption.values.map((option) {
+                        return DropdownMenuItem(
+                          value: option,
+                          child: Text(option.toString().split('.').last,
+                              style: TextStyle(fontSize: 14)),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          repeatOption = value!;
+                          if (repeatOption != RepeatOption.CustomDays) {
+                            customDaysType = CustomByType.Week;
+                            customDays.clear();
+                          }
+                        });
+                      },
+                    ),
+                  ),
+                  SizedBox(width: 10),
+                  if (repeatOption == RepeatOption.CustomDays)
+                    Expanded(
+                      child: DropdownButtonFormField<CustomByType>(
+                        value: customDaysType,
+                        decoration: InputDecoration(labelText: 'Custom By'),
+                        items: CustomByType.values.map((type) {
+                          return DropdownMenuItem(
+                            value: type,
+                            child: Text(type.toString().split('.').last,
+                                style: TextStyle(fontSize: 14)),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            customDaysType = value!;
+                            customDays.clear();
+                          });
+                        },
+                      ),
+                    ),
+                ],
               ),
+
               if (repeatOption == RepeatOption.CustomDays)
                 Wrap(
                   spacing: 1,
-                  children: List.generate(7, (index) {
-                    // Sunday=0, Monday=1, ..., Saturday=6
-                    final dayNames = [
-                      'Sun',
-                      'Mon',
-                      'Tue',
-                      'Wed',
-                      'Thu',
-                      'Fri',
-                      'Sat'
-                    ];
-                    final isSelected = customDays.contains(index);
-                    return Transform.scale(
-                        scale: 0.7,
-                        child: FilterChip(
-                          shape: RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(30))),
-                          label: Text(dayNames[index]),
-                          selected: isSelected,
-                          onSelected: (selected) {
-                            setState(() {
-                              if (selected) {
-                                customDays.add(index);
-                              } else {
-                                customDays.remove(index);
-                              }
-                            });
-                          },
-                        ));
-                  }),
+                  children: customDaysType == CustomByType.Week
+                      ? List.generate(7, (index) {
+                          final dayNames = [
+                            'Sun',
+                            'Mon',
+                            'Tue',
+                            'Wed',
+                            'Thu',
+                            'Fri',
+                            'Sat'
+                          ];
+                          final isSelected = customDays.contains(index);
+                          return Transform.scale(
+                            scale: 0.7,
+                            child: FilterChip(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(30))),
+                              label: Text(dayNames[index]),
+                              selected: isSelected,
+                              onSelected: (selected) {
+                                setState(() {
+                                  if (selected) {
+                                    customDays.add(index);
+                                  } else {
+                                    customDays.remove(index);
+                                  }
+                                });
+                              },
+                            ),
+                          );
+                        })
+                      : List.generate(31, (index) {
+                          final dayNumber = index + 1;
+                          final isSelected = customDays.contains(dayNumber);
+                          return Transform.scale(
+                            scale: 0.7,
+                            child: FilterChip(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(30))),
+                              label: Text('$dayNumber'),
+                              selected: isSelected,
+                              onSelected: (selected) {
+                                setState(() {
+                                  if (selected) {
+                                    customDays.add(dayNumber);
+                                  } else {
+                                    customDays.remove(dayNumber);
+                                  }
+                                });
+                              },
+                            ),
+                          );
+                        }),
                 ),
+
               ListTile(
                 title: Text('Time: ${selectedTime.format(context)}'),
                 trailing: Icon(Icons.access_time),
@@ -268,17 +328,17 @@ class _CreateScheduleScreenState extends State<CreateScheduleScreen> {
                       await _scheduleService.createSchedule(newSchedule);
                     } else {
                       final editedSchedule = Schedule(
-                        id: widget.schedule!.id,
-                        name: name,
-                        description: description,
-                        scheduleType: scheduleType,
-                        data: selectedExpenses,
-                        hour: selectedTime.hour,
-                        minute: selectedTime.minute,
-                        repeatOption: repeatOption,
-                        customDays: customDays.isEmpty ? null : customDays,
-                        isActive: isActive,
-                      );
+                          id: widget.schedule!.id,
+                          name: name,
+                          description: description,
+                          scheduleType: scheduleType,
+                          data: selectedExpenses,
+                          hour: selectedTime.hour,
+                          minute: selectedTime.minute,
+                          repeatOption: repeatOption,
+                          customDays: customDays.isEmpty ? null : customDays,
+                          isActive: isActive,
+                          customByType: customDaysType);
 
                       await _scheduleService.editSchedule(editedSchedule);
                     }

@@ -28,13 +28,15 @@ class ScheduleAdapter extends TypeAdapter<Schedule> {
       customDays: (fields[8] as List?)?.cast<int>(),
       isActive: fields[9] as bool,
       lastTriggeredTime: fields[10] as DateTime?,
+      customByType: fields[11] as CustomByType?,
+      nextTriggerAt: fields[12] as DateTime?,
     );
   }
 
   @override
   void write(BinaryWriter writer, Schedule obj) {
     writer
-      ..writeByte(11)
+      ..writeByte(13)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -56,7 +58,11 @@ class ScheduleAdapter extends TypeAdapter<Schedule> {
       ..writeByte(9)
       ..write(obj.isActive)
       ..writeByte(10)
-      ..write(obj.lastTriggeredTime);
+      ..write(obj.lastTriggeredTime)
+      ..writeByte(11)
+      ..write(obj.customByType)
+      ..writeByte(12)
+      ..write(obj.nextTriggerAt);
   }
 
   @override
@@ -159,6 +165,45 @@ class RepeatOptionAdapter extends TypeAdapter<RepeatOption> {
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is RepeatOptionAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
+
+class CustomByTypeAdapter extends TypeAdapter<CustomByType> {
+  @override
+  final int typeId = 10;
+
+  @override
+  CustomByType read(BinaryReader reader) {
+    switch (reader.readByte()) {
+      case 0:
+        return CustomByType.Week;
+      case 1:
+        return CustomByType.Month;
+      default:
+        return CustomByType.Week;
+    }
+  }
+
+  @override
+  void write(BinaryWriter writer, CustomByType obj) {
+    switch (obj) {
+      case CustomByType.Week:
+        writer.writeByte(0);
+        break;
+      case CustomByType.Month:
+        writer.writeByte(1);
+        break;
+    }
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is CustomByTypeAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

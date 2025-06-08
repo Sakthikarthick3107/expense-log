@@ -5,6 +5,7 @@ import 'package:expense_log/models/schedule.dart';
 import 'package:expense_log/services/settings_service.dart';
 import 'package:expense_log/widgets/message_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class SchedulesScreen extends StatefulWidget {
@@ -138,9 +139,19 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                                       )
                                     ],
                                   ),
-                                  subtitle: Text(
-                                      '${schedule.hour.toString().padLeft(2, '0')}:${schedule.minute.toString().padLeft(2, '0')} - ${schedule.description}',
-                                      style: TextStyle(fontSize: 10)),
+                                  subtitle: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        '${TimeOfDay(hour: schedule.hour, minute: schedule.minute).format(context)} - ${schedule.description}',
+                                        style: TextStyle(fontSize: 10),
+                                      ),
+                                      Text(
+                                          '${schedule.nextTriggerAt != null ? 'Next Scheduled - ${DateFormat.yMd().add_jm().format(schedule.nextTriggerAt!)}' : "Not Scheduled"}',
+                                          style: TextStyle(fontSize: 8))
+                                    ],
+                                  ),
                                   trailing: Transform.scale(
                                     scale: 0.7,
                                     child: Switch(

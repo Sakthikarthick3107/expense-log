@@ -1,6 +1,6 @@
 import 'package:expense_log/models/expense2.dart';
 import 'package:hive_flutter/adapters.dart';
-part 'schedule.g.dart'; // For Hive adapter
+part 'schedule.g.dart';
 
 @HiveType(typeId: 7)
 enum ScheduleType {
@@ -22,6 +22,14 @@ enum RepeatOption {
   Weekends,
   @HiveField(4)
   CustomDays,
+}
+
+@HiveType(typeId: 10)
+enum CustomByType {
+  @HiveField(0)
+  Week,
+  @HiveField(1)
+  Month,
 }
 
 @HiveType(typeId: 9)
@@ -59,6 +67,12 @@ class Schedule {
   @HiveField(10)
   DateTime? lastTriggeredTime;
 
+  @HiveField(11)
+  CustomByType? customByType;
+
+  @HiveField(12)
+  DateTime? nextTriggerAt;
+
   Schedule(
       {required this.id,
       required this.name,
@@ -70,7 +84,9 @@ class Schedule {
       required this.repeatOption,
       this.customDays,
       required this.isActive,
-      this.lastTriggeredTime});
+      this.lastTriggeredTime,
+      this.customByType,
+      this.nextTriggerAt});
 
   Map<String, dynamic> toJson() {
     return {
@@ -85,6 +101,8 @@ class Schedule {
       'customDays': customDays,
       'isActive': isActive,
       'lastTriggeredTime': lastTriggeredTime?.toIso8601String(),
+      'customByType': customByType?.index,
+      'nextTriggerAt': nextTriggerAt
     };
   }
 
@@ -108,6 +126,10 @@ class Schedule {
       isActive: json['isActive'],
       lastTriggeredTime: json['lastTriggeredTime'] != null
           ? DateTime.parse(json['lastTriggeredTime'])
+          : null,
+      customByType: CustomByType.values[json['customByType']['index']],
+      nextTriggerAt: json['nextTriggerAt'] != null
+          ? DateTime.parse(json['nextTriggerAt'])
           : null,
     );
   }

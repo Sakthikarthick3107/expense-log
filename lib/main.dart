@@ -74,6 +74,7 @@ void main() async {
   Hive.registerAdapter(ScheduleAdapter());
   Hive.registerAdapter(ScheduleTypeAdapter());
   Hive.registerAdapter(RepeatOptionAdapter());
+  Hive.registerAdapter(CustomByTypeAdapter());
 
   // await Hive.openBox<Expense>('expenseBox');
   await Hive.openBox<Expense2>('expense2Box');

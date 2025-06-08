@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:expense_log/models/user.dart';
+import 'package:expense_log/services/audit_log_service.dart';
 import 'package:expense_log/services/settings_service.dart';
 import 'package:expense_log/updates/app_update.dart';
 import 'package:expense_log/widgets/color_selector.dart';
@@ -388,7 +389,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   List<String> screens = _settingsService.getScreenOrder();
 
                   showReorderPopup(context, screens, (newOrder) async {
-                    print("Updated Order: $newOrder");
+                    AuditLogService.writeLog(
+                        "Updated Order: ${newOrder.join(',')}");
                     await _settingsService.saveScreenOrder(newOrder);
                     MessageWidget.showToast(
                         context: context,

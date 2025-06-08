@@ -19,7 +19,7 @@ class NotificationButton extends StatelessWidget {
               MaterialPageRoute(builder: (context) => MessageScreen()),
             );
           },
-          icon: Icon(Icons.notifications_on_outlined),
+          icon: Icon(Icons.notifications_outlined),
         ),
         if (unreadCount > 0)
           Positioned(

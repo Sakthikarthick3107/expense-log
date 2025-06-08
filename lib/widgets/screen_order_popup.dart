@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';
 
-
 class ScreenOrderPopup extends StatefulWidget {
   final List<String> screens;
   final Function(List<String>) onSave;
@@ -43,10 +42,16 @@ class _ScreenOrderPopupState extends State<ScreenOrderPopup> {
           },
           children: List.generate(
             screenList.length,
-                (index) => ListTile(
+            (index) => ListTile(
               key: ValueKey(screenList[index]),
-              title: Text(screenList[index]),
-              leading: Icon(Icons.drag_indicator),
+              title: Text(
+                screenList[index],
+                style: TextStyle(fontSize: 16),
+              ),
+              leading: Icon(
+                Icons.drag_indicator,
+                size: 20,
+              ),
             ),
           ),
         ),
@@ -59,9 +64,9 @@ class _ScreenOrderPopupState extends State<ScreenOrderPopup> {
         ElevatedButton(
           onPressed: _isOrderChanged()
               ? () {
-            widget.onSave(screenList);
-            Navigator.pop(context);
-          }
+                  widget.onSave(screenList);
+                  Navigator.pop(context);
+                }
               : null, // Disable button if order is unchanged
           child: Text("Save"),
         ),

@@ -56,7 +56,7 @@ class ScheduleService extends ChangeNotifier {
 
   Future<void> _registerAlarm(Schedule schedule) async {
     DateTime now = DateTime.now();
-
+    DateTime? scheduledTime;
     DateTime baseTime = DateTime(
       now.year,
       now.month,
@@ -95,11 +95,23 @@ class ScheduleService extends ChangeNotifier {
 
         case RepeatOption.CustomDays:
           foundNext = schedule.customDays != null &&
-              schedule.customDays!.contains(weekday);
+              (() {
+                if (schedule.customByType == CustomByType.Week) {
+                  return schedule.customDays!.contains(weekday);
+                } else if (schedule.customByType == CustomByType.Month) {
+                  return schedule.customDays!.contains(potentialTime.day);
+                }
+                return false;
+              })();
+
           break;
       }
 
       if (foundNext) {
+        scheduledTime = baseTime.add(Duration(days: daysToAdd));
+        final _scheduleEditBox = Hive.box<Schedule>('scheduleBox');
+        schedule.nextTriggerAt = scheduledTime;
+        _scheduleEditBox.put(schedule.id, schedule);
         if (daysToAdd == 0 && potentialTime.isBefore(now)) {
           foundNext = false;
           daysToAdd++;
@@ -116,10 +128,8 @@ class ScheduleService extends ChangeNotifier {
       return;
     }
 
-    DateTime scheduledTime = baseTime.add(Duration(days: daysToAdd));
-
     await AndroidAlarmManager.oneShotAt(
-      scheduledTime,
+      scheduledTime!,
       schedule.id,
       alarmCallback,
       exact: true,
@@ -155,6 +165,9 @@ Future<void> alarmCallback(int alarmId) async {
   }
   if (!Hive.isAdapterRegistered(RepeatOptionAdapter().typeId)) {
     Hive.registerAdapter(RepeatOptionAdapter());
+  }
+  if (!Hive.isAdapterRegistered(CustomByTypeAdapter().typeId)) {
+    Hive.registerAdapter(CustomByTypeAdapter());
   }
 
   var scheduleBox = await Hive.openBox<Schedule>('scheduleBox');
@@ -222,7 +235,7 @@ Future<void> alarmCallback(int alarmId) async {
 
       bool foundNext = false;
 
-      for (int i = 0; i < 7; i++) {
+      for (int i = 0; i <= 31; i++) {
         if (i > 0) {
           nextScheduledTime = nextScheduledTime.add(Duration(days: 1));
         }
@@ -231,6 +244,7 @@ Future<void> alarmCallback(int alarmId) async {
         //   continue;
         // }
         int nextWeekday = mapToCustomWeekday(nextScheduledTime.weekday);
+        int nextDayOfMonth = nextScheduledTime.day;
 
         switch (schedule.repeatOption) {
           case RepeatOption.Everyday:
@@ -243,11 +257,15 @@ Future<void> alarmCallback(int alarmId) async {
             if (nextWeekday == 0 || nextWeekday == 6) foundNext = true;
             break;
           case RepeatOption.CustomDays:
-            if (schedule.customDays != null &&
-                schedule.customDays!.contains(nextWeekday)) {
-              foundNext = true;
+            if (schedule.customDays != null) {
+              if (schedule.customByType == CustomByType.Week &&
+                  schedule.customDays!.contains(nextWeekday)) {
+                foundNext = true;
+              } else if (schedule.customByType == CustomByType.Month &&
+                  schedule.customDays!.contains(nextDayOfMonth)) {
+                foundNext = true;
+              }
             }
-            break;
           default:
             break;
         }
@@ -256,6 +274,8 @@ Future<void> alarmCallback(int alarmId) async {
       }
 
       if (foundNext) {
+        schedule.nextTriggerAt = nextScheduledTime;
+        await scheduleBox.put(schedule.id, schedule);
         await AndroidAlarmManager.oneShotAt(
           nextScheduledTime,
           schedule.id,
