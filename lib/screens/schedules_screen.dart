@@ -148,8 +148,9 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                                         style: TextStyle(fontSize: 10),
                                       ),
                                       Text(
-                                          '${schedule.nextTriggerAt != null ? 'Next Scheduled - ${DateFormat.yMd().add_jm().format(schedule.nextTriggerAt!)}' : "Not Scheduled"}',
-                                          style: TextStyle(fontSize: 8))
+                                        '${schedule.nextTriggerAt != null ? 'Next Scheduled - ${DateFormat('dd MMMM yyyy hh:mm a').format(schedule.nextTriggerAt!)}' : "Not Scheduled"}',
+                                        style: TextStyle(fontSize: 8),
+                                      )
                                     ],
                                   ),
                                   trailing: Transform.scale(
