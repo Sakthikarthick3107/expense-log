@@ -30,6 +30,7 @@ import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'dart:async';
 import 'package:device_preview/device_preview.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'models/collection.dart';
 
 void startTelegramPolling() {
@@ -46,8 +47,7 @@ Future<void> requestPermissions() async {
   final permissions = [
     Permission.sms,
     Permission.storage,
-    Permission.manageExternalStorage,
-    // Permission.scheduleExactAlarm
+    Permission.manageExternalStorage
   ];
 
   Map<Permission, PermissionStatus> statuses = await permissions.request();
@@ -59,28 +59,10 @@ Future<void> requestPermissions() async {
   }
 }
 
-Future<void> checkAndRequestExactAlarmPermission() async {
-  var status = await Permission.scheduleExactAlarm.status;
-
-  if (status.isDenied || status.isRestricted) {
-    bool opened = await openAppSettings();
-    if (!opened) {
-      print(
-          'Please open app settings and enable Schedule Exact Alarm permission.');
-    }
-  } else if (status.isPermanentlyDenied) {
-    await openAppSettings();
-  } else {
-    print('Schedule Exact Alarm permission already granted.');
-  }
-}
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   await requestPermissions();
-  // await disableBatteryOptimizations();
-  // await checkAndRequestExactAlarmPermission();
 
   await Hive.initFlutter();
   // Hive.registerAdapter(ExpenseAdapter());
@@ -110,7 +92,7 @@ void main() async {
   await AndroidAlarmManager.initialize();
 
   // await checkAndRunMigration();
-  tz.initializeTimeZones(); // Initialize timezone
+  tz.initializeTimeZones();
   await NotificationService.initialize();
   await PdfHelper.initialize();
 

@@ -1,11 +1,12 @@
-## 📦 Release Notes - v3.3.0  
-#### Released on: 7-06-2025 11:00 PM
+## 📦 Release Notes - v3.3.1  
+#### Released on: 8-06-2025 12:30 PM
 
 ### ✨ New Feature Enhancements
 
 **Schedule Module** introduced:
   * Users can now **schedule expenses** that are entered **automatically** at the specified time.
   * Users can also **schedule reminders** to remind themselves any specific events via push notifications.
+**Need to enable Alarms and Reminders** for Expense Log in settings to use this feature effectively
 
 
 *Thank you for using Expense Log! Your feedback helps us keep improving and delivering a seamless experience.*

@@ -34,7 +34,24 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
             builder: (context, settingsService, _) {
           return Scaffold(
             appBar: AppBar(
-              title: Text('Schedules', style: TextStyle(fontSize: 16)),
+              title: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Schedules', style: TextStyle(fontSize: 16)),
+                  SizedBox(
+                    height: 2,
+                  ),
+                  RichText(
+                    softWrap: true,
+                    text: const TextSpan(
+                      text:
+                          'Enable \'Alarms & Reminders\' for ExpenseLog in Settings to use this feature effectively',
+                      style:
+                          TextStyle(fontSize: 8, fontStyle: FontStyle.italic),
+                    ),
+                  ),
+                ],
+              ),
               actions: [
                 Padding(
                   padding: const EdgeInsets.only(right: 8.0),

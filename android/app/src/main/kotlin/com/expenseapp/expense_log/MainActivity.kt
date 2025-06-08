@@ -21,6 +21,7 @@ import androidx.core.content.FileProvider
 
 class MainActivity : FlutterActivity() {
     private val CHANNEL = "com.expenseapp.expense_log/install"
+     private val SETTINGS_CHANNEL = "com.expenseapp.expense_log/alarm_settings"
     private val SMS_PERMISSION_CODE = 101
 
     // private val smsReceiver = object : BroadcastReceiver() {
@@ -75,18 +76,18 @@ class MainActivity : FlutterActivity() {
                 result.notImplemented()
             }
         }
+
     }
 
     private fun installApk(apkPath: String): Boolean {
         return try {
             val apkFile = File(apkPath)
-            // Use FileProvider to generate a content URI
             if (!apkFile.exists()) {
                 return false
             }
             val fileUri: Uri = FileProvider.getUriForFile(
                 this,
-                "com.expenseapp.expense_log.provider", // This should match the authorities in your Manifest
+                "com.expenseapp.expense_log.provider", 
                 apkFile
             )
 
@@ -102,4 +103,6 @@ class MainActivity : FlutterActivity() {
             false
         }
     }
+
+    
 }
