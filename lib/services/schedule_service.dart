@@ -135,7 +135,7 @@ Future<void> alarmCallback(int alarmId) async {
     */
 
     // Main logic:
-    var expenseId = settingsBox.get('expenseId', defaultValue: 1) as int;
+    var expenseId = settingsBox.get('autoExpenseId', defaultValue: -5) as int;
 
     if (schedule.scheduleType == ScheduleType.AutoExpense &&
         schedule.data != null) {
@@ -151,14 +151,14 @@ Future<void> alarmCallback(int alarmId) async {
 
         await expenseBox.put(expenseId, newExpense);
         print('Alarm callback: Entry added $newExpense');
-        expenseId++;
+        expenseId--;
       }
       await NotificationService.showInstantNotification(
           id: alarmId,
           title: 'Scheduled Expense Status',
           body: '${schedule.name} created successfully!');
 
-      await settingsBox.put('expenseId', expenseId);
+      await settingsBox.put('autoExpenseId', expenseId);
     }
 
     if (schedule.scheduleType == ScheduleType.Reminder) {
