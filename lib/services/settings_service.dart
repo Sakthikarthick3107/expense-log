@@ -99,13 +99,13 @@ class SettingsService with ChangeNotifier {
       final expenseTypeBox = Hive.box<ExpenseType>('expenseTypeBox');
       final collectionBox = Hive.box<Collection>('collectionBox');
       final settingsBox = Hive.box('settingsBox');
-      final scheduleBox = Hive.box<Schedule>('scheduleBox');
+      // final scheduleBox = Hive.box<Schedule>('scheduleBox');
 
       Map<String, dynamic> backupData = {
         "Expense2": expense2Box.values.map((e) => e.toJson()).toList(),
         "ExpenseType": expenseTypeBox.values.map((e) => e.toJson()).toList(),
         "Collection": collectionBox.values.map((e) => e.toJson()).toList(),
-        "Schedule": scheduleBox.values.map((e) => e.toJson()).toList(),
+        // "Schedule": scheduleBox.values.map((e) => e.toJson()).toList(),
         "Settings":
             settingsBox.toMap(), // If it's a simple map, no conversion needed
       };
@@ -148,14 +148,14 @@ class SettingsService with ChangeNotifier {
         var expense2Box = Hive.box<Expense2>('expense2Box');
         var expenseTypeBox = Hive.box<ExpenseType>('expenseTypeBox');
         var collectionBox = Hive.box<Collection>('collectionBox');
-        var scheduleBox = Hive.box<Schedule>('scheduleBox');
+        // var scheduleBox = Hive.box<Schedule>('scheduleBox');
         var settingsBox = Hive.box('settingsBox');
 
         // Clear existing data before restoring
         expense2Box.clear();
         expenseTypeBox.clear();
         collectionBox.clear();
-        scheduleBox.clear();
+        // scheduleBox.clear();
         settingsBox.clear();
 
         // Restore Expense2
@@ -183,12 +183,12 @@ class SettingsService with ChangeNotifier {
         }
 
         //Restore Schedule
-        if (backupData.containsKey("Schedule")) {
-          for (var entry in backupData["Schedule"]) {
-            scheduleBox.put(
-                Schedule.fromJson(entry).id, Schedule.fromJson(entry));
-          }
-        }
+        // if (backupData.containsKey("Schedule")) {
+        //   for (var entry in backupData["Schedule"]) {
+        //     scheduleBox.put(
+        //         Schedule.fromJson(entry).id, Schedule.fromJson(entry));
+        //   }
+        // }
 
         // Restore Settings (assuming it is stored as a map)
         if (backupData.containsKey("Settings")) {

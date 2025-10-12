@@ -155,6 +155,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
+                          Text('3.0.4'),
+                          GestureDetector(
+                            onTap: () {
+                              _settingsService.copyLinkToClipboard(
+                                  context, 'v3.0.4');
+                            },
+                            child: Text(
+                              'Copy Link',
+                              style: TextStyle(
+                                color: Colors.blue,
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
                           Text('2.2.7'),
                           GestureDetector(
                             onTap: () {

@@ -145,10 +145,10 @@ ThemeData appTheme(bool isDarkTheme, String appPrimary) {
           fontSize: 18, color: isDarkTheme ? Colors.white : Colors.black),
       tileColor: Colors.transparent,
     ),
-    cardTheme: CardTheme(
-      surfaceTintColor: isDarkTheme ? Color(0xFF0000000) : Color(0xFFF0F8FF),
-      color: isDarkTheme ? Color(0xFF0000000) : Color(0xFFF0F8FF),
-    ),
+    // cardTheme: CardTheme(
+    //   surfaceTintColor: isDarkTheme ? Color(0xFF0000000) : Color(0xFFF0F8FF),
+    //   color: isDarkTheme ? Color(0xFF0000000) : Color(0xFFF0F8FF),
+    // ),
     drawerTheme: DrawerThemeData(
         backgroundColor: isDarkTheme ? Color(0xFF2F2F2F) : Colors.white),
     iconTheme: IconThemeData(color: isDarkTheme ? Colors.white : Colors.black),
@@ -159,10 +159,10 @@ ThemeData appTheme(bool isDarkTheme, String appPrimary) {
     dropdownMenuTheme: DropdownMenuThemeData(
       textStyle: TextStyle(color: Colors.white, fontSize: 16),
     ),
-    dialogTheme: DialogTheme(
-      backgroundColor: isDarkTheme ? Color(0xFF333333) : Color(0xFFF0F8FF),
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-    ),
+    // dialogTheme: DialogTheme(
+    //   backgroundColor: isDarkTheme ? Color(0xFF333333) : Color(0xFFF0F8FF),
+    //   shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+    // ),
     datePickerTheme: DatePickerThemeData(
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       rangePickerSurfaceTintColor:

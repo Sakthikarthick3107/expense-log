@@ -136,7 +136,7 @@ Future<void> alarmCallback(int alarmId) async {
 
     // Main logic:
     var expenseId = settingsBox.get('expenseId', defaultValue: 1) as int;
-
+    expenseId += 1;
     if (schedule.scheduleType == ScheduleType.AutoExpense &&
         schedule.data != null) {
       for (var expenseTemplate in schedule.data!) {
