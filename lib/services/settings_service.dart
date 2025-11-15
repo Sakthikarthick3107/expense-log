@@ -313,7 +313,8 @@ class SettingsService with ChangeNotifier {
       "Collections",
       "Audit Log",
       "Downloads",
-      "Schedules"
+      "Schedules",
+      "Accounts"
     ];
 
     if (getDefault) {

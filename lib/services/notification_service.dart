@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/timezone.dart' as tz;
-import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/data/latest.dart' as tzdata;
 import 'package:path/path.dart' as p;
 import 'package:open_file/open_file.dart';
 
@@ -75,15 +75,13 @@ class NotificationService {
       body,
       _scheduleDailyTime(hour, minute),
       platformChannelSpecifics,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: DateTimeComponents.time,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
     );
   }
 
   static tz.TZDateTime _scheduleDailyTime(int hour, int minute) {
-    tz.initializeTimeZones();
+    tzdata.initializeTimeZones();
     tz.setLocalLocation(tz.getLocation('Asia/Kolkata'));
 
     final tz.TZDateTime now = tz.TZDateTime.now(tz.local);

@@ -1,0 +1,2 @@
+/home/sakthikarthick3107/Coding/expense-log/android/app/.cxx/debug/4z2hm3w5/x86_64/CMakeFiles/edit_cache.dir
+/home/sakthikarthick3107/Coding/expense-log/android/app/.cxx/debug/4z2hm3w5/x86_64/CMakeFiles/rebuild_cache.dir

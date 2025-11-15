@@ -22,13 +22,14 @@ class ExpenseTypeAdapter extends TypeAdapter<ExpenseType> {
       description: fields[2] as String?,
       limit: fields[3] as double?,
       limitBy: fields[4] as String?,
+      accountId: fields[5] as int?,
     );
   }
 
   @override
   void write(BinaryWriter writer, ExpenseType obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(6)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -38,7 +39,9 @@ class ExpenseTypeAdapter extends TypeAdapter<ExpenseType> {
       ..writeByte(3)
       ..write(obj.limit)
       ..writeByte(4)
-      ..write(obj.limitBy);
+      ..write(obj.limitBy)
+      ..writeByte(5)
+      ..write(obj.accountId);
   }
 
   @override

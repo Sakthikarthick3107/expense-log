@@ -5,6 +5,8 @@ import 'package:expense_log/widgets/message_widget.dart';
 import 'package:expense_log/widgets/type_usage_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:expense_log/services/accounts_service.dart';
+import 'package:expense_log/models/account.dart';
 
 class ExpenseTypeForm extends StatefulWidget {
   final ExpenseType? type;
@@ -26,6 +28,9 @@ class _ExpenseTypeFormState extends State<ExpenseTypeForm> {
   late SettingsService _settingsService;
   late ExpenseService _expenseService;
 
+  // default account id (int). nullable so older data OK
+  int? _selectedDefaultAccount;
+
   @override
   void initState() {
     super.initState();
@@ -33,14 +38,17 @@ class _ExpenseTypeFormState extends State<ExpenseTypeForm> {
     _expenseService = Provider.of<ExpenseService>(context, listen: false);
     if (widget.type != null) {
       _nameController.text = widget.type!.name;
-      _descriptionController.text = widget.type!.description!;
+      _descriptionController.text = widget.type!.description ?? '';
       _limitController.text = widget.type!.limit?.toString() ?? '';
       _selectedLimitBy = widget.type!.limitBy;
+      _selectedDefaultAccount = widget.type!.accountId as int?;
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // get accounts (AccountsService should provide Account.id as int)
+    final accounts = Provider.of<AccountsService>(context).all;
     return AlertDialog(
       title: Text(widget.type == null ? 'New Type' : 'Edit Type'),
       content: SingleChildScrollView(
@@ -51,7 +59,7 @@ class _ExpenseTypeFormState extends State<ExpenseTypeForm> {
             children: [
               TextFormField(
                 controller: _nameController,
-                decoration: InputDecoration(labelText: 'Type'),
+                decoration: const InputDecoration(labelText: 'Type'),
                 validator: (value) {
                   if (value == null) {
                     return 'Type is mandatory';
@@ -63,18 +71,31 @@ class _ExpenseTypeFormState extends State<ExpenseTypeForm> {
               ),
               TextFormField(
                 controller: _descriptionController,
-                decoration: InputDecoration(labelText: 'Description'),
+                decoration: const InputDecoration(labelText: 'Description'),
+              ),
+              const SizedBox(height: 8),
+              // Default account for this ExpenseType (optional). uses int ids
+              DropdownButtonFormField<int?>(
+                value: _selectedDefaultAccount,
+                decoration: const InputDecoration(labelText: 'Default Account (optional)'),
+                items: [
+                  const DropdownMenuItem<int?>(value: null, child: Text('None')),
+                  ...accounts.map((Account a) => DropdownMenuItem<int?>(
+                        value: a.id as int, // ensure your Account.id is int
+                        child: Text('${a.name} (${a.code})'),
+                      ))
+                ],
+                onChanged: (v) => setState(() => _selectedDefaultAccount = v),
               ),
               TextFormField(
                 controller: _limitController,
                 keyboardType: TextInputType.number,
-                decoration: InputDecoration(labelText: 'Limit (optional)'),
-                onChanged: (_) =>
-                    setState(() {}), // rebuild to show/hide dropdown
+                decoration: const InputDecoration(labelText: 'Limit (optional)'),
+                onChanged: (_) => setState(() {}), // rebuild to show/hide dropdown
               ),
               if (_limitController.text.trim().isNotEmpty)
                 DropdownButtonFormField<String>(
-                  decoration: InputDecoration(labelText: 'Limit By'),
+                  decoration: const InputDecoration(labelText: 'Limit By'),
                   value: _selectedLimitBy,
                   items: _limitOptions
                       .map((e) => DropdownMenuItem(
@@ -84,8 +105,7 @@ class _ExpenseTypeFormState extends State<ExpenseTypeForm> {
                       .toList(),
                   onChanged: (val) => setState(() => _selectedLimitBy = val),
                   validator: (value) {
-                    if (_limitController.text.trim().isNotEmpty &&
-                        (value == null || value.isEmpty)) {
+                    if (_limitController.text.trim().isNotEmpty && (value == null || value.isEmpty)) {
                       return 'Please choose how to apply the limit';
                     }
                     return null;
@@ -96,57 +116,46 @@ class _ExpenseTypeFormState extends State<ExpenseTypeForm> {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text('Cancel'),
-        ),
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
         ElevatedButton(
             onPressed: () async {
               if (_formKey.currentState?.validate() ?? false) {
                 final name = _nameController.text;
-                final description = _descriptionController.text ?? '';
-                final limit = _limitController.text.isEmpty
-                    ? null
-                    : double.tryParse(_limitController.text);
-                final limitBy =
-                    (_selectedLimitBy?.isEmpty ?? true) || limit == null
-                        ? null
-                        : _selectedLimitBy;
+                final description = _descriptionController.text;
+                final limit = _limitController.text.isEmpty ? null : double.tryParse(_limitController.text);
+                final limitBy = (_selectedLimitBy?.isEmpty ?? true) || limit == null ? null : _selectedLimitBy;
 
                 final expType = ExpenseType(
-                  id: widget.type?.id ??
-                      await _settingsService.getBoxKey('expenseTypeId'),
+                  id: widget.type?.id ?? await _settingsService.getBoxKey('expenseTypeId'),
                   name: name,
                   description: description,
                   limit: limit,
                   limitBy: limitBy,
+                  // ensure ExpenseType.defaultAccountId is int? in your model
+                  accountId: _selectedDefaultAccount,
                 );
-                int result = _expenseService.createExpenseType(expType);
+
+                final result = _expenseService.createExpenseType(expType);
                 if (result == 1) {
                   Navigator.pop(context, true);
                   MessageWidget.showToast(
                       context: context,
-                      message:
-                          '${widget.type == null ? 'Created' : 'Edited'} type - ${expType.name}',
+                      message: '${widget.type == null ? 'Created' : 'Edited'} type - ${expType.name}',
                       status: result);
                 } else if (result == -1) {
                   MessageWidget.showToast(
                     context: context,
-                    message:
-                        'Cannot apply limit changes : Already in track for the selected/previous duration ',
+                    message: 'Cannot apply limit changes : Already in track for the selected/previous duration ',
                   );
                 } else {
                   Navigator.pop(context, false);
                   MessageWidget.showToast(
-                      context: context,
-                      message: 'Type ${expType.name} already exists',
-                      status: result);
+                      context: context, message: 'Type ${expType.name} already exists', status: result);
                 }
               }
             },
             child: Text(widget.type == null ? 'Create' : 'Edit'))
       ],
     );
-    ;
   }
 }

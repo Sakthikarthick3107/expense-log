@@ -21,13 +21,17 @@ class ExpenseType{
   @HiveField(4)
   String? limitBy;
 
+  @HiveField( 5)
+  int? accountId;
+
 
   ExpenseType({
     required this.id,
     required this.name,
     this.description,
     this.limit,
-    this.limitBy
+    this.limitBy,
+    this.accountId,
     });
 
   Map<String, dynamic> toJson() {
@@ -36,7 +40,8 @@ class ExpenseType{
       'name': name,
       'description': description,
       'limit' : limit,
-      'limitBy' : limitBy
+      'limitBy' : limitBy,
+      'accountId': accountId,
     };
   }
 
@@ -47,6 +52,7 @@ class ExpenseType{
       description: json['description'],
       limit: json['limit']?.toDouble(),
       limitBy: json['limitBy'],
+      accountId: json['accountId'] as int?,
     );
   }
 }

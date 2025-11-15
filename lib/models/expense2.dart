@@ -1,4 +1,3 @@
-
 import 'package:hive/hive.dart';
 
 import 'expense_type.dart';
@@ -26,9 +25,9 @@ class Expense2{
 
   @HiveField(6)
   DateTime? updated;
-  //
-  // @HiveField(7)
-  // bool? isReturnable;
+
+  @HiveField(7)
+  int? accountId; // NEW: nullable mapping to Account.id
 
   Expense2({
     required this.id,
@@ -37,8 +36,8 @@ class Expense2{
     required this.expenseType,
     required this.date,
     required this.created,
-    this.updated
-    // this.isReturnable
+    this.updated,
+    this.accountId,
   });
 
   Expense2 copyWith({
@@ -48,8 +47,8 @@ class Expense2{
     DateTime? date,
     ExpenseType? expenseType,
     DateTime? created,
-    DateTime? updated
-    // bool? isReturnable
+    DateTime? updated,
+    int? accountId,
   }) {
     return Expense2(
         id: id ?? this.id,
@@ -58,8 +57,8 @@ class Expense2{
         expenseType: expenseType ?? this.expenseType,
         date: date ?? this.date,
         created: created ?? this.created,
-        updated: updated ?? this.updated
-        // isReturnable: isReturnable ?? this.isReturnable
+        updated: updated ?? this.updated,
+        accountId: accountId ?? this.accountId,
     );
   }
 
@@ -71,9 +70,8 @@ class Expense2{
       'expenseType': expenseType.toJson(),
       'date': date.toIso8601String() ,
       'created': created.toIso8601String(),
-      'updated': updated?.toIso8601String()
-      // 'isReturnable' : isReturnable
-
+      'updated': updated?.toIso8601String(),
+      'accountId': accountId,
     };
   }
 
@@ -85,8 +83,8 @@ class Expense2{
       expenseType: ExpenseType.fromJson(json['expenseType']),
       date: DateTime.parse(json['date']),
       created: DateTime.parse(json['created']),
-      updated: json['updated'] != null ? DateTime.parse(json['updated']) : null
-      // isReturnable: json['isReturnable']
+      updated: json['updated'] != null ? DateTime.parse(json['updated']) : null,
+      accountId: json['accountId'] as int?,
     );
   }
 }

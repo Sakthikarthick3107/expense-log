@@ -1,4 +1,5 @@
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
+import 'package:expense_log/models/account.dart';
 import 'package:expense_log/models/expense2.dart';
 import 'package:expense_log/models/schedule.dart';
 import 'package:expense_log/models/upi.dart';
@@ -6,6 +7,7 @@ import 'package:expense_log/models/expense_type.dart';
 import 'package:expense_log/models/message.dart' as app_message;
 import 'package:expense_log/models/message.dart';
 import 'package:expense_log/screens/home_screen.dart';
+import 'package:expense_log/services/accounts_service.dart';
 import 'package:expense_log/services/collection_service.dart';
 import 'package:expense_log/services/notification_service.dart';
 import 'package:expense_log/services/schedule_service.dart';
@@ -68,6 +70,7 @@ void main() async {
   // Hive.registerAdapter(ExpenseAdapter());
   Hive.registerAdapter(ExpenseTypeAdapter());
   Hive.registerAdapter(Expense2Adapter());
+  Hive.registerAdapter(AccountAdapter());
   Hive.registerAdapter(CollectionAdapter());
   Hive.registerAdapter(UpiLogAdapter());
   Hive.registerAdapter(MessageAdapter());
@@ -78,6 +81,7 @@ void main() async {
 
   // await Hive.openBox<Expense>('expenseBox');
   await Hive.openBox<Expense2>('expense2Box');
+  await Hive.openBox<Account>('accountsBox');
   await Hive.openBox<ExpenseType>('expenseTypeBox');
   await Hive.openBox('settingsBox');
   await Hive.openBox<Collection>('collectionBox');
@@ -102,6 +106,8 @@ void main() async {
     ignoreSsl: true,
   );
   // startTelegramPolling();
+  final accountsService = AccountsService();
+  await accountsService.init();
   runApp(DevicePreview(
     enabled: !kReleaseMode,
     builder: (context) => MultiProvider(
@@ -116,7 +122,8 @@ void main() async {
         ),
         Provider(create: (_) => UpiService()),
         Provider(create: (_) => ReportService()),
-        ChangeNotifierProvider(create: (_) => ScheduleService())
+        ChangeNotifierProvider(create: (_) => ScheduleService()),
+        ChangeNotifierProvider(create: (_) => accountsService),
         // ProxyProvider2<ExpenseService,SettingsService,UiService>(
         //     update: (_,expenseService,settingsService,__)=> UiService(expenseService, settingsService)
         // )
