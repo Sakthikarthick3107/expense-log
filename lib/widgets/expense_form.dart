@@ -219,7 +219,8 @@ class _ExpenseFormState extends State<ExpenseForm> {
         if ((widget.expense?.name != _nameController.text ||
                 widget.expense?.price !=
                     double.tryParse(_priceController.text) ||
-                widget.expense?.expenseType.id != selectedExpenseTypeId
+                widget.expense?.expenseType.id != selectedExpenseTypeId ||
+                widget.expense?.accountId != _selectedAccountId
             // || widget.expense?.isReturnable == _isReturnable
             ))
           TextButton(
@@ -229,7 +230,8 @@ class _ExpenseFormState extends State<ExpenseForm> {
         if ((widget.expense?.name != _nameController.text ||
                 widget.expense?.price !=
                     double.tryParse(_priceController.text) ||
-                widget.expense?.expenseType.id != selectedExpenseTypeId
+                widget.expense?.expenseType.id != selectedExpenseTypeId ||
+                widget.expense?.accountId != _selectedAccountId
             // || widget.expense?.isReturnable == _isReturnable
             ))
           ElevatedButton(
