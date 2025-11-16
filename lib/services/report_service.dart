@@ -389,7 +389,7 @@ class ReportService {
   }
 
   Future<void> prepareAccountExpenseReport(
-    Account account, List<Expense2> expenses) async {
+    Account account, List<Expense2> expenses,DateTime? fromDate, DateTime? toDate) async {
   final pdf = pw.Document();
 
   final totalSpent =
@@ -416,6 +416,16 @@ class ReportService {
           reportTitle: "Account Report",
           subtitle: "${account.name} (${account.code})",
         ),
+        if(fromDate != null && toDate != null)
+          pw.Center(
+            child : PdfHelper.text(
+            "${DateFormat("d MMM yyyy").format(fromDate)} to ${DateFormat("d MMM yyyy").format(toDate)}",
+            fontSize: 14,
+            fontWeight: pw.FontWeight.bold,
+            align: pw.TextAlign.center
+          )
+          )
+          ,
         if (account.description != null &&
             account.description!.isNotEmpty)
         PdfHelper.text(
@@ -578,11 +588,14 @@ class ReportService {
   );
 
   final pdfBytes = await pdf.save();
+  final  dateDuration = (fromDate != null && toDate != null)
+      ? '${fromDate.day}-${fromDate.month}-${fromDate.year}_to_${toDate.day}-${toDate.month}-${toDate.year}'
+      : DateFormat("dd-MM-yyyy").format(DateTime.now());
   await savePdfAndShowNotification(
-        pdfBytes, 'accounts_report_${account.name}', '${account.code}');
+        pdfBytes, 'accounts_report_${account.name}', '${dateDuration}');
 
     AuditLogService.writeLog(
-        'Downloaded Accounts Report for ${account.name} (${account.code})');
+        'Downloaded Accounts Report for ${account.name} ${dateDuration}');
 }
 
   // Future<void> downloadPdf(File file) async {

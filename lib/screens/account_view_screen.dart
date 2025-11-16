@@ -1,4 +1,5 @@
 import 'package:expense_log/services/report_service.dart';
+import 'package:expense_log/widgets/message_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:hive/hive.dart';
@@ -8,27 +9,36 @@ import 'account_create_screen.dart';
 import '../models/expense2.dart';
 import '../services/expense_service.dart';
 
-class AccountViewScreen extends StatelessWidget {
+class AccountViewScreen extends StatefulWidget {
   final Account account;
   const AccountViewScreen({Key? key, required this.account}) : super(key: key);
 
+  @override
+  State<AccountViewScreen> createState() => _AccountViewScreenState();
+}
+
+class _AccountViewScreenState extends State<AccountViewScreen> {
+
+  DateTime? _fromDate;
+  DateTime? _toDate;
   Future<void> _printReport(BuildContext context) async {
   final reportService = Provider.of<ReportService>(context, listen: false);
 
   final expenses = await _loadExpenses();
+  
+
 
   await reportService.prepareAccountExpenseReport(
-    account,
+    widget.account,
     expenses,
+    _fromDate,
+    _toDate
   );
-
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(content: Text("Report generated successfully")),
-  );
+  MessageWidget.showToast(context: context, message: "Report generated successfully");
 }
 
   Future<void> _edit(BuildContext ctx) async {
-    final res = await Navigator.push(ctx, MaterialPageRoute(builder: (_) => AccountCreateScreen(editing: account)));
+    final res = await Navigator.push(ctx, MaterialPageRoute(builder: (_) => AccountCreateScreen(editing: widget.account)));
     if (res == true) ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(content: Text('Account updated')));
   }
 
@@ -37,7 +47,7 @@ class AccountViewScreen extends StatelessWidget {
           context: ctx,
           builder: (_) => AlertDialog(
             title: const Text('Delete account'),
-            content: Text('Delete account "${account.name}"? This cannot be undone.'),
+            content: Text('Delete account "${widget.account.name}"? This cannot be undone.'),
             actions: [
               TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
               ElevatedButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Delete')),
@@ -47,37 +57,92 @@ class AccountViewScreen extends StatelessWidget {
         false;
     if (ok) {
       final svc = Provider.of<AccountsService>(ctx, listen: false);
-      await svc.delete(account.id);
+      await svc.delete(widget.account.id);
       Navigator.pop(ctx, true);
     }
   }
 
+  Future<void> _openDateFilter() async {
+  final now = DateTime.now();
+  final first = DateTime(now.year - 5); // limit
+
+  final picked = await showDateRangePicker(
+    context: context,
+    firstDate: first,
+    lastDate: now,
+    initialDateRange: _fromDate != null && _toDate != null
+        ? DateTimeRange(start: _fromDate!, end: _toDate!)
+        : DateTimeRange(start: now.subtract(const Duration(days: 30)), end: now),
+  );
+
+  if (picked != null) {
+    setState(() {
+      _fromDate = picked.start;
+      _toDate = picked.end;
+    });
+  }
+}
+
+
   Future<List<Expense2>> _loadExpenses() async {
-    // try to use opened box if available, otherwise open
-    Box<Expense2> box;
-    if (Hive.isBoxOpen('expense2Box')) {
-      box = Hive.box<Expense2>('expense2Box');
-    } else {
-      box = await Hive.openBox<Expense2>('expense2Box');
-    }
-    final aId = account.id?.toString();
-    final items = box.values.where((e) {
-      final ea = e.accountId;
-      return ea != null && ea.toString() == aId;
-    }).toList();
-    // sort newest first
-    items.sort((a, b) => b.date.compareTo(a.date));
-    return items;
+  Box<Expense2> box;
+  if (Hive.isBoxOpen('expense2Box')) {
+    box = Hive.box<Expense2>('expense2Box');
+  } else {
+    box = await Hive.openBox<Expense2>('expense2Box');
   }
 
-  String _fmtDate(DateTime d) => d.toLocal().toString().split(' ').first;
+  final aId = widget.account.id?.toString();
+  var items = box.values.where((e) {
+    final ea = e.accountId;
+    return ea != null && ea.toString() == aId;
+  }).toList();
+
+  if (_fromDate != null && _toDate != null) {
+  items = items.where((e) {
+    final ed = DateTime(e.date.year, e.date.month, e.date.day);
+    final from = DateTime(_fromDate!.year, _fromDate!.month, _fromDate!.day);
+    final to = DateTime(_toDate!.year, _toDate!.month, _toDate!.day);
+    return ed.compareTo(from) >= 0 && ed.compareTo(to) <= 0;
+  }).toList();
+}
+
+
+  items.sort((a, b) => b.date.compareTo(a.date));
+  return items;
+}
+
+
+  String _fmtDate(DateTime d) {
+  final months = [
+    'Jan','Feb','Mar','Apr','May','Jun',
+    'Jul','Aug','Sep','Oct','Nov','Dec'
+  ];
+  return '${d.day} ${months[d.month - 1]} ${d.year}';
+}
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Account Details'),
+         title: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: [
+      const Text('Account Details'),
+      if (_fromDate != null && _toDate != null)
+        Text(
+          '${_fmtDate(_fromDate!)} to ${_fmtDate(_toDate!)}',
+          style: const TextStyle(fontSize: 10),
+        ),
+    ],
+  ),
         actions: [
+          IconButton(
+  icon: const Icon(Icons.filter_alt),
+  onPressed: _openDateFilter,
+),
           IconButton(onPressed: (){
             _printReport(context);
           }, icon: const Icon(Icons.print)),
@@ -100,23 +165,23 @@ class AccountViewScreen extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
               child: Row(children: [
-                CircleAvatar(child: Text(account.name.isNotEmpty ? account.name[0].toUpperCase() : 'A')),
+                CircleAvatar(child: Text(widget.account.name.isNotEmpty ? widget.account.name[0].toUpperCase() : 'A')),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(account.name, style: Theme.of(context).textTheme.titleLarge),
+                    Text(widget.account.name, style: Theme.of(context).textTheme.titleLarge),
                     const SizedBox(height: 6),
-                    Text(account.code, style: Theme.of(context).textTheme.bodyMedium),
+                    Text(widget.account.code, style: Theme.of(context).textTheme.bodyMedium),
                     const SizedBox(height: 6),
-                    Text(account.description ?? '-', style: Theme.of(context).textTheme.bodySmall),
+                    Text(widget.account.description ?? '-', style: Theme.of(context).textTheme.bodySmall),
                   ]),
                 ),
                 Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
                   Text('Created', style: Theme.of(context).textTheme.bodySmall),
-                  Text(_fmtDate(account.createdAt), style: Theme.of(context).textTheme.bodyMedium),
+                  Text(_fmtDate(widget.account.createdAt), style: Theme.of(context).textTheme.bodyMedium),
                   const SizedBox(height: 8),
                   Text('Updated', style: Theme.of(context).textTheme.bodySmall),
-                  Text(account.updatedAt != null ? _fmtDate(account.updatedAt!) : '-', style: Theme.of(context).textTheme.bodyMedium),
+                  Text(widget.account.updatedAt != null ? _fmtDate(widget.account.updatedAt!) : '-', style: Theme.of(context).textTheme.bodyMedium),
                 ]),
               ]),
             ),
@@ -233,7 +298,7 @@ class AccountViewScreen extends StatelessWidget {
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
                                 title: Text(e.name, style: Theme.of(context).textTheme.bodyLarge),
                                 subtitle: Text('$typeName • ${e.date.toLocal().hour.toString().padLeft(2,'0')}:${e.date.toLocal().minute.toString().padLeft(2,'0')} ${e.date.hour >= 12 ? 'PM' : 'AM'}'),
-                                trailing: Text('${e.price.toStringAsFixed(2)}', style: Theme.of(context).textTheme.bodyLarge),
+                                trailing: Text('${e.price.toStringAsFixed(2)}', style: Theme.of(context).textTheme.bodyMedium),
                               );
                             },
                           ),
