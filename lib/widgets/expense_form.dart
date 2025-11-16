@@ -180,14 +180,12 @@ class _ExpenseFormState extends State<ExpenseForm> {
                                   }
                                   return DropdownMenuItem<int>(
                                     value: aid,
-                                    child: Flexible(
-                                      child: Text(
+                                    child: Text(
                                         '${a.name} ${a.code != null ? '(${a.code})' : ''}',
                                         style: TextStyle(fontSize: 12),
                                         softWrap: true,
                                         overflow: TextOverflow.visible,
                                       ),
-                                    ),
                                   );
                                   ;
                                 })
