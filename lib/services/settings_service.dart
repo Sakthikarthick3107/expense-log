@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:expense_log/models/account.dart';
 import 'package:expense_log/models/collection.dart';
 import 'package:expense_log/models/expense_type.dart';
 import 'package:expense_log/models/schedule.dart';
@@ -99,6 +100,7 @@ class SettingsService with ChangeNotifier {
       final expenseTypeBox = Hive.box<ExpenseType>('expenseTypeBox');
       final collectionBox = Hive.box<Collection>('collectionBox');
       final settingsBox = Hive.box('settingsBox');
+      final accountsBox = Hive.box<Account>('accountsBox');
       // final scheduleBox = Hive.box<Schedule>('scheduleBox');
 
       Map<String, dynamic> backupData = {
@@ -106,6 +108,7 @@ class SettingsService with ChangeNotifier {
         "ExpenseType": expenseTypeBox.values.map((e) => e.toJson()).toList(),
         "Collection": collectionBox.values.map((e) => e.toJson()).toList(),
         // "Schedule": scheduleBox.values.map((e) => e.toJson()).toList(),
+        "Account": accountsBox.values.map((e) => e.toJson()).toList(),
         "Settings":
             settingsBox.toMap(), // If it's a simple map, no conversion needed
       };
@@ -150,6 +153,7 @@ class SettingsService with ChangeNotifier {
         var collectionBox = Hive.box<Collection>('collectionBox');
         // var scheduleBox = Hive.box<Schedule>('scheduleBox');
         var settingsBox = Hive.box('settingsBox');
+        var accountsBox = Hive.box<Account>('accountsBox');
 
         // Clear existing data before restoring
         expense2Box.clear();
@@ -157,6 +161,7 @@ class SettingsService with ChangeNotifier {
         collectionBox.clear();
         // scheduleBox.clear();
         settingsBox.clear();
+        accountsBox.clear();
 
         // Restore Expense2
         if (backupData.containsKey("Expense2")) {
@@ -179,6 +184,14 @@ class SettingsService with ChangeNotifier {
           for (var entry in backupData["Collection"]) {
             collectionBox.put(
                 Collection.fromJson(entry).id, Collection.fromJson(entry));
+          }
+        }
+
+        // Restore Accounts
+        if (backupData.containsKey("Account")) {
+          for (var entry in backupData["Account"]) {
+            accountsBox.put(
+                Account.fromJson(entry).id, Account.fromJson(entry));
           }
         }
 

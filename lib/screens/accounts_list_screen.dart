@@ -27,8 +27,9 @@ class AccountsListScreen extends StatelessWidget {
               itemBuilder: (_, i) {
                 final a = accounts[i];
                 return ListTile(
-                  title: Text(a.name),
-                  subtitle: Text(a.code + (a.description != null && a.description!.isNotEmpty ? ' • ${a.description}' : '')),
+                  title: Text(a.name, style: TextStyle(fontSize: 14),),
+                  subtitle: Text(a.code + (a.description != null && a.description!.isNotEmpty ? ' • ${a.description}' : ''),
+                   style: TextStyle(fontSize: 12)),
                   trailing: Row(mainAxisSize: MainAxisSize.min, children: [
                     IconButton(
                       icon: const Icon(Icons.edit),

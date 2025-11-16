@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:expense_log/models/account.dart';
 import 'package:expense_log/models/date_range.dart';
 import 'package:expense_log/services/audit_log_service.dart';
 import 'package:expense_log/utility/pdf_helper.dart';
@@ -386,6 +387,203 @@ class ReportService {
     // await OpenFile.open(filePath);
     // await downloadPdf(file);
   }
+
+  Future<void> prepareAccountExpenseReport(
+    Account account, List<Expense2> expenses) async {
+  final pdf = pw.Document();
+
+  final totalSpent =
+      expenses.fold<double>(0.0, (sum, e) => sum + e.price);
+
+  // Group by date (yyyy-MM-dd)
+  final Map<String, List<Expense2>> grouped = {};
+  for (final e in expenses) {
+    final key = DateFormat("yyyy-MM-dd").format(e.date);
+    grouped.putIfAbsent(key, () => []).add(e);
+  }
+
+  // Sort by date desc
+  final sortedDates = grouped.keys.toList()
+    ..sort((a, b) => b.compareTo(a));
+
+  pdf.addPage(
+    pw.MultiPage(
+      pageTheme: PdfHelper.pageBackground(),
+      footer: (_) =>
+          PdfHelper.footer(footerTitle: "Account Expense Report"),
+      build: (context) => [
+        ...PdfHelper.header(
+          reportTitle: "Account Report",
+          subtitle: "${account.name} (${account.code})",
+        ),
+        if (account.description != null &&
+            account.description!.isNotEmpty)
+        PdfHelper.text(
+          "${account.description}",
+          fontSize: 14,
+          fontWeight: pw.FontWeight.bold
+        ),
+        pw.SizedBox(height: 8),
+        // Summary Box
+        pw.Container(
+          padding: const pw.EdgeInsets.all(10),
+          decoration: pw.BoxDecoration(
+            color: PdfColors.grey300,
+            borderRadius: pw.BorderRadius.circular(8),
+          ),
+          child: pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              PdfHelper.text(
+                "Total Transactions: ${expenses.length}",
+                fontSize: 12,
+                fontWeight: pw.FontWeight.bold,
+              ),
+              PdfHelper.text(
+                "Total Spent: ₹${totalSpent.toStringAsFixed(2)}",
+                fontSize: 12,
+                fontWeight: pw.FontWeight.bold,
+              ),
+            ],
+          ),
+        ),
+
+        pw.SizedBox(height: 12),
+
+        // FULL 4 COLUMN TABLE
+        ...sortedDates.map((date) {
+          final list = grouped[date]!;
+          final dayTotal =
+              list.fold<double>(0.0, (s, e) => s + e.price);
+
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              // Date header row
+              pw.Table(
+                columnWidths: {
+                  0: pw.FlexColumnWidth(3),
+                  1: pw.FlexColumnWidth(1),
+                },
+                children: [
+                  pw.TableRow(
+                    decoration:
+                        const pw.BoxDecoration(color: PdfColors.grey300),
+                    children: [
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(6),
+                        child: PdfHelper.text(
+                          DateFormat("d MMM yyyy")
+                              .format(DateTime.parse(date)),
+                          fontSize: 12,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(6),
+                        child: PdfHelper.text(
+                          "₹ ${dayTotal.toStringAsFixed(2)}",
+                          fontSize: 12,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+
+              // Column Headings
+              pw.Table(
+                columnWidths: {
+                  0: pw.FlexColumnWidth(1.2), // Time
+                  1: pw.FlexColumnWidth(2.7), // Name
+                  2: pw.FlexColumnWidth(2.2), // Type
+                  3: pw.FlexColumnWidth(1.2), // Amount
+                },
+                children: [
+                  pw.TableRow(
+                    decoration: pw.BoxDecoration(
+                      color: PdfColors.grey200,
+                    ),
+                    children: [
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(4),
+                        child: PdfHelper.text("Time",
+                            fontWeight: pw.FontWeight.bold, fontSize: 10),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(4),
+                        child: PdfHelper.text("Name",
+                            fontWeight: pw.FontWeight.bold, fontSize: 10),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(4),
+                        child: PdfHelper.text("Type",
+                            fontWeight: pw.FontWeight.bold, fontSize: 10),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(4),
+                        child: PdfHelper.text("Amount",
+                            fontWeight: pw.FontWeight.bold, fontSize: 10),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+
+              // Transaction Rows
+              pw.Table(
+                columnWidths: {
+                  0: pw.FlexColumnWidth(1.2),
+                  1: pw.FlexColumnWidth(2.7),
+                  2: pw.FlexColumnWidth(2.2),
+                  3: pw.FlexColumnWidth(1.2),
+                },
+                children: list.map((e) {
+                  final time =
+                      DateFormat("hh:mm a").format(e.date.toLocal());
+                  final type = e.expenseType.name;
+
+                  return pw.TableRow(
+                    children: [
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(4),
+                        child: PdfHelper.text(time, fontSize: 9),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(4),
+                        child: PdfHelper.text(e.name, fontSize: 9),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(4),
+                        child: PdfHelper.text(type, fontSize: 9),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(4),
+                        child: PdfHelper.text(
+                            "₹${e.price.toStringAsFixed(2)}",
+                            fontSize: 9),
+                      ),
+                    ],
+                  );
+                }).toList(),
+              ),
+
+              pw.SizedBox(height: 12),
+            ],
+          );
+        }).toList(),
+      ],
+    ),
+  );
+
+  final pdfBytes = await pdf.save();
+  await savePdfAndShowNotification(
+        pdfBytes, 'accounts_report_${account.name}', '${account.code}');
+
+    AuditLogService.writeLog(
+        'Downloaded Accounts Report for ${account.name} (${account.code})');
+}
 
   // Future<void> downloadPdf(File file) async {
   //   await FlutterDownloader.enqueue(

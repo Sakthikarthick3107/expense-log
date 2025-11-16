@@ -1,3 +1,4 @@
+import 'package:expense_log/services/report_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:hive/hive.dart';
@@ -10,6 +11,21 @@ import '../services/expense_service.dart';
 class AccountViewScreen extends StatelessWidget {
   final Account account;
   const AccountViewScreen({Key? key, required this.account}) : super(key: key);
+
+  Future<void> _printReport(BuildContext context) async {
+  final reportService = Provider.of<ReportService>(context, listen: false);
+
+  final expenses = await _loadExpenses();
+
+  await reportService.prepareAccountExpenseReport(
+    account,
+    expenses,
+  );
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(content: Text("Report generated successfully")),
+  );
+}
 
   Future<void> _edit(BuildContext ctx) async {
     final res = await Navigator.push(ctx, MaterialPageRoute(builder: (_) => AccountCreateScreen(editing: account)));
@@ -62,6 +78,9 @@ class AccountViewScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Account Details'),
         actions: [
+          IconButton(onPressed: (){
+            _printReport(context);
+          }, icon: const Icon(Icons.print)),
           IconButton(
             icon: const Icon(Icons.edit),
             onPressed: () => _edit(context),
@@ -116,7 +135,13 @@ class AccountViewScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Transactions: ${items.length}', style: Theme.of(context).textTheme.bodyLarge),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Transactions', style: Theme.of(context).textTheme.bodySmall),
+                  Text('${items.length}', style: Theme.of(context).textTheme.bodyLarge),
+                  ],
+              ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
@@ -188,7 +213,7 @@ class AccountViewScreen extends StatelessWidget {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(date, style: Theme.of(context).textTheme.bodySmall),
+                                Text('${date}', style: Theme.of(context).textTheme.bodySmall),
                                 Text('₹ ${dayTotal.toStringAsFixed(2)}', style: Theme.of(context).textTheme.bodyMedium),
                               ],
                             ),

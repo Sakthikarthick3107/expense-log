@@ -125,65 +125,84 @@ class _ExpenseFormState extends State<ExpenseForm> {
                   : Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                      DropdownButtonFormField<int>(
-                         value: selectedExpenseTypeId,
-                         items: _expenseService.getExpenseTypes().map((expType) {
-                           return DropdownMenuItem<int>(
-                             value: expType.id,
-                             child: Text(expType.name),
-                           );
-                         }).toList(),
-                         onChanged: (int? newValue) {
-                           setState(() {
-                             selectedExpenseTypeId = newValue!;
-                            // Auto-map account from selected ExpenseType only if user hasn't chosen account
-                            try {
-                              final selType = _expenseService
-                                  .getExpenseTypes()
-                                  .firstWhere((t) => t.id == selectedExpenseTypeId);
-                              final defAcc = (selType as dynamic).defaultAccountId;
-                              if ((_selectedAccountId == null) && defAcc != null) {
-                                if (defAcc is int) {
-                                  _selectedAccountId = defAcc;
-                                } else if (defAcc is String) {
-                                  _selectedAccountId = int.tryParse(defAcc);
-                                }
-                              }
-                            } catch (_) {}
-                           });
-                         },
-                         decoration:
-                             const InputDecoration(labelText: "Expense Type"),
-                       ),
-                      const SizedBox(height: 8),
-                      // Account dropdown (required)
-                      DropdownButtonFormField<int>(
-                        value: _selectedAccountId,
-                        items: accounts.map((Account a) {
-                          // account.id may be String in some code; attempt int parse if needed
-                          int? aid;
-                          try {
-                            if (a.id is int) {
-                              aid = a.id as int;
-                            } else {
-                              aid = int.tryParse(a.id.toString());
-                            }
-                          } catch (_) {
-                            aid = null;
-                          }
-                          return DropdownMenuItem<int>(
-                            value: aid,
-                            child: Text('${a.name} ${a.code != null ? '(${a.code})' : ''}'),
-                          );
-                        }).where((item) => item.value != null).toList(),
-                        onChanged: (int? v) => setState(() => _selectedAccountId = v),
-                        decoration: const InputDecoration(labelText: 'Account'),
-                        validator: (v) {
-                          if (v == null) return 'Select account';
-                          return null;
-                        },
-                      ),
-                    ]),
+                          DropdownButtonFormField<int>(
+                            value: selectedExpenseTypeId,
+                            items: _expenseService
+                                .getExpenseTypes()
+                                .map((expType) {
+                              return DropdownMenuItem<int>(
+                                value: expType.id,
+                                child: Text(expType.name,
+                                    style: TextStyle(fontSize: 14)),
+                              );
+                            }).toList(),
+                            onChanged: (int? newValue) {
+                              setState(() {
+                                selectedExpenseTypeId = newValue!;
+                                // Auto-map account from selected ExpenseType only if user hasn't chosen account
+                                try {
+                                  final selType = _expenseService
+                                      .getExpenseTypes()
+                                      .firstWhere(
+                                          (t) => t.id == selectedExpenseTypeId);
+                                  final defAcc =
+                                      (selType as dynamic).defaultAccountId;
+                                  if ((_selectedAccountId == null) &&
+                                      defAcc != null) {
+                                    if (defAcc is int) {
+                                      _selectedAccountId = defAcc;
+                                    } else if (defAcc is String) {
+                                      _selectedAccountId = int.tryParse(defAcc);
+                                    }
+                                  }
+                                } catch (_) {}
+                              });
+                            },
+                            decoration: const InputDecoration(
+                                labelText: "Expense Type"),
+                          ),
+                          const SizedBox(height: 8),
+                          // Account dropdown (required)
+                          DropdownButtonFormField<int>(
+                            value: _selectedAccountId,
+                            items: accounts
+                                .map((Account a) {
+                                  // account.id may be String in some code; attempt int parse if needed
+                                  int? aid;
+                                  try {
+                                    if (a.id is int) {
+                                      aid = a.id as int;
+                                    } else {
+                                      aid = int.tryParse(a.id.toString());
+                                    }
+                                  } catch (_) {
+                                    aid = null;
+                                  }
+                                  return DropdownMenuItem<int>(
+                                    value: aid,
+                                    child: Flexible(
+                                      child: Text(
+                                        '${a.name} ${a.code != null ? '(${a.code})' : ''}',
+                                        style: TextStyle(fontSize: 12),
+                                        softWrap: true,
+                                        overflow: TextOverflow.visible,
+                                      ),
+                                    ),
+                                  );
+                                  ;
+                                })
+                                .where((item) => item.value != null)
+                                .toList(),
+                            onChanged: (int? v) =>
+                                setState(() => _selectedAccountId = v),
+                            decoration: const InputDecoration(
+                                labelText: 'Payment Account'),
+                            validator: (v) {
+                              if (v == null) return 'Select account';
+                              return null;
+                            },
+                          ),
+                        ]),
               // if (widget.isFromCollection != true)
               // CheckboxListTile(
               //     title: Text('Refundable?'),
@@ -246,16 +265,17 @@ class _ExpenseFormState extends State<ExpenseForm> {
                         );
 
                 final exp = Expense2(
-                    id: widget.expense?.id ?? await _settingsService.getBoxKey('expenseId'),
-                    name: name,
-                    price: price,
-                    date: widget.expenseDate,
-                    created: widget.expense?.created ?? DateTime.now(),
-                    expenseType: selectedExpenseType,
-                    accountId: _selectedAccountId, // nullable int
-                    updated: widget.expense != null ? DateTime.now() : null,
-                     // isReturnable: widget.expense?.isReturnable ?? _isReturnable
-                     );
+                  id: widget.expense?.id ??
+                      await _settingsService.getBoxKey('expenseId'),
+                  name: name,
+                  price: price,
+                  date: widget.expenseDate,
+                  created: widget.expense?.created ?? DateTime.now(),
+                  expenseType: selectedExpenseType,
+                  accountId: _selectedAccountId, // nullable int
+                  updated: widget.expense != null ? DateTime.now() : null,
+                  // isReturnable: widget.expense?.isReturnable ?? _isReturnable
+                );
 
                 if (widget.isFromCollection == true) {
                   exp.id = -1;

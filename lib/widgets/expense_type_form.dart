@@ -2,7 +2,6 @@ import 'package:expense_log/models/expense_type.dart';
 import 'package:expense_log/services/expense_service.dart';
 import 'package:expense_log/services/settings_service.dart';
 import 'package:expense_log/widgets/message_widget.dart';
-import 'package:expense_log/widgets/type_usage_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_log/services/accounts_service.dart';
@@ -41,7 +40,7 @@ class _ExpenseTypeFormState extends State<ExpenseTypeForm> {
       _descriptionController.text = widget.type!.description ?? '';
       _limitController.text = widget.type!.limit?.toString() ?? '';
       _selectedLimitBy = widget.type!.limitBy;
-      _selectedDefaultAccount = widget.type!.accountId as int?;
+      _selectedDefaultAccount = widget.type!.accountId;
     }
   }
 
@@ -74,15 +73,14 @@ class _ExpenseTypeFormState extends State<ExpenseTypeForm> {
                 decoration: const InputDecoration(labelText: 'Description'),
               ),
               const SizedBox(height: 8),
-              // Default account for this ExpenseType (optional). uses int ids
               DropdownButtonFormField<int?>(
                 value: _selectedDefaultAccount,
                 decoration: const InputDecoration(labelText: 'Default Account (optional)'),
                 items: [
-                  const DropdownMenuItem<int?>(value: null, child: Text('None')),
+                  const DropdownMenuItem<int?>(value: null, child: Text('None', style: TextStyle(fontSize: 14))),
                   ...accounts.map((Account a) => DropdownMenuItem<int?>(
-                        value: a.id as int, // ensure your Account.id is int
-                        child: Text('${a.name} (${a.code})'),
+                        value: a.id,
+                        child: Text('${a.name} (${a.code})', style: TextStyle(fontSize: 14)),
                       ))
                 ],
                 onChanged: (v) => setState(() => _selectedDefaultAccount = v),

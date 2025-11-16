@@ -1,5 +1,7 @@
+import 'package:expense_log/models/account.dart';
 import 'package:expense_log/models/expense2.dart';
 import 'package:expense_log/screens/home_screen.dart';
+import 'package:expense_log/services/accounts_service.dart';
 import 'package:expense_log/services/audit_log_service.dart';
 import 'package:expense_log/services/collection_service.dart';
 import 'package:expense_log/services/expense_service.dart';
@@ -32,6 +34,7 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
   late CollectionService _collectionService;
   late SettingsService _settingsService;
   late ReportService _reportService;
+  late AccountsService _accountsService;
   late List<Collection> availableCollections;
   String? expenseType;
   final ValueNotifier<DateTime> _selectedDateNotifier =
@@ -40,6 +43,7 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
   Map<int, Expense2> deleteList = {};
   late Map<String, double> _metricsData = {};
   bool groupByType = false;
+  List<Account> accounts = [];
 
   @override
   void initState() {
@@ -49,8 +53,10 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
     _settingsService = Provider.of<SettingsService>(context, listen: false);
     _collectionService = Provider.of<CollectionService>(context, listen: false);
     _reportService = Provider.of<ReportService>(context, listen: false);
+    _accountsService = Provider.of<AccountsService>(context, listen: false);
     setState(() {
       availableCollections = _collectionService.getCollections();
+      accounts = _accountsService.all;
     });
     totalExpense =
         _expenseService.selectedDayTotalExpense(_selectedDateNotifier.value);
@@ -72,6 +78,8 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
   }
 
   Widget buildExpenseTile(Expense2 expOfDay, {bool showType = true}) {
+    var accId = expOfDay.accountId ?? 0;
+    var accName =  accounts.firstWhere((x) => x.id == expOfDay.accountId).name;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10.0),
       margin: const EdgeInsets.only(bottom: 10),
@@ -141,10 +149,21 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
                       fontSize: 12, fontWeight: FontWeight.w100),
                 )
               : null,
-          trailing: Text(
-            expOfDay.price.toString(),
-            style: const TextStyle(fontSize: 14),
-          ),
+          trailing: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  expOfDay.price.toString(),
+                  style: const TextStyle(fontSize: 14),
+                ),
+                Text(
+                    accName,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontStyle: FontStyle.italic,
+                      ))
+              ]),
         ),
       ),
     );
