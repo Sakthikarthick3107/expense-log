@@ -78,8 +78,8 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
   }
 
   Widget buildExpenseTile(Expense2 expOfDay, {bool showType = true}) {
-    var accId = expOfDay.accountId ?? 0;
-    var accName =  accounts.firstWhere((x) => x.id == expOfDay.accountId).name;
+    var accId = expOfDay.accountId;
+    var accName = accId != null ? accounts.firstWhere((x) => x.id == expOfDay.accountId).name:'';
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10.0),
       margin: const EdgeInsets.only(bottom: 10),
