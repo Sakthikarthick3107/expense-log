@@ -1,11 +1,12 @@
-## 📦 Release Notes - v3.1.6
-#### Released on: 29-11-2025 5:30 PM
+## 📦 Release Notes - v3.1.7
+#### Released on: 29-11-2025 10:50 PM
 
 ### ✨ New Feature
 
 **Account Tracking Introduces** New features :
   * Account Tracking Listing UI Changes
   * track with debits and credits
+  * Accounts with Type Credit Debits
 
 
 *Thank you for using Expense Log! Your feedback helps us keep improving and delivering a seamless experience.*

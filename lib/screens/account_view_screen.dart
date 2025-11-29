@@ -196,6 +196,7 @@ class _AccountViewScreenState extends State<AccountViewScreen> {
         final overallTotal = items.fold<double>(0.0, (s, e) => s + e.price);
         final overallDebit = items.where((x) =>(x.price > 0)).fold<double>(0.0, (s, e) => s + e.price);
         final overallCredit = items.where((x) =>(x.price <= 0)).fold<double>(0.0, (s, e) => s + e.price);
+
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6),
           child: Row(
@@ -241,6 +242,96 @@ class _AccountViewScreenState extends State<AccountViewScreen> {
 
       },
     ),
+          FutureBuilder<List<Expense2>>(
+            future: _loadExpenses(),
+            builder: (context, snap) {
+              if (!snap.hasData) return const SizedBox();
+              final items = snap.data!;
+              if (items.isEmpty) return const SizedBox();
+              final Map<String, List<Expense2>> typeGrouped = {};
+
+              for (final e in items) {
+                final typeName = (e.expenseType?.name ?? "Unknown");
+
+                typeGrouped.putIfAbsent(typeName, () => []).add(e);
+              }
+              final sortedTypeGrouped = Map.fromEntries(
+                  typeGrouped.entries.toList()
+                    ..sort((a, b) => a.key.toLowerCase().compareTo(b.key.toLowerCase()))
+              );
+
+              return SizedBox(
+                height: 75,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: sortedTypeGrouped.keys.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 10),
+                  itemBuilder: (context, index) {
+                    final type = sortedTypeGrouped.keys.elementAt(index);
+                    final list = sortedTypeGrouped[type] ?? [];
+                    final debitTotal = list
+                        .where((x) => x.price > 0)
+                        .fold<double>(0.0, (s, e) => s + e.price);
+                    final creditTotal = list
+                        .where((x) => x.price < 0)
+                        .fold<double>(0.0, (s, e) => s + e.price.abs());
+
+                    return Card(
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(type,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall!
+                                    .copyWith(fontWeight: FontWeight.bold)),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.arrow_upward,size: 12,color: Colors.green,),
+                                    Text(
+                                      "₹ ${creditTotal.toStringAsFixed(2)}",
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.normal,
+                                      ),
+                                    ),],
+                                ),
+                                SizedBox(width: 15,),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.arrow_downward,size: 12,color: Colors.red,),
+                                    Text(
+                                      "₹ ${debitTotal.toStringAsFixed(2)}",
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              ],
+                            )
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              );
+            },
+          ),
+
           Expanded(
             child: FutureBuilder<List<Expense2>>(
               future: _loadExpenses(),
@@ -329,7 +420,7 @@ class _AccountViewScreenState extends State<AccountViewScreen> {
                               return ListTile(
                                 dense: true,
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-                                title: Text(e.name, style: Theme.of(context).textTheme.bodyLarge),
+                                title: Text(e.name, style: Theme.of(context).textTheme.bodyMedium),
                                 subtitle: Text('$typeName • ${e.date.toLocal().hour.toString().padLeft(2,'0')}:${e.date.toLocal().minute.toString().padLeft(2,'0')} ${e.date.hour >= 12 ? 'PM' : 'AM'}'),
                                 trailing: FittedBox(
                                   fit: BoxFit.scaleDown,
@@ -337,13 +428,10 @@ class _AccountViewScreenState extends State<AccountViewScreen> {
                                     mainAxisSize: MainAxisSize.min,
                                     crossAxisAlignment: CrossAxisAlignment.end,
                                     children: [
-                                      // Price with + or -
                                       Text(
                                         '${e.price > 0 ? '- ' : '+ '}${e.price.abs().toStringAsFixed(2)}',
                                         style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: e.price > 0 ? Colors.red : Colors.green,
+                                          fontSize: 14,
                                         ),
                                       ),
 
