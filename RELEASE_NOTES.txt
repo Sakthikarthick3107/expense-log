@@ -1,12 +1,11 @@
-## 📦 Release Notes - v3.1.0
-#### Released on: 16-11-2025 10:30 AM
+## 📦 Release Notes - v3.1.6
+#### Released on: 29-11-2025 5:30 PM
 
 ### ✨ New Feature
 
 **Account Tracking Introduces** New features :
-  * Account Tracking is introduced
-  * Users can track expense with respect to cash, upi, cards basis as well
-  * Included accounts reports
+  * Account Tracking Listing UI Changes
+  * track with debits and credits
 
 
 *Thank you for using Expense Log! Your feedback helps us keep improving and delivering a seamless experience.*

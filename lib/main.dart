@@ -67,7 +67,6 @@ void main() async {
   await requestPermissions();
 
   await Hive.initFlutter();
-  // Hive.registerAdapter(ExpenseAdapter());
   Hive.registerAdapter(ExpenseTypeAdapter());
   Hive.registerAdapter(Expense2Adapter());
   Hive.registerAdapter(AccountAdapter());
@@ -79,24 +78,30 @@ void main() async {
   Hive.registerAdapter(RepeatOptionAdapter());
   Hive.registerAdapter(CustomByTypeAdapter());
 
-  // await Hive.openBox<Expense>('expenseBox');
-  await Hive.openBox<Expense2>('expense2Box');
-  await Hive.openBox<Account>('accountsBox');
-  await Hive.openBox<ExpenseType>('expenseTypeBox');
-  await Hive.openBox('settingsBox');
-  await Hive.openBox<Collection>('collectionBox');
-  await Hive.openBox<UpiLog>('upiLogBox');
-  await Hive.openBox<app_message.Message>('messageBox');
-  await Hive.openBox<Schedule>('scheduleBox');
+  var expenseBox = await Hive.openBox<Expense2>('expense2Box');
+  var accountBox = await Hive.openBox<Account>('accountsBox');
+  var expenseTypeBox = await Hive.openBox<ExpenseType>('expenseTypeBox');
+  var settingsBox = await Hive.openBox('settingsBox');
+  var collectionBox = await Hive.openBox<Collection>('collectionBox');
+  var upiLogBox = await Hive.openBox<UpiLog>('upiLogBox');
+  var messageBox = await Hive.openBox<app_message.Message>('messageBox');
+  var scheduleBox = await Hive.openBox<Schedule>('scheduleBox');
 
-  // await Workmanager().initialize(callbackDispatcher);
+  await Future.wait([
+    expenseBox.compact(),
+    accountBox.compact(),
+    expenseTypeBox.compact(),
+    settingsBox.compact(),
+    collectionBox.compact(),
+    upiLogBox.compact(),
+    messageBox.compact(),
+    scheduleBox.compact()
 
-  // await Workmanager().registerPeriodicTask("userschedules", "autoexpense",
-  //     inputData: {}, frequency: Duration(minutes: 2));
+  ]);
+
+
 
   await AndroidAlarmManager.initialize();
-
-  // await checkAndRunMigration();
   tz.initializeTimeZones();
   await NotificationService.initialize();
   await PdfHelper.initialize();
@@ -105,7 +110,6 @@ void main() async {
     debug: true,
     ignoreSsl: true,
   );
-  // startTelegramPolling();
   final accountsService = AccountsService();
   await accountsService.init();
   runApp(DevicePreview(
@@ -124,9 +128,6 @@ void main() async {
         Provider(create: (_) => ReportService()),
         ChangeNotifierProvider(create: (_) => ScheduleService()),
         ChangeNotifierProvider(create: (_) => accountsService),
-        // ProxyProvider2<ExpenseService,SettingsService,UiService>(
-        //     update: (_,expenseService,settingsService,__)=> UiService(expenseService, settingsService)
-        // )
       ],
       child: const MyApp(),
     ),

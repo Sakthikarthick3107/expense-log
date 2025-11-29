@@ -194,29 +194,51 @@ class _AccountViewScreenState extends State<AccountViewScreen> {
         if (!snap.hasData) return const SizedBox();
         final items = snap.data!;
         final overallTotal = items.fold<double>(0.0, (s, e) => s + e.price);
+        final overallDebit = items.where((x) =>(x.price > 0)).fold<double>(0.0, (s, e) => s + e.price);
+        final overallCredit = items.where((x) =>(x.price <= 0)).fold<double>(0.0, (s, e) => s + e.price);
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+
+              // Transactions count
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Transactions', style: Theme.of(context).textTheme.bodySmall),
-                  Text('${items.length}', style: Theme.of(context).textTheme.bodyLarge),
-                  ],
+                  Text('${items.length}', style: Theme.of(context).textTheme.bodyMedium),
+                ],
               ),
+
+              // Total Debit (Spent)
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text('Total Spent', style: Theme.of(context).textTheme.bodySmall),
-                  Text('₹ ${overallTotal.toStringAsFixed(2)}', style: Theme.of(context).textTheme.bodyLarge),
-                  ],
+                  Text('Debit (Spent)', style: Theme.of(context).textTheme.bodySmall),
+                  Text(
+                    '₹ ${overallDebit.toStringAsFixed(2)}',
+                    style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: Colors.red),
+                  ),
+                ],
+              ),
+
+              // Total Credit (Received)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text('Credit (Received)', style: Theme.of(context).textTheme.bodySmall),
+                  Text(
+                    '₹ ${overallCredit.abs().toStringAsFixed(2)}',
+                    style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: Colors.green),
+                  ),
+                ],
               ),
             ],
           ),
         );
+
       },
     ),
           Expanded(
@@ -231,15 +253,15 @@ class _AccountViewScreenState extends State<AccountViewScreen> {
                 }
                 final items = snap.data!;
 
-                // Group by date string (yyyy-mm-dd)
-                final Map<String, List<Expense2>> grouped = {};
+                // Group by actual DateTime (yyyy-mm-dd without time)
+                final Map<DateTime, List<Expense2>> grouped = {};
                 for (final e in items) {
-                  final key = _fmtDate(e.date);
-                  grouped.putIfAbsent(key, () => []).add(e);
+                  final dateOnly = DateTime(e.date.year, e.date.month, e.date.day);
+                  grouped.putIfAbsent(dateOnly, () => []).add(e);
                 }
 
                 // Sort dates descending
-                final List<String> dates = grouped.keys.toList()
+                final List<DateTime> dates = grouped.keys.toList()
                   ..sort((a, b) => b.compareTo(a));
 
                 // compute overall totals
@@ -266,7 +288,7 @@ class _AccountViewScreenState extends State<AccountViewScreen> {
                     final date = dates[index - 1];
                     final dayItems = grouped[date]!;
                     final dayTotal = dayItems.fold<double>(0.0, (s, ex) => s + ex.price);
-
+                    bool isDayDebit = dayTotal > 0;
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 4),
                       child: Column(
@@ -278,10 +300,21 @@ class _AccountViewScreenState extends State<AccountViewScreen> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text('${date}', style: Theme.of(context).textTheme.bodySmall),
-                                Text('₹ ${dayTotal.toStringAsFixed(2)}', style: Theme.of(context).textTheme.bodyMedium),
+                                Text(
+                                  _fmtDate(date),
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+
+                                Text(
+                                  '${isDayDebit ? "- " : "+ "}₹ ${dayTotal.abs().toStringAsFixed(2)}',
+                                  style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                                    color: isDayDebit ? Colors.red : Colors.green,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ],
-                            ),
+                            )
+
                           ),
                           const Divider(height: 1),
                           // transactions for the day (plain background)
@@ -298,7 +331,47 @@ class _AccountViewScreenState extends State<AccountViewScreen> {
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
                                 title: Text(e.name, style: Theme.of(context).textTheme.bodyLarge),
                                 subtitle: Text('$typeName • ${e.date.toLocal().hour.toString().padLeft(2,'0')}:${e.date.toLocal().minute.toString().padLeft(2,'0')} ${e.date.hour >= 12 ? 'PM' : 'AM'}'),
-                                trailing: Text('${e.price.toStringAsFixed(2)}', style: Theme.of(context).textTheme.bodyMedium),
+                                trailing: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      // Price with + or -
+                                      Text(
+                                        '${e.price > 0 ? '- ' : '+ '}${e.price.abs().toStringAsFixed(2)}',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: e.price > 0 ? Colors.red : Colors.green,
+                                        ),
+                                      ),
+
+                                      SizedBox(height: 2),
+
+                                      Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            e.price > 0 ? Icons.arrow_downward : Icons.arrow_upward,
+                                            size: 12,
+                                            color: e.price > 0 ? Colors.red : Colors.green,
+                                          ),
+                                          SizedBox(width: 3),
+                                          Text(
+                                            e.price > 0 ? 'Debit' : 'Credit',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+
                               );
                             },
                           ),
