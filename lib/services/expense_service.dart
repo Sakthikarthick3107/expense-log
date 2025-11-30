@@ -432,7 +432,10 @@ class ExpenseService {
   Map<K, double> getMetrics<K>(
     String duration,
     String metricBy,
-    List<String> unselectedTypes, {
+    List<String> unselectedTypes,
+
+      {
+        bool? isDebit = null,
     DateTimeRange? customDateRange,
   }) {
     final expenseTypes = getExpenseTypes();
@@ -453,7 +456,9 @@ class ExpenseService {
                 expense.expenseType.id == expenseType.id &&
                 !expense.date.isBefore(startDate) &&
                 expense.date.isBefore(endDate.add(const Duration(days: 1))) &&
-                !unselectedTypes.contains(expenseType.name))
+                !unselectedTypes.contains(expenseType.name)
+              && (isDebit != null && isDebit ? expense.price > 0 : expense.price <= 0)
+        ).map((e) => e.copyWith(price: e.price.abs()))
             .fold(0.0, (sum, expense) => sum + expense.price);
 
         if (total != 0) {
@@ -466,8 +471,11 @@ class ExpenseService {
 
       for (var expense in expenses.where((exp) =>
           !unselectedTypes.contains(exp.expenseType.name) &&
+           (isDebit != null && isDebit ? exp.price > 0 : exp.price <= 0) &&
           !exp.date.isBefore(startDate) &&
-          exp.date.isBefore(endDate.add(const Duration(days: 1))))) {
+          exp.date.isBefore(endDate.add(const Duration(days: 1))))
+          .map((e) => e.copyWith(price: e.price.abs()))
+      ) {
         final DateTime day =
             DateTime(expense.date.year, expense.date.month, expense.date.day);
 
@@ -489,6 +497,7 @@ class ExpenseService {
 
   Map<Map<String, double>, List<Map<String, double>>> getMetrics2(
       String duration, String metricBy, List<String> unselectedTypes,
+      bool isDebit,
       {DateTimeRange? customDateRange}) {
     final expenseTypes = getExpenseTypes();
     final expenses = getExpenses();
@@ -511,7 +520,9 @@ class ExpenseService {
             expense.expenseType.id == expenseType.id &&
             !expense.date.isBefore(startDate) &&
             expense.date.isBefore(endDate.add(Duration(days: 1))) &&
-            !unselectedTypes.contains(expenseType.name));
+            !unselectedTypes.contains(expenseType.name)
+            && (isDebit ? expense.price > 0 : expense.price <= 0)
+        ).map((e) => e.copyWith(price: e.price.abs()));;
 
         double total =
             filterWithType.fold(0.0, (sum, expense) => sum + expense.price);
@@ -552,7 +563,9 @@ class ExpenseService {
       var filterWithDayLimit = expenses.where((exp) =>
           !unselectedTypes.contains(exp.expenseType.name) &&
           !exp.date.isBefore(startDate) &&
-          exp.date.isBefore(endDate.add(Duration(days: 1))));
+          exp.date.isBefore(endDate.add(Duration(days: 1)))
+              && (isDebit ? exp.price > 0 : exp.price <= 0)
+      ).map((e) => e.copyWith(price: e.price.abs()));;
 
       for (var expense in filterWithDayLimit) {
         DateTime day =

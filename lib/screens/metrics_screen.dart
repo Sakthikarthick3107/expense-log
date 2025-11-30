@@ -46,7 +46,7 @@ class _MetricsScreenState extends State<MetricsScreen> {
   late Map<Map<String, double>, List<Map<String, double>>> _metricsData2 = {};
 
   String? _selectedKey;
-
+  bool isDebit = true;
   @override
   void initState() {
     super.initState();
@@ -59,50 +59,52 @@ class _MetricsScreenState extends State<MetricsScreen> {
         _selectedDurationNotifier.value,
         customDateRange: selectedDateRange);
     _metricsData = _expenseService.getMetrics(_selectedDurationNotifier.value,
-        _selectedMetricBy.value, _unSelectedTypes,
+        _selectedMetricBy.value, _unSelectedTypes,isDebit: isDebit,
         customDateRange: selectedDateRange);
     _metricsData2 = _expenseService.getMetrics2(_selectedDurationNotifier.value,
-        _selectedMetricBy.value, _unSelectedTypes,
+        _selectedMetricBy.value, _unSelectedTypes, isDebit,
         customDateRange: selectedDateRange);
     _barCharData = _expenseService.getMetrics(
-        _selectedDurationNotifier.value, 'By type', _unSelectedTypes,
+        _selectedDurationNotifier.value, 'By type', _unSelectedTypes,isDebit: isDebit,
         customDateRange: selectedDateRange);
     _calendarChartData = _expenseService.getMetrics<DateTime>(
-        _selectedDurationNotifier.value, 'By day', _unSelectedTypes,
+        _selectedDurationNotifier.value, 'By day', _unSelectedTypes,isDebit: isDebit,
         customDateRange: selectedDateRange);
     _selectedDurationNotifier.addListener(() {
       _expenseTypesOfDuration = _expenseService.expenseTypesOfSelectedDuration(
           _selectedDurationNotifier.value,
           customDateRange: selectedDateRange);
       _metricsData = _expenseService.getMetrics(_selectedDurationNotifier.value,
-          _selectedMetricBy.value, _unSelectedTypes,
+          _selectedMetricBy.value, _unSelectedTypes,isDebit: isDebit,
           customDateRange: selectedDateRange);
       _metricsData2 = _expenseService.getMetrics2(
           _selectedDurationNotifier.value,
           _selectedMetricBy.value,
           _unSelectedTypes,
+          isDebit,
           customDateRange: selectedDateRange);
       _barCharData = _expenseService.getMetrics(
-          _selectedDurationNotifier.value, 'By type', _unSelectedTypes,
+          _selectedDurationNotifier.value, 'By type', _unSelectedTypes,isDebit: isDebit,
           customDateRange: selectedDateRange);
       _calendarChartData = _expenseService.getMetrics(
-          _selectedDurationNotifier.value, 'By day', _unSelectedTypes,
+          _selectedDurationNotifier.value, 'By day', _unSelectedTypes,isDebit: isDebit,
           customDateRange: selectedDateRange);
     });
     _selectedMetricBy.addListener(() {
       _metricsData = _expenseService.getMetrics(_selectedDurationNotifier.value,
-          _selectedMetricBy.value, _unSelectedTypes,
+          _selectedMetricBy.value, _unSelectedTypes,isDebit: isDebit,
           customDateRange: selectedDateRange);
       _metricsData2 = _expenseService.getMetrics2(
           _selectedDurationNotifier.value,
           _selectedMetricBy.value,
           _unSelectedTypes,
+          isDebit,
           customDateRange: selectedDateRange);
       _barCharData = _expenseService.getMetrics(
-          _selectedDurationNotifier.value, 'By type', _unSelectedTypes,
+          _selectedDurationNotifier.value, 'By type', _unSelectedTypes,isDebit: isDebit,
           customDateRange: selectedDateRange);
       _calendarChartData = _expenseService.getMetrics(
-          _selectedDurationNotifier.value, 'By day', _unSelectedTypes,
+          _selectedDurationNotifier.value, 'By day', _unSelectedTypes,isDebit: isDebit,
           customDateRange: selectedDateRange);
     });
   }
@@ -146,21 +148,25 @@ class _MetricsScreenState extends State<MetricsScreen> {
                         _selectedDurationNotifier.value,
                         _selectedMetricBy.value,
                         _unSelectedTypes,
+                        isDebit: isDebit,
                         customDateRange: selectedDateRange);
                     _metricsData2 = _expenseService.getMetrics2(
                         _selectedDurationNotifier.value,
                         _selectedMetricBy.value,
                         _unSelectedTypes,
+                        isDebit,
                         customDateRange: selectedDateRange);
                     _barCharData = _expenseService.getMetrics(
                         _selectedDurationNotifier.value,
                         'By type',
                         _unSelectedTypes,
+                        isDebit: isDebit,
                         customDateRange: selectedDateRange);
                     _calendarChartData = _expenseService.getMetrics(
                         _selectedDurationNotifier.value,
                         'By day',
                         _unSelectedTypes,
+                        isDebit: isDebit,
                         customDateRange: selectedDateRange);
                   });
                 },
@@ -188,10 +194,35 @@ class _MetricsScreenState extends State<MetricsScreen> {
                   if (_metricsData2.keys
                       .where((metric) => metric.keys.first != 'Total')
                       .isNotEmpty)
-                    IconButton(
-                      onPressed: () {},
-                      color: Theme.of(context).scaffoldBackgroundColor,
-                      icon: const Icon(Icons.print),
+                    DropdownButton<bool>(
+                      value: isDebit,
+                      onChanged: (bool? newValue) {
+                        setState(() {
+                          isDebit = newValue!;
+                          _metricsData2 = _expenseService.getMetrics2(
+                              _selectedDurationNotifier.value,
+                              _selectedMetricBy.value,
+                              _unSelectedTypes,
+                              isDebit,
+                              customDateRange: selectedDateRange);
+                          _barCharData = _expenseService.getMetrics(
+                              _selectedDurationNotifier.value, 'By type', _unSelectedTypes,isDebit: isDebit,
+                              customDateRange: selectedDateRange);
+                          _calendarChartData = _expenseService.getMetrics<DateTime>(
+                              _selectedDurationNotifier.value, 'By day', _unSelectedTypes,isDebit: isDebit,
+                              customDateRange: selectedDateRange);
+                        });
+                      },
+                      items: [
+                        DropdownMenuItem(
+                          value: true,
+                          child: Text("Debit", style: TextStyle(fontSize: 16)),
+                        ),
+                        DropdownMenuItem(
+                          value: false,
+                          child: Text("Credit", style: TextStyle(fontSize: 16)),
+                        ),
+                      ],
                     ),
                   Expanded(
                     child: Align(
