@@ -337,7 +337,7 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
                               color: totalExpense > 0 ? Colors.red: Colors.green,
                               size: 20,),
                           Text(
-                          "₹ ${totalExpense.toStringAsFixed(2)}",
+                          "₹ ${totalExpense.abs().toStringAsFixed(2)}",
                             style: const TextStyle(
                             fontSize: 22, fontWeight: FontWeight.bold),
                               )
