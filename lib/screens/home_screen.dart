@@ -315,26 +315,26 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             actions: [
               // NotificationButton(unreadCount: settingsService.getUnreadCount()),
-              Tooltip(
-                key: _tooltipKey,
-                message: [
-                  'This month : ₹ ${_expenseService.getMetrics('This month', 'By type', [])['Total']?.toStringAsFixed(2)}',
-                  // '\n',
-                  if (_expenseService
-                      .getExpenseTypeLimitSummary()
-                      .isNotEmpty) ...[
-                    'Limits',
-                    ..._expenseService.getExpenseTypeLimitSummary()
-                  ]
-                ].join('\n'),
-                child: IconButton(
-                  icon: Icon(Icons.info_outline),
-                  onPressed: () {
-                    final dynamic tooltip = _tooltipKey.currentState;
-                    tooltip?.ensureTooltipVisible();
-                  },
-                ),
-              ),
+              // Tooltip(
+              //   key: _tooltipKey,
+              //   message: [
+              //     'This month : ₹ ${_expenseService.getMetrics('This month', 'By type', [])['Total']?.toStringAsFixed(2)}',
+              //     // '\n',
+              //     if (_expenseService
+              //         .getExpenseTypeLimitSummary()
+              //         .isNotEmpty) ...[
+              //       'Limits',
+              //       ..._expenseService.getExpenseTypeLimitSummary()
+              //     ]
+              //   ].join('\n'),
+              //   child: IconButton(
+              //     icon: Icon(Icons.info_outline),
+              //     onPressed: () {
+              //       final dynamic tooltip = _tooltipKey.currentState;
+              //       tooltip?.ensureTooltipVisible();
+              //     },
+              //   ),
+              // ),
               if (user == null)
                 Container(
                   padding: EdgeInsets.all(10),
