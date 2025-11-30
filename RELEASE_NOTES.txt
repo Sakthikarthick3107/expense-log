@@ -1,5 +1,5 @@
-## 📦 Release Notes - v3.1.8
-#### Released on: 30-11-2025 11:30 PM
+## 📦 Release Notes - v3.1.9
+#### Released on: 30-11-2025 8:00 PM
 
 ### ✨ New Feature
 
@@ -8,5 +8,6 @@
   * track with debits and credits
   * Accounts with Type Credit Debits
   * Metrics screen view with credit/debit difference
+  * Daily expense Credit/Debit tracks
 
 *Thank you for using Expense Log! Your feedback helps us keep improving and delivering a seamless experience.*

@@ -29,6 +29,7 @@ class _ExpenseFormState extends State<ExpenseForm> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _priceController = TextEditingController();
+  final _descriptionController = TextEditingController();
   bool _isReturnable = false;
   int selectedExpenseTypeId = 0;
   int? _selectedAccountId;
@@ -49,10 +50,14 @@ class _ExpenseFormState extends State<ExpenseForm> {
     _priceController.addListener(() {
       setState(() {});
     });
+    _descriptionController.addListener(() {
+      setState(() {});
+    });
 
     if (widget.expense != null) {
       _nameController.text = widget.expense!.name;
       _priceController.text = widget.expense!.price.toString();
+      _descriptionController.text = widget.expense!.description != null ? widget.expense!.description.toString():'';
       selectedExpenseTypeId = widget.expense!.expenseType.id;
       // try to read accountId from provided expense (robust to int or String)
       final rawAccount = (widget.expense as dynamic).accountId;
@@ -76,6 +81,7 @@ class _ExpenseFormState extends State<ExpenseForm> {
     super.dispose();
     _nameController.dispose();
     _priceController.dispose();
+    _descriptionController.dispose();
   }
 
   @override
@@ -104,7 +110,24 @@ class _ExpenseFormState extends State<ExpenseForm> {
 
               TextFormField(
                 controller: _priceController,
-                decoration: const InputDecoration(labelText: 'Price'),
+                decoration: InputDecoration(
+                    labelText: 'Price',
+                  suffixIcon: InkWell(
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (_) => AlertDialog(
+                          title: const Text('Price Info'),
+                          content: const Text(
+                            '• Negative value = Credit (money received)\n'
+                                '• Positive value = Debit (money spent)',
+                          ),
+                        ),
+                      );
+                    },
+                    child: const Icon(Icons.info_outline),
+                  ),
+                ),
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
                 validator: (value) {
@@ -210,6 +233,13 @@ class _ExpenseFormState extends State<ExpenseForm> {
               //         _isReturnable = value ?? false;
               //       });
               //     })
+              TextFormField(
+                controller: _descriptionController,
+                decoration: const InputDecoration(labelText: 'Description'),
+                keyboardType: TextInputType.multiline,
+                maxLines: null,
+                minLines: 3,
+              ),
             ],
           ),
         ),
@@ -220,6 +250,7 @@ class _ExpenseFormState extends State<ExpenseForm> {
                 widget.expense?.price ==
                     double.tryParse(_priceController.text) &&
                 widget.expense?.expenseType.id == selectedExpenseTypeId
+                && (widget.expense?.description ?? '') == _descriptionController.text
             // && widget.expense?.isReturnable == _isReturnable
             ))
           Column(
@@ -237,7 +268,8 @@ class _ExpenseFormState extends State<ExpenseForm> {
                 widget.expense?.price !=
                     double.tryParse(_priceController.text) ||
                 widget.expense?.expenseType.id != selectedExpenseTypeId ||
-                widget.expense?.accountId != _selectedAccountId
+                widget.expense?.accountId != _selectedAccountId ||
+            (widget.expense?.description ?? '') != _descriptionController.text
             // || widget.expense?.isReturnable == _isReturnable
             ))
           TextButton(
@@ -248,13 +280,15 @@ class _ExpenseFormState extends State<ExpenseForm> {
                 widget.expense?.price !=
                     double.tryParse(_priceController.text) ||
                 widget.expense?.expenseType.id != selectedExpenseTypeId ||
-                widget.expense?.accountId != _selectedAccountId
+                widget.expense?.accountId != _selectedAccountId ||
+            (widget.expense?.description ?? '') != _descriptionController.text
             // || widget.expense?.isReturnable == _isReturnable
             ))
           ElevatedButton(
             onPressed: () async {
               if (_formKey.currentState?.validate() ?? false) {
                 final name = _nameController.text;
+                final description = _descriptionController.text;
                 final price = double.parse(_priceController.text);
 
                 final selectedExpenseType =
@@ -272,6 +306,7 @@ class _ExpenseFormState extends State<ExpenseForm> {
                   expenseType: selectedExpenseType,
                   accountId: _selectedAccountId, // nullable int
                   updated: widget.expense != null ? DateTime.now() : null,
+                  description: description
                   // isReturnable: widget.expense?.isReturnable ?? _isReturnable
                 );
 

@@ -152,17 +152,27 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
           trailing: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  expOfDay.price.toString(),
+                   expOfDay.price.abs().toStringAsFixed(2),
                   style: const TextStyle(fontSize: 14),
                 ),
-                Text(
-                    accName,
-                    style: const TextStyle(
-                      fontSize: 10,
-                      fontStyle: FontStyle.italic,
-                      ))
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(expOfDay.price > 0 ? Icons.arrow_downward : Icons.arrow_upward,
+                    size: 14,
+                    color: expOfDay.price > 0 ? Colors.red : Colors.green,),
+                    Text(
+                        accName,
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontStyle: FontStyle.italic,
+                        ))
+                  ],
+                ),
+
               ]),
         ),
       ),
@@ -320,11 +330,20 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
                                     color: Colors.white, fontSize: 16),
                               ));
                         } else {
-                          return Text(
-                            "₹ ${totalExpense.toStringAsFixed(2)}",
+                          return Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(totalExpense > 0? Icons.arrow_downward : Icons.arrow_upward,
+                              color: totalExpense > 0 ? Colors.red: Colors.green,
+                              size: 20,),
+                          Text(
+                          "₹ ${totalExpense.toStringAsFixed(2)}",
                             style: const TextStyle(
-                                fontSize: 22, fontWeight: FontWeight.bold),
+                            fontSize: 22, fontWeight: FontWeight.bold),
+                              )
+                            ],
                           );
+
                         }
                       })
                 ],
@@ -371,15 +390,15 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
                     children: grpWithType.entries.expand((entry) {
                       final type = entry.key;
                       final expenses = entry.value;
-                      double typeTotal =
-                          expenses.fold<double>(0.0, (sum, e) => sum + e.price);
-
+                      double typeCredit = expenses.where((x)=> (x.price <= 0)).fold<double>(0.0, (sum, e) => sum + e.price);
+                      double typeDebit = expenses.where((x)=> (x.price > 0)).fold<double>(0.0, (sum, e) => sum + e.price);
                       return [
                         Padding(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 20.0, vertical: 6),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 type,
@@ -389,13 +408,37 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
                                   color: Theme.of(context).primaryColor,
                                 ),
                               ),
-                              Text(
-                                "₹ ${typeTotal.toStringAsFixed(2)}",
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  color: Theme.of(context).primaryColor,
-                                ),
+                              Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(Icons.arrow_upward,color: Colors.green,size: 12,),
+                                      Text(
+                                        "₹ ${typeCredit.abs().toStringAsFixed(2)}",
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          color: Theme.of(context).primaryColor,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Row(
+                                    children: [
+                                      Icon(Icons.arrow_downward,color: Colors.red,size: 12,),
+                                      Text(
+                                        "₹ ${typeDebit.abs().toStringAsFixed(2)}",
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          color: Theme.of(context).primaryColor,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               )
+
                             ],
                           ),
                         ),

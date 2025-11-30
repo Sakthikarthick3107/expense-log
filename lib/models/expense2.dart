@@ -27,7 +27,11 @@ class Expense2{
   DateTime? updated;
 
   @HiveField(7)
-  int? accountId; // NEW: nullable mapping to Account.id
+  int? accountId;
+
+  @HiveField(8)
+  String? description;
+
 
   Expense2({
     required this.id,
@@ -38,6 +42,7 @@ class Expense2{
     required this.created,
     this.updated,
     this.accountId,
+    this.description
   });
 
   Expense2 copyWith({
@@ -49,6 +54,7 @@ class Expense2{
     DateTime? created,
     DateTime? updated,
     int? accountId,
+    String? description
   }) {
     return Expense2(
         id: id ?? this.id,
@@ -59,6 +65,7 @@ class Expense2{
         created: created ?? this.created,
         updated: updated ?? this.updated,
         accountId: accountId ?? this.accountId,
+        description: description ?? this.description
     );
   }
 
@@ -72,6 +79,7 @@ class Expense2{
       'created': created.toIso8601String(),
       'updated': updated?.toIso8601String(),
       'accountId': accountId,
+      'description' : description
     };
   }
 
@@ -85,6 +93,7 @@ class Expense2{
       created: DateTime.parse(json['created']),
       updated: json['updated'] != null ? DateTime.parse(json['updated']) : null,
       accountId: json['accountId'] as int?,
+      description: json['description'] as String?
     );
   }
 }
