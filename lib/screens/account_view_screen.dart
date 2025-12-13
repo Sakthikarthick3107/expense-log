@@ -233,6 +233,7 @@ class _AccountViewScreenState extends State<AccountViewScreen> {
                   final txns = await smsSyncService.sync(widget.account);
 
                   if (txns.isNotEmpty) {
+                    MessageWidget.showToast(context: context, message: "Transactions found in SMS");
                     Navigator.push(
                       context,
                       MaterialPageRoute(
