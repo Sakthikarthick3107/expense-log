@@ -244,7 +244,6 @@ class _AccountViewScreenState extends State<AccountViewScreen> {
                       MaterialPageRoute(
                         builder: (_) => SmsReviewPage(
                           account: widget.account,
-                          txns: txns,
                         ),
                       ),
                     );

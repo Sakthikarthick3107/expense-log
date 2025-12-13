@@ -1,217 +1,142 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import '../../models/ParsedSmsTxn.dart';
-import '../../models/account.dart';
-import '../services/expense_service.dart';
 import 'package:provider/provider.dart';
+import 'package:expense_log/models/ParsedSmsTxn.dart';
+import 'package:expense_log/models/account.dart';
+import 'package:expense_log/models/expense2.dart';
+import 'package:expense_log/models/expense_type.dart';
+import 'package:expense_log/services/sms_sync_service.dart';
+import 'package:expense_log/services/expense_service.dart';
+import 'package:expense_log/services/accounts_service.dart';
+import 'package:expense_log/services/settings_service.dart';
+import 'package:expense_log/widgets/message_widget.dart';
 
 class SmsReviewPage extends StatefulWidget {
   final Account account;
-  final List<ParsedSmsTxn> txns;
-
-  const SmsReviewPage({
-    super.key,
-    required this.account,
-    required this.txns,
-  });
+  const SmsReviewPage({Key? key, required this.account}) : super(key: key);
 
   @override
   State<SmsReviewPage> createState() => _SmsReviewPageState();
 }
 
 class _SmsReviewPageState extends State<SmsReviewPage> {
-  final Set<int> _selectedIndexes = {};
-  late ExpenseService expenseService;
+  late SmsSyncService _smsSync;
+  late ExpenseService _expenseService;
+  late AccountsService _accountsService;
+  late SettingsService _settings_service;
+
+  List<ParsedSmsTxn> _parsed = [];
+  Map<int, dynamic> _selectedTypeForRow = {}; // map index -> expenseTypeId (int or String)
+  bool _loading = true;
 
   @override
   void initState() {
     super.initState();
-    expenseService = Provider.of<ExpenseService>(context, listen: false);
-    for (int i = 0; i < widget.txns.length; i++) {
-      _selectedIndexes.add(i);
+    _smsSync = Provider.of<SmsSyncService>(context, listen: false);
+    _expenseService = Provider.of<ExpenseService>(context, listen: false);
+    _accountsService = Provider.of<AccountsService>(context, listen: false);
+    _settings_service = Provider.of<SettingsService>(context, listen: false);
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() => _loading = true);
+    final parsed = await _smsSync.sync(widget.account);
+    setState(() {
+      _parsed = parsed;
+      _loading = false;
+    });
+  }
+
+  Future<void> _createExpenseFromRow(int idx) async {
+    final txn = _parsed[idx];
+    final typeId = _selectedTypeForRow[idx];
+    if (typeId == null) {
+      MessageWidget.showToast(context: context, message: 'Select type first', status: 0);
+      return;
+    }
+
+    final key = await _settings_service.getBoxKey('expenseId');
+    final newId = key is int ? key : int.tryParse(key.toString()) ?? DateTime.now().millisecondsSinceEpoch;
+
+    final ExpenseType type = _expenseService
+        .getExpenseTypes()
+        .firstWhere((t) => t.id.toString() == typeId.toString());
+
+    final exp = Expense2(
+      id: newId,
+      name: txn.description.length > 40 ? txn.description.substring(0, 40) : txn.description,
+      price: txn.amount,
+      expenseType: type,
+      date: txn.date,
+      created: DateTime.now(),
+      updated: DateTime.now(),
+      accountId: widget.account.id is int ? widget.account.id as int : int.tryParse(widget.account.id.toString()),
+    );
+
+    // If txn is credit we create negative amount? (keep positive but allow user to decide)
+    // Here we only auto-create for debits. If credit, show message and skip by default.
+    if (!txn.isDebit) {
+      MessageWidget.showToast(context: context, message: 'Detected credit - please review before creating', status: 0);
+      return;
+    }
+
+    final res = await _expenseService.createExpense(exp);
+    if (res == 1) {
+      MessageWidget.showToast(context: context, message: 'Expense created', status: 1);
+      // Optionally mark sms synced time on account elsewhere
+      setState(() {
+        _parsed.removeAt(idx);
+      });
+    } else {
+      MessageWidget.showToast(context: context, message: 'Failed creating expense', status: 0);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final types = _expenseService.getExpenseTypes();
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Review SMS Transactions'),
-      ),
-      body: widget.txns.isEmpty
-          ? const Center(child: Text('No transactions found'))
-          : ListView.builder(
-              itemCount: widget.txns.length,
-              itemBuilder: (context, index) {
-                final txn = widget.txns[index];
-                final isSelected = _selectedIndexes.contains(index);
-
-                return Card(
-                  margin: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 6),
-                  child: ListTile(
-                    leading: Checkbox(
-                      value: isSelected,
-                      onChanged: (val) {
-                        setState(() {
-                          if (val == true) {
-                            _selectedIndexes.add(index);
-                          } else {
-                            _selectedIndexes.remove(index);
-                          }
-                        });
-                      },
-                    ),
-                    title: Text(
-                      '₹${txn.amount.toStringAsFixed(2)}',
-                      style: TextStyle(
-                        color:
-                            txn.isDebit ? Colors.red : Colors.green,
-                        fontWeight: FontWeight.bold,
+      appBar: AppBar(title: const Text('SMS Review')),
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : _parsed.isEmpty
+              ? const Center(child: Text('No new transactions'))
+              : ListView.separated(
+                  padding: const EdgeInsets.all(8),
+                  itemCount: _parsed.length,
+                  separatorBuilder: (_, __) => const Divider(),
+                  itemBuilder: (ctx, i) {
+                    final p = _parsed[i];
+                    return ListTile(
+                      title: Text(p.description, maxLines: 2, overflow: TextOverflow.ellipsis),
+                      subtitle: Text('${p.date.toLocal()} • ${p.isDebit ? 'Debit' : 'Credit'} • ${p.amount.toStringAsFixed(2)}'),
+                      trailing: SizedBox(
+                        width: 220,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Expanded(
+                              child: DropdownButton<dynamic>(
+                                isDense: true,
+                                value: _selectedTypeForRow[i],
+                                hint: const Text('Type'),
+                                items: types
+                                    .map((t) => DropdownMenuItem<dynamic>(value: t.id, child: Text(t.name)))
+                                    .toList(),
+                                onChanged: (v) => setState(() => _selectedTypeForRow[i] = v),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            ElevatedButton(
+                              onPressed: p.isDebit ? () => _createExpenseFromRow(i) : null,
+                              child: const Text('Create'),
+                            )
+                          ],
+                        ),
                       ),
-                    ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          txn.isDebit ? 'Debit' : 'Credit',
-                        ),
-                        Text(
-                          DateFormat('dd MMM yyyy, hh:mm a')
-                              .format(txn.date),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          txn.rawBody,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.edit),
-                      onPressed: () => _editAmount(context, index),
-                    ),
-                  ),
-                );
-              },
-            ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          children: [
-            Expanded(
-              child: OutlinedButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: ElevatedButton(
-                onPressed: _selectedIndexes.isEmpty
-                    ? null
-                    : _postSelected,
-                child: const Text('Post Selected'),
-              ),
-            ),
-          ],
-        ),
-      ),
+                    );
+                  },
+                ),
     );
-  }
-
-  void _editAmount(BuildContext context, int index) {
-    final controller = TextEditingController(
-      text: widget.txns[index].amount.toString(),
-    );
-
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Edit Amount'),
-        content: TextField(
-          controller: controller,
-          keyboardType: TextInputType.number,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final value = double.tryParse(controller.text);
-              if (value != null) {
-                setState(() {
-                  widget.txns[index] =
-                      widget.txns[index].copyWith(amount: value);
-                });
-              }
-              Navigator.pop(context);
-            },
-            child: const Text('Save'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _postSelected() {
-    // final expenseService = ExpenseService();
-    // final incomeService = IncomeService();
-
-    // for (final index in _selectedIndexes) {
-    //   final txn = widget.txns[index];
-
-    //   if (txn.isDebit) {
-    //     expenseService.addExpense(
-    //       amount: txn.amount,final expenseService = ExpenseService();
-    // final incomeService = IncomeService();
-
-    // for (final index in _selectedIndexes) {
-    //   final txn = widget.txns[index];
-
-    //   if (txn.isDebit) {
-    //     expenseService.addExpense(
-    //       amount: txn.amount,
-    //       accountId: widget.account.id,
-    //       note: txn.description,
-    //       date: txn.date,
-    //     );
-    //     widget.account.balance -= txn.amount;
-    //   } else {
-    //     incomeService.addIncome(
-    //       amount: txn.amount,
-    //       accountId: widget.account.id,
-    //       note: txn.description,
-    //       date: txn.date,
-    //     );
-    //     widget.account.balance += txn.amount;
-    //   }
-    // }
-
-    // widget.account.lastSmsSyncedAt = DateTime.now();
-    // widget.account.save();
-    //       accountId: widget.account.id,
-    //       note: txn.description,
-    //       date: txn.date,
-    //     );
-    //     widget.account.balance -= txn.amount;
-    //   } else {
-    //     incomeService.addIncome(
-    //       amount: txn.amount,
-    //       accountId: widget.account.id,
-    //       note: txn.description,
-    //       date: txn.date,
-    //     );
-    //     widget.account.balance += txn.amount;
-    //   }
-    // }
-
-    // widget.account.lastSmsSyncedAt = DateTime.now();
-    // widget.account.save();
-
-    Navigator.pop(context);
   }
 }

@@ -7,60 +7,81 @@ class SmsSyncService with ChangeNotifier {
   final Telephony _telephony = Telephony.instance;
 
   Future<List<ParsedSmsTxn>> sync(Account account) async {
-    final hasPermission =
-        await _telephony.requestPhoneAndSmsPermissions ?? false;
-
+    final hasPermission = await (_telephony.requestPhoneAndSmsPermissions) ?? false;
     if (!hasPermission) return [];
 
-    final since = (account.lastSmsSyncedAt?.millisecondsSinceEpoch ?? 5).toString();
-
+    // if lastSmsSyncedAt missing, use 5 days ago (not epoch 5)
+    final sinceMillis = account.lastSmsSyncedAt?.millisecondsSinceEpoch ??
+        DateTime.now().subtract(const Duration(days: 5)).millisecondsSinceEpoch;
+    final since = sinceMillis.toString();
 
     final messages = await _telephony.getInboxSms(
       columns: [SmsColumn.BODY, SmsColumn.DATE],
       filter: SmsFilter.where(SmsColumn.DATE).greaterThan(since),
     );
 
+    if (messages.isEmpty) return [];
+
+    final keyword = (account.smsKeyword ?? '').toLowerCase();
+
+    // improved amount regex: handles ₹, Rs, INR and plain amounts with commas and decimals
+    final amountRegex = RegExp(r'(?:(?:₹|rs|inr)\s*[:-]?\s*|amount\s*[:=]?\s*)([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{1,2})?|[0-9]+(?:\.[0-9]{1,2})?)',
+        caseSensitive: false);
+
+    // transaction words for debit/credit detection (explicit words preferred)
+    bool looksLikeTxn(String body) {
+      final b = body.toLowerCase();
+      final hasAmount = amountRegex.hasMatch(b);
+      final hasTxnWord = b.contains('debit') ||
+          b.contains('debited') ||
+          b.contains('credit') ||
+          b.contains('credited') ||
+          b.contains('spent') ||
+          b.contains('payment') ||
+          b.contains('withdrawn') ||
+          b.contains('received') ||
+          b.contains('deposit') ||
+          b.contains('upi') ||
+          b.contains('imps') ||
+          b.contains('neft');
+      if (!hasAmount || !hasTxnWord) return false;
+      if (keyword.isNotEmpty && !b.contains(keyword)) return false;
+      return true;
+    }
+
     final filtered = messages.where((sms) =>
-        sms.body != null &&
-        sms.body!.toLowerCase().contains(account.smsKeyword!.toLowerCase()) &&
-        _containsTxnWords(sms.body!));
+        sms.body != null && looksLikeTxn(sms.body!));
 
-    return filtered
-        .map((sms) => _parseSms(sms))
-        .whereType<ParsedSmsTxn>()
-        .toList();
+    List<ParsedSmsTxn> parsed = [];
+    for (final sms in filtered) {
+      final body = sms.body!.toLowerCase();
+
+      final match = amountRegex.firstMatch(body);
+      if (match == null) continue;
+      final amountRaw = match.group(1)!.replaceAll(',', '');
+      double? amount = double.tryParse(amountRaw);
+      if (amount == null) continue;
+
+      // determine debit vs credit with preference to explicit 'credited'/'debited'
+      bool isDebit;
+      if (body.contains('credited') || body.contains('received') || body.contains('deposit') || body.contains('refund')) {
+        isDebit = false;
+      } else if (body.contains('debited') || body.contains('debit') || body.contains('spent') || body.contains('payment') || body.contains('withdrawn')) {
+        isDebit = true;
+      } else {
+        // fallback: presence of 'to' or 'by' may hint direction, but default to debit
+        isDebit = true;
+      }
+
+      parsed.add(ParsedSmsTxn(
+        amount: amount,
+        isDebit: isDebit,
+        date: DateTime.fromMillisecondsSinceEpoch(sms.date ?? sinceMillis),
+        description: sms.body ?? '',
+        rawBody: sms.body ?? '',
+      ));
+    }
+
+    return parsed;
   }
-
-  bool _containsTxnWords(String body) {
-    final b = body.toLowerCase();
-    return b.contains('debit') ||
-        b.contains('credit') ||
-        b.contains('upi') ||
-        b.contains('imps') ||
-        b.contains('neft');
-  }
-
-  ParsedSmsTxn? _parseSms(SmsMessage sms) {
-  final body = sms.body!.toLowerCase();
-
-  final amountRegex =
-      RegExp(r'(rs\.?|inr)\s?([0-9,]+\.?[0-9]*)');
-  final match = amountRegex.firstMatch(body);
-  if (match == null) return null;
-
-  final amount =
-      double.parse(match.group(2)!.replaceAll(',', ''));
-
-  final isDebit =
-      body.contains('debit') || body.contains('spent');
-
-  return ParsedSmsTxn(
-    amount: amount,
-    isDebit: isDebit,
-    date: DateTime.fromMillisecondsSinceEpoch(sms.date!),
-    description: body,
-    rawBody: sms.body!,
-  );
-}
-
 }
