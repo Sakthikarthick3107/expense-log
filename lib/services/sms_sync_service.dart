@@ -34,7 +34,7 @@ class SmsSyncService with ChangeNotifier {
   bool _containsTxnWords(String body) {
     final b = body.toLowerCase();
     return b.contains('debit') ||
-        b.contains('credited') ||
+        b.contains('credit') ||
         b.contains('upi') ||
         b.contains('imps') ||
         b.contains('neft');

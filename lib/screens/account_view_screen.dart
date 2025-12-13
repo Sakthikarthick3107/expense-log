@@ -227,13 +227,18 @@ class _AccountViewScreenState extends State<AccountViewScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              IconButton(
+              ElevatedButton.icon(
                 icon: const Icon(Icons.sync),
+                label: const Text("Sync SMS"),
                 onPressed: () async {
                   final txns = await smsSyncService.sync(widget.account);
 
                   if (txns.isNotEmpty) {
-                    MessageWidget.showToast(context: context, message: "Transactions found in SMS");
+                    MessageWidget.showToast(
+                      context: context,
+                      message: "Transactions found in SMS",
+                    );
+
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -243,9 +248,11 @@ class _AccountViewScreenState extends State<AccountViewScreen> {
                         ),
                       ),
                     );
-                  }
-                  else{
-                    MessageWidget.showToast(context: context, message: "No new transactions found in SMS");
+                  } else {
+                    MessageWidget.showToast(
+                      context: context,
+                      message: "No new transactions found in SMS",
+                    );
                   }
                 },
               )
