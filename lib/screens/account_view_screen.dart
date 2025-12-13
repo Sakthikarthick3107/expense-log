@@ -143,6 +143,14 @@ class _AccountViewScreenState extends State<AccountViewScreen> {
     return '${d.day} ${months[d.month - 1]} ${d.year}';
   }
 
+  String _fmtDateTime(DateTime d) {
+    final date = _fmtDate(d);
+    final hour = d.toLocal().hour % 12 == 0 ? 12 : d.toLocal().hour % 12;
+    final minute = d.toLocal().minute.toString().padLeft(2, '0');
+    final ampm = d.toLocal().hour >= 12 ? 'PM' : 'AM';
+    return '$date, $hour:$minute $ampm';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -226,6 +234,7 @@ class _AccountViewScreenState extends State<AccountViewScreen> {
           const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               ElevatedButton.icon(
                 icon: const Icon(Icons.sync),
@@ -254,7 +263,13 @@ class _AccountViewScreenState extends State<AccountViewScreen> {
                     );
                   }
                 },
-              )
+              ),
+              const SizedBox(width: 12),
+              if (widget.account.lastSmsSyncedAt != null)
+                Text(
+                  'Last synced: ${_fmtDateTime(widget.account.lastSmsSyncedAt!)}',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
             ],
           ),
           const SizedBox(height: 8),
@@ -263,8 +278,7 @@ class _AccountViewScreenState extends State<AccountViewScreen> {
             builder: (context, snap) {
               if (!snap.hasData) return const SizedBox();
               final items = snap.data!;
-              final overallTotal =
-                  items.fold<double>(0.0, (s, e) => s + e.price);
+              final overallTotal = items.fold<double>(0.0, (s, e) => s + e.price);
               final overallDebit = items
                   .where((x) => (x.price > 0))
                   .fold<double>(0.0, (s, e) => s + e.price);
