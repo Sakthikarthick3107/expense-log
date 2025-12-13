@@ -223,96 +223,89 @@ class _SmsReviewPageState extends State<SmsReviewPage> {
           ? const Center(child: CircularProgressIndicator())
           : _parsed.isEmpty
               ? const Center(child: Text('No new transactions'))
-              : Stack(
+              : Column(
                   children: [
-                    ListView.separated(
-                      padding: const EdgeInsets.all(8),
-                      itemCount: _parsed.length,
-                      separatorBuilder: (_, __) => const Divider(),
-                      itemBuilder: (ctx, i) {
-                        final p = _parsed[i];
-                        final selected = _selectedIndexes.contains(i);
-                        return ListTile(
-                          leading: Checkbox(
-                            value: selected,
-                            onChanged: (v) {
-                              setState(() {
-                                if (v == true)
-                                  _selectedIndexes.add(i);
-                                else
-                                  _selectedIndexes.remove(i);
-                                _selectAll =
-                                    _selectedIndexes.length == _parsed.length;
-                              });
-                            },
-                          ),
-                          title: Text(p.description,
-                              maxLines: 2, overflow: TextOverflow.ellipsis),
-                          subtitle: Text(
-                              '${p.date.toLocal()} • ${p.isDebit ? 'Debit' : 'Credit'} • ${p.amount.toStringAsFixed(2)}'),
-                          trailing: SizedBox(
-                            width: 220,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Expanded(
-                                  child: DropdownButton<dynamic>(
-                                    isDense: true,
-                                    value: _selectedTypeForRow[i],
-                                    hint: const Text('Type'),
-                                    items: types
-                                        .map((t) => DropdownMenuItem<dynamic>(
-                                            value: t.id, child: Text(t.name)))
-                                        .toList(),
-                                    onChanged: (v) => setState(
-                                        () => _selectedTypeForRow[i] = v),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                ElevatedButton(
-                                  onPressed: p.isDebit
-                                      ? () => _createExpenseFromRow(i)
-                                      : null,
-                                  child: const Text('Create'),
-                                )
-                              ],
+                    Expanded(
+                      child: ListView.separated(
+                        padding: const EdgeInsets.all(8),
+                        itemCount: _parsed.length,
+                        separatorBuilder: (_, __) => const Divider(),
+                        itemBuilder: (ctx, i) {
+                          final p = _parsed[i];
+                          final selected = _selectedIndexes.contains(i);
+                          return ListTile(
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            leading: Checkbox(
+                              value: selected,
+                              onChanged: (v) {
+                                setState(() {
+                                  if (v == true)
+                                    _selectedIndexes.add(i);
+                                  else
+                                    _selectedIndexes.remove(i);
+                                  _selectAll =
+                                      _selectedIndexes.length == _parsed.length;
+                                });
+                              },
                             ),
-                          ),
-                        );
-                      },
-                    ),
-                    if (_selectedIndexes.isNotEmpty)
-                      Positioned(
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        child: Container(
-                          color: Theme.of(context).scaffoldBackgroundColor,
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 8, horizontal: 12),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                  child: Text(
-                                      '${_selectedIndexes.length} selected')),
-                              ElevatedButton(
-                                onPressed: _createSelected,
-                                child: const Text('Create Selected'),
+                            title: Text(p.description, maxLines: 3, overflow: TextOverflow.visible),
+                            isThreeLine: true,
+                            subtitle: Text(
+                                '${p.date.toLocal()} • ${p.isDebit ? 'Debit' : 'Credit'} • ${p.amount.toStringAsFixed(2)}'),
+                            trailing: SizedBox(
+                              width: 240,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Expanded(
+                                    child: DropdownButton<dynamic>(
+                                      isDense: true,
+                                      value: _selectedTypeForRow[i],
+                                      hint: const Text('Type'),
+                                      items: types
+                                          .map((t) => DropdownMenuItem<dynamic>(
+                                              value: t.id, child: Text(t.name)))
+                                          .toList(),
+                                      onChanged: (v) => setState(
+                                          () => _selectedTypeForRow[i] = v),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  ElevatedButton(
+                                    onPressed: () => _createExpenseFromRow(i),
+                                    child: const Text('Create'),
+                                  )
+                                ],
                               ),
-                              const SizedBox(width: 8),
-                              TextButton(
-                                onPressed: () {
-                                  setState(() {
-                                    _selectedIndexes.clear();
-                                    _selectAll = false;
-                                  });
-                                },
-                                child: const Text('Clear'),
-                              ),
-                            ],
-                          ),
-                        ),
+                            ),
+                          );
+                        },
                       ),
+                    ),
+                    // persistent bottom bar with Cancel + Create Selected
+                    Container(
+                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).scaffoldBackgroundColor,
+                        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, -1))],
+                      ),
+                      child: Row(
+                        children: [
+                          Text('${_parsed.length} found', style: Theme.of(context).textTheme.bodyMedium),
+                          const SizedBox(width: 12),
+                          Expanded(child: Text('${_selectedIndexes.length} selected')),
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: const Text('Cancel'),
+                          ),
+                          const SizedBox(width: 8),
+                          ElevatedButton(
+                            onPressed: _selectedIndexes.isNotEmpty ? _createSelected : null,
+                            child: const Text('Create Selected'),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
     );

@@ -4,19 +4,13 @@ import 'package:expense_log/services/audit_log_service.dart';
 import 'package:expense_log/updates/ShowReleaseNotes.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:expense_log/widgets/message_widget.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-// import 'package:flutter_app_installer/flutter_app_installer.dart';
-// import 'package:install_plugin/install_plugin.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
-// import 'package:restart_app/restart_app.dart';
-// import 'package:apk_installer/apk_installer.dart';
 
 class AppUpdate {
   final String owner = 'Sakthikarthick3107';

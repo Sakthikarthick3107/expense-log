@@ -4,7 +4,6 @@ import 'package:expense_log/services/settings_service.dart';
 import 'package:expense_log/services/ui_service.dart';
 import 'package:expense_log/widgets/info_dialog.dart';
 import 'package:expense_log/widgets/message_widget.dart';
-import 'package:expense_log/widgets/warning_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_log/services/accounts_service.dart';
@@ -30,7 +29,6 @@ class _ExpenseFormState extends State<ExpenseForm> {
   final _nameController = TextEditingController();
   final _priceController = TextEditingController();
   final _descriptionController = TextEditingController();
-  bool _isReturnable = false;
   int selectedExpenseTypeId = 0;
   int? _selectedAccountId;
 
@@ -185,32 +183,25 @@ class _ExpenseFormState extends State<ExpenseForm> {
                                 labelText: "Expense Type"),
                           ),
                           const SizedBox(height: 8),
-                          // Account dropdown (required)
                           DropdownButtonFormField<int>(
                             value: _selectedAccountId,
                             items: accounts
                                 .map((Account a) {
-                                  // account.id may be String in some code; attempt int parse if needed
                                   int? aid;
                                   try {
-                                    if (a.id is int) {
-                                      aid = a.id as int;
-                                    } else {
-                                      aid = int.tryParse(a.id.toString());
-                                    }
+                                    aid = a.id;
                                   } catch (_) {
                                     aid = null;
                                   }
                                   return DropdownMenuItem<int>(
                                     value: aid,
                                     child: Text(
-                                        '${a.name} ${a.code != null ? '(${a.code})' : ''}',
+                                        '${a.name} ${'(${a.code})'}',
                                         style: TextStyle(fontSize: 12),
                                         softWrap: true,
                                         overflow: TextOverflow.visible,
                                       ),
                                   );
-                                  ;
                                 })
                                 .where((item) => item.value != null)
                                 .toList(),
@@ -224,15 +215,6 @@ class _ExpenseFormState extends State<ExpenseForm> {
                             },
                           ),
                         ]),
-              // if (widget.isFromCollection != true)
-              // CheckboxListTile(
-              //     title: Text('Refundable?'),
-              //     value: _isReturnable,
-              //     onChanged: (value){
-              //       setState(() {
-              //         _isReturnable = value ?? false;
-              //       });
-              //     })
               TextFormField(
                 controller: _descriptionController,
                 decoration: const InputDecoration(labelText: 'Description'),
@@ -270,7 +252,6 @@ class _ExpenseFormState extends State<ExpenseForm> {
                 widget.expense?.expenseType.id != selectedExpenseTypeId ||
                 widget.expense?.accountId != _selectedAccountId ||
             (widget.expense?.description ?? '') != _descriptionController.text
-            // || widget.expense?.isReturnable == _isReturnable
             ))
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -282,7 +263,6 @@ class _ExpenseFormState extends State<ExpenseForm> {
                 widget.expense?.expenseType.id != selectedExpenseTypeId ||
                 widget.expense?.accountId != _selectedAccountId ||
             (widget.expense?.description ?? '') != _descriptionController.text
-            // || widget.expense?.isReturnable == _isReturnable
             ))
           ElevatedButton(
             onPressed: () async {

@@ -222,7 +222,6 @@ class ExpenseService {
   }
 
   List<String>? exceededExpenses(List<Expense2> newExpenses) {
-    final today = DateTime.now();
     final Map<int, double> typeTotals = {};
     final Map<int, ExpenseType> typeMap = {};
 
@@ -576,8 +575,6 @@ class ExpenseService {
       }
       List<DateTime> sortedDays = primaryTempMetricsData.keys.toList();
       sortedDays.sort((a, b) => b.compareTo(a));
-      Map<String, double> sortedMetricsData = {'Total': overallTotal};
-
       for (DateTime day in sortedDays) {
         Map<String, double> primaryMetric = {};
         List<Map<String, double>> secondaryMetric = [];

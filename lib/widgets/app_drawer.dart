@@ -1,20 +1,10 @@
-import 'dart:convert';
 import 'dart:io';
-import 'package:expense_log/models/expense2.dart';
-import 'package:expense_log/models/expense_type.dart';
-import 'package:expense_log/screens/daily_expense_screen.dart';
-import 'package:expense_log/screens/expense_type_screen.dart';
 import 'package:expense_log/screens/settings_screen.dart';
-import 'package:expense_log/widgets/message_widget.dart';
 import 'package:flutter/material.dart';
-// import 'package:googleapis/eventarc/v1.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
 
-import '../services/settings_service.dart'; // Import your service
+import '../services/settings_service.dart';
 
 class AppDrawer extends StatefulWidget {
   final Function(int) onSelectScreen;

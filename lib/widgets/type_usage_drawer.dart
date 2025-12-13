@@ -8,6 +8,7 @@ import 'package:expense_log/widgets/warning_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+// ignore: must_be_immutable
 class TypeUsageDrawer extends StatefulWidget {
   List<Expense2> expenses;
   TypeUsageDrawer({super.key, required this.expenses});
@@ -17,7 +18,7 @@ class TypeUsageDrawer extends StatefulWidget {
 }
 
 class _TypeUsageDrawerState extends State<TypeUsageDrawer> {
-  GroupBy _currentGroupBy = GroupBy.Week; // default value
+  GroupBy _currentGroupBy = GroupBy.Week;
 
   DateRange getTypeUsageRange(List<Expense2> expenses) {
     if (expenses.isEmpty) {

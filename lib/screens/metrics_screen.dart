@@ -37,7 +37,6 @@ class _MetricsScreenState extends State<MetricsScreen> {
       ValueNotifier<String>('This week');
   final ValueNotifier<String> _selectedMetricBy =
       ValueNotifier<String>('By type');
-  late Map<String, double> _metricsData = {};
   late Map<String, double> _barCharData = {};
   late Map<DateTime, double> _calendarChartData = {};
   DateTimeRange? selectedDateRange;
@@ -58,9 +57,6 @@ class _MetricsScreenState extends State<MetricsScreen> {
     _expenseTypesOfDuration = _expenseService.expenseTypesOfSelectedDuration(
         _selectedDurationNotifier.value,
         customDateRange: selectedDateRange);
-    _metricsData = _expenseService.getMetrics(_selectedDurationNotifier.value,
-        _selectedMetricBy.value, _unSelectedTypes,isDebit: isDebit,
-        customDateRange: selectedDateRange);
     _metricsData2 = _expenseService.getMetrics2(_selectedDurationNotifier.value,
         _selectedMetricBy.value, _unSelectedTypes, isDebit,
         customDateRange: selectedDateRange);
@@ -73,9 +69,6 @@ class _MetricsScreenState extends State<MetricsScreen> {
     _selectedDurationNotifier.addListener(() {
       _expenseTypesOfDuration = _expenseService.expenseTypesOfSelectedDuration(
           _selectedDurationNotifier.value,
-          customDateRange: selectedDateRange);
-      _metricsData = _expenseService.getMetrics(_selectedDurationNotifier.value,
-          _selectedMetricBy.value, _unSelectedTypes,isDebit: isDebit,
           customDateRange: selectedDateRange);
       _metricsData2 = _expenseService.getMetrics2(
           _selectedDurationNotifier.value,
@@ -91,9 +84,6 @@ class _MetricsScreenState extends State<MetricsScreen> {
           customDateRange: selectedDateRange);
     });
     _selectedMetricBy.addListener(() {
-      _metricsData = _expenseService.getMetrics(_selectedDurationNotifier.value,
-          _selectedMetricBy.value, _unSelectedTypes,isDebit: isDebit,
-          customDateRange: selectedDateRange);
       _metricsData2 = _expenseService.getMetrics2(
           _selectedDurationNotifier.value,
           _selectedMetricBy.value,
@@ -144,12 +134,6 @@ class _MetricsScreenState extends State<MetricsScreen> {
                 onPressed: () {
                   Navigator.pop(context);
                   setState(() {
-                    _metricsData = _expenseService.getMetrics(
-                        _selectedDurationNotifier.value,
-                        _selectedMetricBy.value,
-                        _unSelectedTypes,
-                        isDebit: isDebit,
-                        customDateRange: selectedDateRange);
                     _metricsData2 = _expenseService.getMetrics2(
                         _selectedDurationNotifier.value,
                         _selectedMetricBy.value,
@@ -335,7 +319,7 @@ class _MetricsScreenState extends State<MetricsScreen> {
                                                       _calendarChartData,
                                                   durationType:
                                                       _selectedDurationNotifier
-                                                          .value, // e.g. 'This week', 'Month', 'Custom', etc.
+                                                          .value, 
                                                   customDateRange:
                                                       selectedDateRange,
                                                 ),

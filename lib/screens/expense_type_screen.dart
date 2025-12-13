@@ -1,11 +1,9 @@
 import 'package:expense_log/models/expense_type.dart';
 import 'package:expense_log/services/expense_service.dart';
 import 'package:expense_log/services/settings_service.dart';
-import 'package:expense_log/services/ui_service.dart';
 import 'package:expense_log/widgets/expense_type_form.dart';
 import 'package:expense_log/widgets/type_usage_drawer.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';

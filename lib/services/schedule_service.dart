@@ -7,7 +7,6 @@ import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:expense_log/services/notification_service.dart';
 import 'package:timezone/data/latest.dart' as tz;
-import 'package:timezone/timezone.dart' as tz;
 import 'package:expense_log/utility/schedule_utils.dart';
 
 class ScheduleService extends ChangeNotifier {
@@ -120,21 +119,7 @@ Future<void> alarmCallback(int alarmId) async {
   final schedule = scheduleBox.get(alarmId);
 
   if (schedule != null) {
-    final now = DateTime.now();
-
-    // Safe duplicate check (if you add lastTriggeredTime field in model):
-    /*
-    if (schedule.lastTriggeredTime != null &&
-        now.difference(schedule.lastTriggeredTime!).inMinutes < 1) {
-      print('Skipping duplicate firing for schedule ${schedule.id}');
-      return;
-    }
-
-    schedule.lastTriggeredTime = now;
-    await scheduleBox.put(schedule.id, schedule);
-    */
-
-    // Main logic:
+    
     var expenseId = settingsBox.get('expenseId', defaultValue: 1) as int;
     expenseId += 1;
     if (schedule.scheduleType == ScheduleType.AutoExpense &&
@@ -187,9 +172,5 @@ Future<void> alarmCallback(int alarmId) async {
         );
       }
     }
-  }
-
-  int mapToCustomWeekday(int dartWeekday) {
-    return dartWeekday % 7;
   }
 }

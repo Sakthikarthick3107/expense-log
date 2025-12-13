@@ -271,22 +271,4 @@ class PdfHelper {
       );
     }).toList();
   }
-
-  static pw.Widget _buildDashedLine({
-    double dashWidth = 5,
-    double dashSpace = 3,
-    double totalWidth = 500,
-  }) {
-    final dashCount = (totalWidth / (dashWidth + dashSpace)).floor();
-    return pw.Wrap(
-      spacing: dashSpace,
-      children: List.generate(dashCount, (_) {
-        return pw.Container(
-          width: dashWidth,
-          height: 1,
-          color: PdfColors.grey700,
-        );
-      }),
-    );
-  }
 }

@@ -1,4 +1,3 @@
-import 'package:expense_log/services/expense_service.dart';
 import 'package:expense_log/widgets/warning_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -23,7 +22,6 @@ class _CollectionFormModalState extends State<CollectionFormModal> {
   final _formKey = GlobalKey<FormState>();
   late SettingsService _settingsService;
   late CollectionService _collectionService;
-  late ExpenseService _expenseService;
   final ValueNotifier<List<Expense2>> addedExpenseNotifier =
       ValueNotifier<List<Expense2>>([]);
   late TextEditingController _nameController = TextEditingController();
@@ -34,7 +32,6 @@ class _CollectionFormModalState extends State<CollectionFormModal> {
     super.initState();
     _settingsService = Provider.of<SettingsService>(context, listen: false);
     _collectionService = Provider.of<CollectionService>(context, listen: false);
-    _expenseService = Provider.of<ExpenseService>(context, listen: false);
     _nameController =
         TextEditingController(text: widget.collection?.name ?? '');
     _descriptionController =

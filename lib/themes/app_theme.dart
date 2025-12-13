@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../utility/preset_colors.dart';
 
-Color _parseHexColor(String hex) {
-  hex = hex.replaceAll('#', '');
-  if (hex.length == 6) hex = 'FF$hex';
-  return Color(int.parse(hex, radix: 16));
-}
+// Color _parseHexColor(String hex) {
+//   hex = hex.replaceAll('#', '');
+//   if (hex.length == 6) hex = 'FF$hex';
+//   return Color(int.parse(hex, radix: 16));
+// }
 
 ThemeData appTheme(bool isDarkTheme, String appPrimary) {
   Color primaryColor = presetColors

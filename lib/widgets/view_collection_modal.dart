@@ -1,17 +1,15 @@
 import 'package:expense_log/services/audit_log_service.dart';
-import 'package:expense_log/services/collection_service.dart';
 import 'package:expense_log/services/expense_service.dart';
 import 'package:expense_log/widgets/info_dialog.dart';
 import 'package:expense_log/widgets/message_widget.dart';
 import 'package:expense_log/widgets/warning_dialog.dart';
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 
 import '../models/collection.dart';
 import '../services/settings_service.dart';
 
+// ignore: must_be_immutable
 class ViewCollectionModal extends StatefulWidget {
   List<Collection> collections;
   DateTime expenseDate;
@@ -23,13 +21,11 @@ class ViewCollectionModal extends StatefulWidget {
 }
 
 class _ViewCollectionModalState extends State<ViewCollectionModal> {
-  late CollectionService _collectionService;
   late ExpenseService _expenseService;
 
   @override
   void initState() {
     super.initState();
-    _collectionService = Provider.of<CollectionService>(context, listen: false);
     _expenseService = Provider.of<ExpenseService>(context, listen: false);
   }
 

@@ -1,5 +1,4 @@
 import 'package:expense_log/services/settings_service.dart';
-import 'package:expense_log/widgets/message_widget.dart';
 import 'package:expense_log/widgets/warning_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:expense_log/services/audit_log_service.dart';

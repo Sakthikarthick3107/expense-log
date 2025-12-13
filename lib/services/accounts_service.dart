@@ -2,7 +2,6 @@ import 'package:expense_log/services/settings_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import '../models/account.dart';
-import 'package:expense_log/services/collection_service.dart';
 
 class AccountsService extends ChangeNotifier {
   static const String boxName = 'accountsBox';

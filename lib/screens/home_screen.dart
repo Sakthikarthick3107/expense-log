@@ -1,28 +1,21 @@
 import 'dart:io';
-import 'package:expense_log/models/expense2.dart';
-import 'package:expense_log/models/expense_type.dart';
 import 'package:expense_log/models/user.dart';
 import 'package:expense_log/screens/accounts_list_screen.dart';
 import 'package:expense_log/screens/collections_screen.dart';
 import 'package:expense_log/screens/daily_expense_screen.dart';
 import 'package:expense_log/screens/downloads_screen.dart';
 import 'package:expense_log/screens/expense_type_screen.dart';
-import 'package:expense_log/screens/message_screen.dart';
 import 'package:expense_log/screens/metrics_screen.dart';
 import 'package:expense_log/screens/schedules_screen.dart';
 import 'package:expense_log/screens/settings_screen.dart';
-import 'package:expense_log/screens/upi_logs.dart';
 import 'package:expense_log/screens/audit_log_screen.dart';
-import 'package:expense_log/services/expense_service.dart';
 import 'package:expense_log/services/notification_service.dart';
 import 'package:expense_log/services/settings_service.dart';
 import 'package:expense_log/services/ui_service.dart';
-import 'package:expense_log/services/upi_service.dart';
 import 'package:expense_log/updates/app_update.dart';
 import 'package:expense_log/widgets/app_drawer.dart';
 import 'package:expense_log/widgets/avatar_widget.dart';
 import 'package:expense_log/widgets/message_widget.dart';
-import 'package:expense_log/widgets/notification_button.dart';
 import 'package:expense_log/widgets/warning_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -30,8 +23,6 @@ import 'package:hive/hive.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
-import 'package:timezone/data/latest.dart' as tz;
-import 'package:timezone/timezone.dart' as tz;
 
 class HomeScreen extends StatefulWidget {
   final int initialIndex;
@@ -46,24 +37,19 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
   User? user;
   late SettingsService _settingsService;
-  late ExpenseService _expenseService;
   late UiService _uiService;
   late List<Widget> orderScreens = [];
-  static const platform = MethodChannel('com.expenseapp.expense_log/install');
-  late UpiService _upiService;
 
   @override
   void initState() {
     super.initState();
     _requestPermissions();
-    // _listenForSms();
 
     setState(() {
       _currentIndex = widget.initialIndex;
     });
     _settingsService = Provider.of<SettingsService>(context, listen: false);
     _uiService = Provider.of<UiService>(context, listen: false);
-    _expenseService = Provider.of<ExpenseService>(context, listen: false);
     _checkIfUserExists();
     _scheduleNotifications();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -73,7 +59,6 @@ class _HomeScreenState extends State<HomeScreen> {
       reorderScreens();
     });
     _fetchVersion();
-    _upiService = Provider.of<UpiService>(context, listen: false);
   }
 
   Future<void> _requestPermissions() async {
@@ -82,17 +67,6 @@ class _HomeScreenState extends State<HomeScreen> {
       await Permission.sms.request();
     }
   }
-
-  // Future<void> _listenForSms() async {
-  //   platform.setMethodCallHandler((call) async {
-  //     UpiService upiService = UpiService();
-  //     if (call.method == "onSmsReceived") {
-  //       String message = call.arguments;
-  //       upiService.createLog(message);
-  //       print("📩 SMS Received in Flutter: $message");
-  //     }
-  //   });
-  // }
 
   final List<Widget> _screens = [
     const DailyExpenseScreen(),
@@ -237,8 +211,6 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  final GlobalKey<TooltipState> _tooltipKey = GlobalKey<TooltipState>();
-
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -314,31 +286,10 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
             actions: [
-              // NotificationButton(unreadCount: settingsService.getUnreadCount()),
-              // Tooltip(
-              //   key: _tooltipKey,
-              //   message: [
-              //     'This month : ₹ ${_expenseService.getMetrics('This month', 'By type', [])['Total']?.toStringAsFixed(2)}',
-              //     // '\n',
-              //     if (_expenseService
-              //         .getExpenseTypeLimitSummary()
-              //         .isNotEmpty) ...[
-              //       'Limits',
-              //       ..._expenseService.getExpenseTypeLimitSummary()
-              //     ]
-              //   ].join('\n'),
-              //   child: IconButton(
-              //     icon: Icon(Icons.info_outline),
-              //     onPressed: () {
-              //       final dynamic tooltip = _tooltipKey.currentState;
-              //       tooltip?.ensureTooltipVisible();
-              //     },
-              //   ),
-              // ),
+              
               if (user == null)
                 Container(
                   padding: EdgeInsets.all(10),
-                  // margin: EdgeInsets.all(20),
                   child: Text(
                     '$version',
                     style: TextStyle(color: Colors.white, fontSize: 12),
@@ -358,7 +309,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       },
                     ))
             ],
-            //leading: Text(version),
           ),
           body: Platform.isWindows
               ? Container(

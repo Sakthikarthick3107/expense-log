@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:expense_log/models/account.dart';
 import 'package:expense_log/models/collection.dart';
 import 'package:expense_log/models/expense_type.dart';
-import 'package:expense_log/models/schedule.dart';
 import 'package:expense_log/models/user.dart';
 import 'package:expense_log/services/audit_log_service.dart';
 import 'package:expense_log/widgets/message_widget.dart';
@@ -12,7 +11,6 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:flutter/services.dart';
@@ -44,7 +42,6 @@ class SettingsService with ChangeNotifier {
   }
 
   Future<int> googleSignIn() async {
-    // print('Servicee g starts');
     final GoogleSignIn _googleSignIn = GoogleSignIn();
     try {
       GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
@@ -85,14 +82,12 @@ class SettingsService with ChangeNotifier {
   Future<int> backupHiveToGoogleDrive() async {
     try {
       final account = await _googleSignIn.signIn();
-      if (account == null) return 0; // Sign-in failed
+      if (account == null) return 0;
 
       final authHeaders = await account.authHeaders;
       final authenticateClient = GoogleAuthClient(authHeaders);
-      // final authenticateClient = http.Client();
       final driveApi = drive.DriveApi(authenticateClient);
 
-      // Convert Hive data to JSON
       final directory = await getApplicationDocumentsDirectory();
       final backupFile = File('${directory.path}/hive_backup.json');
 
@@ -101,21 +96,18 @@ class SettingsService with ChangeNotifier {
       final collectionBox = Hive.box<Collection>('collectionBox');
       final settingsBox = Hive.box('settingsBox');
       final accountsBox = Hive.box<Account>('accountsBox');
-      // final scheduleBox = Hive.box<Schedule>('scheduleBox');
 
       Map<String, dynamic> backupData = {
         "Expense2": expense2Box.values.map((e) => e.toJson()).toList(),
         "ExpenseType": expenseTypeBox.values.map((e) => e.toJson()).toList(),
         "Collection": collectionBox.values.map((e) => e.toJson()).toList(),
-        // "Schedule": scheduleBox.values.map((e) => e.toJson()).toList(),
         "Account": accountsBox.values.map((e) => e.toJson()).toList(),
         "Settings":
-            settingsBox.toMap(), // If it's a simple map, no conversion needed
+            settingsBox.toMap(),
       };
 
       await backupFile.writeAsString(jsonEncode(backupData));
 
-      // Upload to Google Drive
       var media = drive.Media(backupFile.openRead(), backupFile.lengthSync());
       var driveFile = drive.File()
         ..name = "expense_log_${DateTime.now().millisecondsSinceEpoch}.json";
@@ -137,7 +129,7 @@ class SettingsService with ChangeNotifier {
   Future<int> pickBackupFileAndRestore() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['json'], // Allow only JSON files
+      allowedExtensions: ['json'],
     );
 
     if (result != null) {
@@ -147,23 +139,18 @@ class SettingsService with ChangeNotifier {
         String jsonString = await file.readAsString();
         Map<String, dynamic> backupData = jsonDecode(jsonString);
 
-        // Open all required Hive boxes
         var expense2Box = Hive.box<Expense2>('expense2Box');
         var expenseTypeBox = Hive.box<ExpenseType>('expenseTypeBox');
         var collectionBox = Hive.box<Collection>('collectionBox');
-        // var scheduleBox = Hive.box<Schedule>('scheduleBox');
         var settingsBox = Hive.box('settingsBox');
         var accountsBox = Hive.box<Account>('accountsBox');
 
-        // Clear existing data before restoring
         expense2Box.clear();
         expenseTypeBox.clear();
         collectionBox.clear();
-        // scheduleBox.clear();
         settingsBox.clear();
         accountsBox.clear();
 
-        // Restore Expense2
         if (backupData.containsKey("Expense2")) {
           for (var entry in backupData["Expense2"]) {
             expense2Box.put(
@@ -171,7 +158,6 @@ class SettingsService with ChangeNotifier {
           }
         }
 
-        // Restore ExpenseType
         if (backupData.containsKey("ExpenseType")) {
           for (var entry in backupData["ExpenseType"]) {
             expenseTypeBox.put(
@@ -179,7 +165,6 @@ class SettingsService with ChangeNotifier {
           }
         }
 
-        // Restore Collection
         if (backupData.containsKey("Collection")) {
           for (var entry in backupData["Collection"]) {
             collectionBox.put(
@@ -187,7 +172,6 @@ class SettingsService with ChangeNotifier {
           }
         }
 
-        // Restore Accounts
         if (backupData.containsKey("Account")) {
           for (var entry in backupData["Account"]) {
             accountsBox.put(
@@ -195,15 +179,6 @@ class SettingsService with ChangeNotifier {
           }
         }
 
-        //Restore Schedule
-        // if (backupData.containsKey("Schedule")) {
-        //   for (var entry in backupData["Schedule"]) {
-        //     scheduleBox.put(
-        //         Schedule.fromJson(entry).id, Schedule.fromJson(entry));
-        //   }
-        // }
-
-        // Restore Settings (assuming it is stored as a map)
         if (backupData.containsKey("Settings")) {
           settingsBox.putAll(backupData["Settings"]);
         }
@@ -308,11 +283,9 @@ class SettingsService with ChangeNotifier {
           return totalDownloads;
         }
       } else {
-        // print('Failed to fetch release data: ${response.statusCode}');
         return -1;
       }
     } catch (e) {
-      // print('Error fetching release data: $e');
       return -1;
     }
     return null;
@@ -461,14 +434,12 @@ class SettingsService with ChangeNotifier {
 }
 
 class GoogleAuthClient extends http.BaseClient {
-  final Map<String, String> _headers; // Stores authentication headers
-  final http.Client _client = http.Client(); // Creates a standard HTTP client
+  final Map<String, String> _headers;
+  final http.Client _client = http.Client();
 
-  GoogleAuthClient(this._headers); // Constructor receives headers
-
+  GoogleAuthClient(this._headers);
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) {
     return _client.send(request..headers.addAll(_headers));
-    // Adds authentication headers to every request
   }
 }
