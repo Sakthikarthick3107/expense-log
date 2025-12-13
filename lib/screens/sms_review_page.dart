@@ -233,48 +233,72 @@ class _SmsReviewPageState extends State<SmsReviewPage> {
                         itemBuilder: (ctx, i) {
                           final p = _parsed[i];
                           final selected = _selectedIndexes.contains(i);
-                          return ListTile(
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                            leading: Checkbox(
-                              value: selected,
-                              onChanged: (v) {
-                                setState(() {
-                                  if (v == true)
-                                    _selectedIndexes.add(i);
-                                  else
-                                    _selectedIndexes.remove(i);
-                                  _selectAll =
-                                      _selectedIndexes.length == _parsed.length;
-                                });
-                              },
-                            ),
-                            title: Text(p.description, maxLines: 3, overflow: TextOverflow.visible),
-                            isThreeLine: true,
-                            subtitle: Text(
-                                '${p.date.toLocal()} • ${p.isDebit ? 'Debit' : 'Credit'} • ${p.amount.toStringAsFixed(2)}'),
-                            trailing: SizedBox(
-                              width: 240,
+                          return InkWell(
+                            onTap: () {
+                              setState(() {
+                                if (selected)
+                                  _selectedIndexes.remove(i);
+                                else
+                                  _selectedIndexes.add(i);
+                                _selectAll = _selectedIndexes.length == _parsed.length;
+                              });
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
                               child: Row(
-                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Expanded(
-                                    child: DropdownButton<dynamic>(
-                                      isDense: true,
-                                      value: _selectedTypeForRow[i],
-                                      hint: const Text('Type'),
-                                      items: types
-                                          .map((t) => DropdownMenuItem<dynamic>(
-                                              value: t.id, child: Text(t.name)))
-                                          .toList(),
-                                      onChanged: (v) => setState(
-                                          () => _selectedTypeForRow[i] = v),
-                                    ),
+                                  // selection checkbox
+                                  Checkbox(
+                                    value: selected,
+                                    onChanged: (v) {
+                                      setState(() {
+                                        if (v == true)
+                                          _selectedIndexes.add(i);
+                                        else
+                                          _selectedIndexes.remove(i);
+                                        _selectAll = _selectedIndexes.length == _parsed.length;
+                                      });
+                                    },
                                   ),
                                   const SizedBox(width: 8),
-                                  ElevatedButton(
-                                    onPressed: () => _createExpenseFromRow(i),
-                                    child: const Text('Create'),
-                                  )
+                                  // message + mapping (takes remaining width)
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        // message description (full width)
+                                        Text(
+                                          p.description,
+                                          style: Theme.of(context).textTheme.bodyMedium,
+                                        ),
+                                        const SizedBox(height: 8),
+                                        // small meta row (date / debit/credit / amount)
+                                        Text(
+                                          '${p.date.toLocal()} • ${p.isDebit ? 'Debit' : 'Credit'} • ${p.amount.toStringAsFixed(2)}',
+                                          style: Theme.of(context).textTheme.bodySmall,
+                                        ),
+                                        const SizedBox(height: 8),
+                                        // type mapping below description (full width dropdown)
+                                        DropdownButtonFormField<dynamic>(
+                                          value: _selectedTypeForRow[i],
+                                          decoration: const InputDecoration(
+                                            isDense: true,
+                                            contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                                            border: OutlineInputBorder(),
+                                            hintText: 'Map type (required to create)',
+                                          ),
+                                          items: types
+                                              .map((t) => DropdownMenuItem<dynamic>(
+                                                    value: t.id,
+                                                    child: Text(t.name),
+                                                  ))
+                                              .toList(),
+                                          onChanged: (v) => setState(() => _selectedTypeForRow[i] = v),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
