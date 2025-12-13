@@ -61,19 +61,10 @@ class AccountsService extends ChangeNotifier {
     return account.id.toString();
   }
 
-  Future<void> update(Account acc) async {
+  Future<void> update(Account account) async {
     if (!isInitialized) await init();
-
-    final existsName =
-        _box!.values.any((a) => a.id != acc.id && a.name.toLowerCase() == acc.name.toLowerCase());
-    if (existsName) throw Exception('Account name already exists');
-
-    final existsCode =
-        _box!.values.any((a) => a.id != acc.id && a.code.toLowerCase() == acc.code.toLowerCase());
-    if (existsCode) throw Exception('Account code already exists');
-
-    final updated = acc.copyWith(updatedAt: DateTime.now());
-    await _box!.put(updated.id, updated);
+    // ensure we use the account.id as key and persist the full object
+    await _box!.put(account.id, account);
     notifyListeners();
   }
 

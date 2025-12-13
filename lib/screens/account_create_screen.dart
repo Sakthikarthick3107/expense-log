@@ -15,7 +15,6 @@ class _AccountCreateScreenState extends State<AccountCreateScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameCtrl = TextEditingController();
   final _codeCtrl = TextEditingController();
-  final _descCtrl = TextEditingController();
   final _smsKeywordCtrl = TextEditingController();
   bool _saving = false;
 
@@ -23,10 +22,10 @@ class _AccountCreateScreenState extends State<AccountCreateScreen> {
   void initState() {
     super.initState();
     if (widget.editing != null) {
-      _nameCtrl.text = widget.editing!.name;
-      _codeCtrl.text = widget.editing!.code;
-      _descCtrl.text = widget.editing!.description ?? '';
-      _smsKeywordCtrl.text = widget.editing!.smsKeyword ?? '';
+      final a = widget.editing!;
+      _nameCtrl.text = a.name;
+      _codeCtrl.text = a.code;
+      _smsKeywordCtrl.text = a.smsKeyword ?? ''; // <- ensure smsKeyword shown when editing
     }
   }
 
@@ -34,7 +33,6 @@ class _AccountCreateScreenState extends State<AccountCreateScreen> {
   void dispose() {
     _nameCtrl.dispose();
     _codeCtrl.dispose();
-    _descCtrl.dispose();
     _smsKeywordCtrl.dispose();
     super.dispose();
   }
@@ -48,13 +46,11 @@ class _AccountCreateScreenState extends State<AccountCreateScreen> {
         await svc.create(
                   _nameCtrl.text.trim(), 
                   _codeCtrl.text.trim(),
-                  description: _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
                   smsSyncKeyword: _smsKeywordCtrl.text.trim());
       } else {
         final updated = widget.editing!.copyWith(
           name: _nameCtrl.text.trim(),
           code: _codeCtrl.text.trim(),
-          description: _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
           smsKeyword: _smsKeywordCtrl.text.trim(),
           updatedAt: DateTime.now(),
         );
@@ -91,11 +87,6 @@ class _AccountCreateScreenState extends State<AccountCreateScreen> {
               validator: (v) => (v == null || v.trim().isEmpty) ? 'Enter code' : null,
             ),
             const SizedBox(height: 8),
-            TextFormField(
-              controller: _descCtrl,
-              decoration: const InputDecoration(labelText: 'Description (optional)'),
-              maxLines: 2,
-            ),
             TextFormField(
               controller: _smsKeywordCtrl,
               decoration: const InputDecoration(labelText: 'SMS Keyword to sync transactions'),

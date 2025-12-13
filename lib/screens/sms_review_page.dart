@@ -176,11 +176,19 @@ class _SmsReviewPageState extends State<SmsReviewPage> {
 
     if (created > 0 && latestCreatedAt != null) {
       try {
-        final now = latestCreatedAt;
-        final updatedAccount = (widget.account as dynamic).copyWith != null
-            ? (widget.account as dynamic).copyWith(lastSmsSyncedAt: now)
-            : (widget.account as dynamic)
-          ..lastSmsSyncedAt = now;
+        // create a new Account instance with lastSmsSyncedAt updated.
+        final acct = widget.account;
+        final updatedAccount = Account(
+          id: acct.id,
+          name: acct.name,
+          code: acct.code,
+          description: acct.description,
+          createdAt: acct.createdAt,
+          updatedAt: DateTime.now(),
+          // preserve other fields if present (smsKeyword, lastSmsSyncedAt etc.)
+          smsKeyword: acct.smsKeyword,
+          lastSmsSyncedAt: latestCreatedAt,
+        );
         await _accountsService.update(updatedAccount);
       } catch (_) {}
     }

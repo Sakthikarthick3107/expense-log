@@ -10,9 +10,9 @@ class SmsSyncService with ChangeNotifier {
     final hasPermission = await (_telephony.requestPhoneAndSmsPermissions) ?? false;
     if (!hasPermission) return [];
 
-    // if lastSmsSyncedAt missing, use 5 days ago (not epoch 5)
+    // if lastSmsSyncedAt missing, use 30 days ago (not epoch 5)
     final sinceMillis = account.lastSmsSyncedAt?.millisecondsSinceEpoch ??
-        DateTime.now().subtract(const Duration(days: 5)).millisecondsSinceEpoch;
+        DateTime.now().subtract(const Duration(days: 30)).millisecondsSinceEpoch;
     final since = sinceMillis.toString();
 
     final messages = await _telephony.getInboxSms(
