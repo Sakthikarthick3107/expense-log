@@ -30,7 +30,7 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
       
-            - name: Patch telephony plugin namespace
+      - name: Patch telephony plugin namespace
         run: |
           TELEPHONY_GRADLE="$HOME/.pub-cache/hosted/pub.dev/telephony-0.2.0/android/build.gradle"
 
