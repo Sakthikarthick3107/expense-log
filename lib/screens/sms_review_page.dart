@@ -290,17 +290,28 @@ class _SmsReviewPageState extends State<SmsReviewPage> {
                                         // type mapping below description (full width dropdown)
                                         DropdownButtonFormField<dynamic>(
                                           value: _selectedTypeForRow[i],
-                                          style: const TextStyle(fontSize: 12),
-                                          decoration: const InputDecoration(
+                                          decoration: InputDecoration(
                                             isDense: true,
-                                            contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-                                            border: OutlineInputBorder(),
+                                            contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                                            border: const OutlineInputBorder(),
                                             labelText: 'Expense Type',
                                           ),
+                                          // Use theme-aware text color so it shows correctly in light/dark mode
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Theme.of(context).textTheme.bodyMedium?.color,
+                                          ),
+                                          dropdownColor: Theme.of(context).cardColor,
                                           items: types
                                               .map((t) => DropdownMenuItem<dynamic>(
                                                     value: t.id,
-                                                    child: Text(t.name, style: TextStyle(fontSize: 12)),
+                                                    child: Text(
+                                                      t.name,
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                        color: Theme.of(context).textTheme.bodyMedium?.color,
+                                                      ),
+                                                    ),
                                                   ))
                                               .toList(),
                                           onChanged: (v) => setState(() => _selectedTypeForRow[i] = v),

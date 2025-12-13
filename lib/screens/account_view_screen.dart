@@ -20,14 +20,12 @@ class AccountViewScreen extends StatefulWidget {
 }
 
 class _AccountViewScreenState extends State<AccountViewScreen> {
+  Account? _liveAccount;
+
+  Account get activeAccount => _liveAccount ?? widget.account;
+
   DateTime? _fromDate;
   DateTime? _toDate;
-  late SmsSyncService smsSyncService;
-
-  void initState() {
-    super.initState();
-    smsSyncService = Provider.of<SmsSyncService>(context, listen: false);
-  }
 
   Future<void> _printReport(BuildContext context) async {
     final reportService = Provider.of<ReportService>(context, listen: false);
@@ -153,6 +151,12 @@ class _AccountViewScreenState extends State<AccountViewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // always read latest account from provider (in case it was edited or updated)
+    final accountsSvc = Provider.of<AccountsService>(context);
+    _liveAccount = accountsSvc.getById(widget.account.id) ?? widget.account;
+    final account = activeAccount;
+    final smsSyncService = Provider.of<SmsSyncService>(context, listen: false);
+
     return Scaffold(
       appBar: AppBar(
         title: Column(
@@ -181,10 +185,6 @@ class _AccountViewScreenState extends State<AccountViewScreen> {
             icon: const Icon(Icons.edit),
             onPressed: () => _edit(context),
           ),
-          // IconButton(
-          //   icon: const Icon(Icons.delete),
-          //   onPressed: () => _delete(context),
-          // ),
         ],
       ),
       body: Padding(
@@ -265,9 +265,9 @@ class _AccountViewScreenState extends State<AccountViewScreen> {
                 },
               ),
               const SizedBox(width: 12),
-              if (widget.account.lastSmsSyncedAt != null)
+              if (account.lastSmsSyncedAt != null)
                 Text(
-                  'Last synced: ${_fmtDateTime(widget.account.lastSmsSyncedAt!)}',
+                  'Last synced: ${_fmtDateTime(account.lastSmsSyncedAt!)}',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
             ],
