@@ -282,16 +282,17 @@ class _SmsReviewPageState extends State<SmsReviewPage> {
                                         // type mapping below description (full width dropdown)
                                         DropdownButtonFormField<dynamic>(
                                           value: _selectedTypeForRow[i],
+                                          style: const TextStyle(fontSize: 12),
                                           decoration: const InputDecoration(
                                             isDense: true,
                                             contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
                                             border: OutlineInputBorder(),
-                                            hintText: 'Map type (required to create)',
+                                            labelText: 'Expense Type',
                                           ),
                                           items: types
                                               .map((t) => DropdownMenuItem<dynamic>(
                                                     value: t.id,
-                                                    child: Text(t.name),
+                                                    child: Text(t.name, style: TextStyle(fontSize: 12)),
                                                   ))
                                               .toList(),
                                           onChanged: (v) => setState(() => _selectedTypeForRow[i] = v),
@@ -306,26 +307,28 @@ class _SmsReviewPageState extends State<SmsReviewPage> {
                         },
                       ),
                     ),
-                    // persistent bottom bar with Cancel + Create Selected
+                    // persistent bottom bar with Cancel + Create (fixed height)
                     Container(
-                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+                      height: 72,
                       decoration: BoxDecoration(
                         color: Theme.of(context).scaffoldBackgroundColor,
-                        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, -1))],
+                        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, -1))],
                       ),
                       child: Row(
                         children: [
                           Text('${_parsed.length} found', style: Theme.of(context).textTheme.bodyMedium),
                           const SizedBox(width: 12),
-                          Expanded(child: Text('${_selectedIndexes.length} selected')),
+                          Expanded(child: Text('${_selectedIndexes.length} selected', style: Theme.of(context).textTheme.bodyMedium)),
                           TextButton(
                             onPressed: () => Navigator.pop(context, false),
                             child: const Text('Cancel'),
                           ),
                           const SizedBox(width: 8),
                           ElevatedButton(
+                            style: ElevatedButton.styleFrom(minimumSize: const Size(120, 44)),
                             onPressed: _selectedIndexes.isNotEmpty ? _createSelected : null,
-                            child: const Text('Create Selected'),
+                            child: const Text('Create'),
                           ),
                         ],
                       ),

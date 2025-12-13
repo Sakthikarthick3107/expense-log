@@ -25,26 +25,40 @@ class SmsSyncService with ChangeNotifier {
     final keyword = (account.smsKeyword ?? '').toLowerCase();
 
     // improved amount regex: handles ₹, Rs, INR and plain amounts with commas and decimals
-    final amountRegex = RegExp(r'(?:(?:₹|rs|inr)\s*[:-]?\s*|amount\s*[:=]?\s*)([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{1,2})?|[0-9]+(?:\.[0-9]{1,2})?)',
+    final amountRegex = RegExp(r'(?:(?:₹|rs|inr)\s*[:\-]?\s*|amount\s*[:=]?\s*)([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{1,2})?|[0-9]+(?:\.[0-9]{1,2})?)',
         caseSensitive: false);
 
     // transaction words for debit/credit detection (explicit words preferred)
     bool looksLikeTxn(String body) {
       final b = body.toLowerCase();
+      // reject common promotional indicators early
+      if (b.contains('congrat') || b.contains('claim') || b.contains('offer') || b.contains('free') || b.contains('promo')) return false;
+
+      // must contain an explicit amount
       final hasAmount = amountRegex.hasMatch(b);
-      final hasTxnWord = b.contains('debit') ||
-          b.contains('debited') ||
-          b.contains('credit') ||
-          b.contains('credited') ||
-          b.contains('spent') ||
-          b.contains('payment') ||
-          b.contains('withdrawn') ||
-          b.contains('received') ||
-          b.contains('deposit') ||
-          b.contains('upi') ||
-          b.contains('imps') ||
-          b.contains('neft');
-      if (!hasAmount || !hasTxnWord) return false;
+      if (!hasAmount) return false;
+
+      // require explicit transaction word (focus on clear debit/credit verbs)
+      final txnWords = [
+        'debited',
+        'debited by',
+        'debit',
+        'credited',
+        'credit',
+        'paid',
+        'payment',
+        'txn',
+        'transaction',
+        'success',
+        'failed',
+        'withdrawn',
+        'spent',
+        'received',
+        'deposit'
+      ];
+      final hasTxnWord = txnWords.any((w) => b.contains(w));
+      if (!hasTxnWord) return false;
+
       if (keyword.isNotEmpty && !b.contains(keyword)) return false;
       return true;
     }
