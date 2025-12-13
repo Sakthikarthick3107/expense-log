@@ -1,13 +1,9 @@
-## 📦 Release Notes - v3.1.10
-#### Released on: 30-11-2025 9:00 PM
+## 📦 Release Notes - v3.1.12
+#### Released on: 13-12-2025 4:00 PM
 
 ### ✨ New Feature
 
-**Account Tracking Introduces** New features :
-  * Account Tracking Listing UI Changes
-  * track with debits and credits
-  * Accounts with Type Credit Debits
-  * Metrics screen view with credit/debit difference
-  * Daily expense Credit/Debit tracks
+**Account transaction SMS Sync** New features :
+  * Account Transaction Sync with SMS and account keyword
 
 *Thank you for using Expense Log! Your feedback helps us keep improving and delivering a seamless experience.*

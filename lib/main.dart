@@ -11,6 +11,7 @@ import 'package:expense_log/services/accounts_service.dart';
 import 'package:expense_log/services/collection_service.dart';
 import 'package:expense_log/services/notification_service.dart';
 import 'package:expense_log/services/schedule_service.dart';
+import 'package:expense_log/services/sms_sync_service.dart';
 import 'package:expense_log/services/expense_service.dart';
 import 'package:expense_log/services/settings_service.dart';
 import 'package:expense_log/services/report_service.dart';
@@ -128,6 +129,7 @@ void main() async {
         Provider(create: (_) => ReportService()),
         ChangeNotifierProvider(create: (_) => ScheduleService()),
         ChangeNotifierProvider(create: (_) => accountsService),
+        ChangeNotifierProvider(create: (_) => SmsSyncService()),
       ],
       child: const MyApp(),
     ),

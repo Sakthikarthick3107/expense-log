@@ -2,7 +2,7 @@ name: expense_log
 description: "Expense Tracker Application"
 publish_to: 'none' 
 
-version: 3.1.11+1
+version: 3.1.12+1
 
 environment:
   sdk: '>=3.4.4 <4.0.0'
@@ -45,6 +45,7 @@ dependencies:
   device_preview: ^1.2.0
   table_calendar: ^3.0.8
   flutter_markdown: ^0.7.7+1
+  telephony: ^0.2.0
 
 
 dev_dependencies:

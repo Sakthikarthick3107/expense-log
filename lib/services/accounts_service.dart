@@ -29,7 +29,7 @@ class AccountsService extends ChangeNotifier {
 
   /// Create account with uniqueness checks on name and code.
   /// Returns created Account id, or throws Exception on duplicate.
-  Future<String> create(String name, String code, {String? description}) async {
+  Future<String> create(String name, String code, {String? description,String? smsSyncKeyword}) async {
     if (!isInitialized) await init();
 
     final existsName = _box!.values.any((a) => a.name.toLowerCase() == name.toLowerCase());
@@ -54,6 +54,7 @@ class AccountsService extends ChangeNotifier {
       code: code,
       description: description,
       createdAt: now,
+      smsKeyword: smsSyncKeyword,
       updatedAt: null,
     );
     await _box!.put(account.id, account);

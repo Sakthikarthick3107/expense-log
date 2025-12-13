@@ -22,13 +22,21 @@ class Account {
   @HiveField(5)
   final DateTime? updatedAt;
 
+  @HiveField(6)
+  String? smsKeyword;
+
+  @HiveField(7)
+  DateTime? lastSmsSyncedAt;
+
   Account({
     required this.id,
     required this.name,
     required this.code,
     this.description,
     required this.createdAt,
-    this.updatedAt
+    this.updatedAt,
+    this.smsKeyword,
+    this.lastSmsSyncedAt
   });
 
   Account copyWith({
@@ -39,6 +47,8 @@ class Account {
     DateTime? createdAt,
     DateTime? updatedAt,
     String? type,
+    String? smsKeyword,
+    DateTime? lastSmsSyncedAt
   }) {
     return Account(
       id: id ?? this.id,
@@ -46,7 +56,9 @@ class Account {
       code: code ?? this.code,
       description: description ?? this.description,
       createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt
+      updatedAt: updatedAt ?? this.updatedAt,
+      smsKeyword: smsKeyword ?? this.smsKeyword,
+      lastSmsSyncedAt: lastSmsSyncedAt ?? this.lastSmsSyncedAt
     );
   }
 
@@ -56,7 +68,9 @@ class Account {
         'code': code,
         'description': description,
         'createdAt': createdAt.toIso8601String(),
-        'updatedAt': updatedAt?.toIso8601String()
+        'updatedAt': updatedAt?.toIso8601String(),
+        'smsKeyword': smsKeyword,
+        'lastSmsSyncedAt': lastSmsSyncedAt?.toIso8601String()
       };
 
   factory Account.fromJson(Map<dynamic, dynamic> j) => Account(
@@ -65,6 +79,8 @@ class Account {
         code: j['code'] as String,
         description: j['description'] as String?,
         createdAt: DateTime.parse(j['createdAt'] as String),
-        updatedAt: j['updatedAt'] != null ? DateTime.parse(j['updatedAt'] as String) : null
+        updatedAt: j['updatedAt'] != null ? DateTime.parse(j['updatedAt'] as String) : null,
+        smsKeyword: j['smsKeyword'] as String?,
+        lastSmsSyncedAt: j['lastSmsSyncedAt'] != null ? DateTime.parse(j['lastSmsSyncedAt'] as String) : null,
       );
 }
