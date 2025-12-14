@@ -59,7 +59,8 @@ class SmsSyncService with ChangeNotifier {
         'withdrawn',
         'spent',
         'received',
-        'deposit'
+        'deposit',
+        'sent'
       ];
       final hasTxnWord = txnWords.any((w) => b.contains(w));
       if (!hasTxnWord) return false;
