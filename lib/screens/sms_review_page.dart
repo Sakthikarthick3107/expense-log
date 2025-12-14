@@ -92,7 +92,7 @@ class _SmsReviewPageState extends State<SmsReviewPage> {
       return;
     }
 
-    final res = await _expense_service.createExpense(exp);
+    final res = await _expenseService.createExpense(exp);  
     if (res == 1) {
       MessageWidget.showToast(context: context, message: 'Expense created', status: 1);
 
@@ -131,7 +131,7 @@ class _SmsReviewPageState extends State<SmsReviewPage> {
         final typeId = _selectedTypeForRow[idx];
         final key = await _settings_service.getBoxKey('expenseId');
         final newId = key is int ? key : int.tryParse(key.toString()) ?? DateTime.now().millisecondsSinceEpoch;
-        final ExpenseType type = _expense_service.getExpenseTypes().firstWhere((t) => t.id.toString() == typeId.toString());
+        final ExpenseType type = _expenseService.getExpenseTypes().firstWhere((t) => t.id.toString() == typeId.toString());
 
         // credit => negative amount
         final price = txn.isDebit ? txn.amount : -txn.amount;
@@ -149,7 +149,7 @@ class _SmsReviewPageState extends State<SmsReviewPage> {
           accountId: widget.account.id is int ? widget.account.id as int : int.tryParse(widget.account.id.toString()),
         );
 
-        final res = await _expense_service.createExpense(exp);
+        final res = await _expenseService.createExpense(exp);
         if (res == 1) {
           created++;
           latestCreatedAt = (latestCreatedAt == null || txn.date.isAfter(latestCreatedAt)) ? txn.date : latestCreatedAt;
