@@ -1,5 +1,5 @@
-## 📦 Release Notes - v3.1.12
-#### Released on: 13-12-2025 4:00 PM
+## 📦 Release Notes - v3.2.0
+#### Released on: 14-12-2025 8:00 PM
 
 ### ✨ New Feature
 
