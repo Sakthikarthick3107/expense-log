@@ -3,12 +3,11 @@ import 'package:expense_log/services/accounts_service.dart';
 import 'package:expense_log/models/account.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
-/// Migration v3.2.3 helpers
+/// Migration v3.2.3
 /// If installed app version is greater than 3.2.3, set lastSmsSyncedAt = 2025-11-01
-/// only for accounts where lastSmsSyncedAt is null.
+/// only for accounts where lastSmsSyncedAt is null. No migration flag stored.
 Future<void> runMigrationV323() async {
   const targetVersion = '3.2.3';
-  const migrationTag = 'migrate_v3_2_3_gt_done';
   final targetDate = DateTime(2025, 11, 1);
   final boxName = AccountsService.boxName;
 
@@ -47,19 +46,14 @@ Future<void> runMigrationV323() async {
       return;
     }
   }
+
   final box = Hive.box<Account>(boxName);
-
-  // run once only
-  try {
-    final already = box.get(migrationTag);
-    if (already == true) return;
-  } catch (_) {}
-
   final accounts = box.values.toList();
+
   for (final acc in accounts) {
     if (acc == null) continue;
     try {
-      final dyn = acc as dynamic;
+      final dyn = acc;
       // only update when lastSmsSyncedAt is null
       final last = (() {
         try {
@@ -111,9 +105,4 @@ Future<void> runMigrationV323() async {
       // ignore per-entry errors
     }
   }
-
-  // mark migration as applied
-  try {
-
-  } catch (_) {}
 }

@@ -1,9 +1,10 @@
-## 📦 Release Notes - v3.2.4
-#### Released on: 14-12-2025 9:30 PM
+## 📦 Release Notes - v3.2.5
+#### Released on: 14-12-2025 10:00 AM
 
 ### ✨ New Feature
 
 **Account transaction SMS Sync** New features :
   * Account Transaction Sync with SMS and account keyword
+  * Easy entry via SMS syncs
 
 *Thank you for using Expense Log! Your feedback helps us keep improving and delivering a seamless experience.*

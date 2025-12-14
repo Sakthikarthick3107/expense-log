@@ -236,11 +236,36 @@ class _AccountViewScreenState extends State<AccountViewScreen> {
             mainAxisAlignment: MainAxisAlignment.end,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              ElevatedButton.icon(
+              if (account.lastSmsSyncedAt != null)
+                Text(
+                  'Last synced: ${_fmtDateTime(account.lastSmsSyncedAt!)}',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                const SizedBox(width: 12),
+                ElevatedButton.icon(
                 icon: const Icon(Icons.sync),
                 label: const Text("Sync SMS"),
                 onPressed: () async {
-                  final txns = await smsSyncService.sync(widget.account);
+                  final kw = (account.smsKeyword ?? '').trim();
+                  if (kw.isEmpty) {
+                    final goEdit = await showDialog<bool>(
+                      context: context,
+                      builder: (_) => AlertDialog(
+                        title: const Text('SMS keyword required'),
+                        content: const Text('No SMS keyword is set for this account. Provide a keyword to proceed with SMS sync.'),
+                        actions: [
+                          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+                          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('Edit')),
+                        ],
+                      ),
+                    ) ?? false;
+                    if (goEdit) {
+                      await Navigator.push(context, MaterialPageRoute(builder: (_) => AccountCreateScreen(editing: account)));
+                    }
+                    return;
+                  }
+
+                  final txns = await smsSyncService.sync(account);
 
                   if (txns.isNotEmpty) {
                     MessageWidget.showToast(
@@ -264,12 +289,6 @@ class _AccountViewScreenState extends State<AccountViewScreen> {
                   }
                 },
               ),
-              const SizedBox(width: 12),
-              if (account.lastSmsSyncedAt != null)
-                Text(
-                  'Last synced: ${_fmtDateTime(account.lastSmsSyncedAt!)}',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
             ],
           ),
           const SizedBox(height: 8),

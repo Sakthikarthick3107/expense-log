@@ -50,69 +50,64 @@ class _SmsReviewPageState extends State<SmsReviewPage> {
     });
   }
 
+  String _fmtDateTimeShort(DateTime d) {
+    final dt = d.toLocal();
+    final hour = dt.hour.toString().padLeft(2, '0');
+    final min = dt.minute.toString().padLeft(2, '0');
+    final date = '${dt.year}-${dt.month.toString().padLeft(2,'0')}-${dt.day.toString().padLeft(2,'0')}';
+    return '$date $hour:$min';
+  }
+
   Future<void> _createExpenseFromRow(int idx) async {
     final txn = _parsed[idx];
     final typeId = _selectedTypeForRow[idx];
     if (typeId == null) {
-      MessageWidget.showToast(
-          context: context, message: 'Select type first', status: 0);
+      MessageWidget.showToast(context: context, message: 'Select type first', status: 0);
       return;
     }
 
     final key = await _settings_service.getBoxKey('expenseId');
-    final newId = key is int
-        ? key
-        : int.tryParse(key.toString()) ?? DateTime.now().millisecondsSinceEpoch;
+    final newId = key is int ? key : int.tryParse(key.toString()) ?? DateTime.now().millisecondsSinceEpoch;
 
     final ExpenseType type = _expenseService
         .getExpenseTypes()
         .firstWhere((t) => t.id.toString() == typeId.toString());
 
+    final baseName = txn.description.length > 40 ? txn.description.substring(0, 40) : txn.description;
+    final remark = ' (synced via ${widget.account.name} SMS at ${_fmtDateTimeShort(txn.date)})';
     final exp = Expense2(
       id: newId,
-      name: txn.description.length > 40
-          ? txn.description.substring(0, 40)
-          : txn.description,
+      name: baseName + remark,
       price: txn.amount,
       expenseType: type,
       date: txn.date,
       created: DateTime.now(),
       updated: DateTime.now(),
-      accountId: widget.account.id is int
-          ? widget.account.id as int
-          : int.tryParse(widget.account.id.toString()),
+      accountId: widget.account.id is int ? widget.account.id as int : int.tryParse(widget.account.id.toString()),
     );
 
-    // If txn is credit we create negative amount? (keep positive but allow user to decide)
-    // Here we only auto-create for debits. If credit, show message and skip by default.
+    // credit => negative amount (if your logic requires)
     if (!txn.isDebit) {
-      MessageWidget.showToast(
-          context: context,
-          message: 'Detected credit - please review before creating',
-          status: 0);
+      MessageWidget.showToast(context: context, message: 'Detected credit - please review before creating', status: 0);
       return;
     }
 
-    final res = await _expenseService.createExpense(exp);
+    final res = await _expense_service.createExpense(exp);
     if (res == 1) {
-      MessageWidget.showToast(
-          context: context, message: 'Expense created', status: 1);
+      MessageWidget.showToast(context: context, message: 'Expense created', status: 1);
 
       // Do NOT update account.lastSmsSyncedAt here.
-      // lastSmsSyncedAt will be updated after batch creation in _createSelected.
       setState(() {
         _parsed.removeAt(idx);
       });
     } else {
-      MessageWidget.showToast(
-          context: context, message: 'Failed creating expense', status: 0);
+      MessageWidget.showToast(context: context, message: 'Failed creating expense', status: 0);
     }
   }
 
   Future<void> _createSelected() async {
     if (_selectedIndexes.isEmpty) {
-      MessageWidget.showToast(
-          context: context, message: 'No rows selected', status: 0);
+      MessageWidget.showToast(context: context, message: 'No rows selected', status: 0);
       return;
     }
     // ensure every selected row has a mapped type
@@ -135,43 +130,35 @@ class _SmsReviewPageState extends State<SmsReviewPage> {
         final txn = _parsed[idx];
         final typeId = _selectedTypeForRow[idx];
         final key = await _settings_service.getBoxKey('expenseId');
-        final newId = key is int
-            ? key
-            : int.tryParse(key.toString()) ??
-                DateTime.now().millisecondsSinceEpoch;
-        final ExpenseType type = _expenseService
-            .getExpenseTypes()
-            .firstWhere((t) => t.id.toString() == typeId.toString());
+        final newId = key is int ? key : int.tryParse(key.toString()) ?? DateTime.now().millisecondsSinceEpoch;
+        final ExpenseType type = _expense_service.getExpenseTypes().firstWhere((t) => t.id.toString() == typeId.toString());
 
+        // credit => negative amount
         final price = txn.isDebit ? txn.amount : -txn.amount;
 
+        final baseName = txn.description.length > 40 ? txn.description.substring(0, 40) : txn.description;
+        final remark = ' (synced via ${widget.account.name} SMS at ${_fmtDateTimeShort(txn.date)})';
         final exp = Expense2(
           id: newId,
-          name: txn.description.length > 40
-              ? txn.description.substring(0, 40)
-              : txn.description,
+          name: baseName + remark,
           price: price,
           expenseType: type,
           date: txn.date,
           created: DateTime.now(),
           updated: DateTime.now(),
-          accountId: widget.account.id is int
-              ? widget.account.id as int
-              : int.tryParse(widget.account.id.toString()),
+          accountId: widget.account.id is int ? widget.account.id as int : int.tryParse(widget.account.id.toString()),
         );
 
-        final res = await _expenseService.createExpense(exp);
+        final res = await _expense_service.createExpense(exp);
         if (res == 1) {
           created++;
-          latestCreatedAt =
-              (latestCreatedAt == null || txn.date.isAfter(latestCreatedAt))
-                  ? txn.date
-                  : latestCreatedAt;
-          setState(() {
-            _parsed.removeAt(idx);
-          });
+          latestCreatedAt = (latestCreatedAt == null || txn.date.isAfter(latestCreatedAt)) ? txn.date : latestCreatedAt;
+          // remove parsed row
+          setState(() { _parsed.removeAt(idx); });
         }
-      } catch (_) {}
+      } catch (_) {
+        // skip row on error
+      }
     }
 
     if (created > 0 && latestCreatedAt != null) {
