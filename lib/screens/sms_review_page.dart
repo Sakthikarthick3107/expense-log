@@ -140,12 +140,13 @@ class _SmsReviewPageState extends State<SmsReviewPage> {
         final remark = ' (synced via ${widget.account.name} SMS at ${_fmtDateTimeShort(txn.date)})';
         final exp = Expense2(
           id: newId,
-          name: baseName + remark,
+          name: baseName,
           price: price,
           expenseType: type,
           date: txn.date,
           created: DateTime.now(),
           updated: DateTime.now(),
+          description: remark,
           accountId: widget.account.id is int ? widget.account.id as int : int.tryParse(widget.account.id.toString()),
         );
 
