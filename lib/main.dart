@@ -30,11 +30,10 @@ import 'package:expense_log/services/telegram_service.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_log/utility/pdf_helper.dart';
 import 'package:timezone/data/latest.dart' as tz;
-import 'package:timezone/timezone.dart' as tz;
 import 'dart:async';
 import 'package:device_preview/device_preview.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'models/collection.dart';
+import 'package:expense_log/migrations/migrate_v3_2_3.dart';
 
 void startTelegramPolling() {
   Timer.periodic(Duration(seconds: 5), (timer) async {
@@ -62,12 +61,13 @@ Future<void> requestPermissions() async {
   }
 }
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   await requestPermissions();
 
   await Hive.initFlutter();
+
   Hive.registerAdapter(ExpenseTypeAdapter());
   Hive.registerAdapter(Expense2Adapter());
   Hive.registerAdapter(AccountAdapter());
@@ -100,7 +100,12 @@ void main() async {
 
   ]);
 
-
+  // run migration v3.2.3 (force-update lastSmsSyncedAt)
+  try {
+    await runMigrationV323();
+  } catch (e) {
+    // ignore so app still starts
+  }
 
   await AndroidAlarmManager.initialize();
   tz.initializeTimeZones();
