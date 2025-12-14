@@ -25,14 +25,19 @@ class SmsSyncService with ChangeNotifier {
     final keyword = (account.smsKeyword ?? '').toLowerCase();
 
     // improved amount regex: handles ₹, Rs, INR and plain amounts with commas and decimals
-    final amountRegex = RegExp(r'(?:(?:₹|rs|inr)\s*[:\-]?\s*|amount\s*[:=]?\s*)([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{1,2})?|[0-9]+(?:\.[0-9]{1,2})?)',
-        caseSensitive: false);
+    // NOTE: removed the loose fallback that matched plain numbers (avoids matching OTPs).
+    final amountRegex = RegExp(
+      r'(?:(?:₹|rs|inr)\s*[:\-]?\s*|amount\s*[:=]?\s*)([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{1,2})?)',
+      caseSensitive: false,
+    );
 
     // transaction words for debit/credit detection (explicit words preferred)
     bool looksLikeTxn(String body) {
       final b = body.toLowerCase();
       // reject common promotional indicators early
       if (b.contains('congrat') || b.contains('claim') || b.contains('offer') || b.contains('free') || b.contains('promo')) return false;
+      // reject OTP / verification messages
+      if (b.contains('otp') || b.contains('one time password') || b.contains('pin') && b.contains('is')) return false;
 
       // must contain an explicit amount
       final hasAmount = amountRegex.hasMatch(b);
@@ -59,7 +64,11 @@ class SmsSyncService with ChangeNotifier {
       final hasTxnWord = txnWords.any((w) => b.contains(w));
       if (!hasTxnWord) return false;
 
-      if (keyword.isNotEmpty && !b.contains(keyword)) return false;
+      // when user provided a keyword, match it as a whole word (safer)
+      if (keyword.isNotEmpty) {
+        final kwRe = RegExp(r'\b' + RegExp.escape(keyword) + r'\b', caseSensitive: false);
+        if (!kwRe.hasMatch(b)) return false;
+      }
       return true;
     }
 
@@ -72,7 +81,20 @@ class SmsSyncService with ChangeNotifier {
 
       final match = amountRegex.firstMatch(body);
       if (match == null) continue;
-      final amountRaw = match.group(1)!.replaceAll(',', '');
+      // robust normalization: remove thousands separators (commas/spaces, NBSPs),
+      // keep decimal point; handle stray unicode spaces.
+      String amountRaw = match.group(1)!;
+      // normalize common Unicode spaces to normal space
+      amountRaw = amountRaw.replaceAll(RegExp(r'[\u00A0\u2009\u202F]'), ' ');
+      // remove commas and regular spaces used as thousand separators
+      amountRaw = amountRaw.replaceAll(RegExp(r'[,\s]'), '');
+      // if there are multiple dots, keep only the last as decimal separator
+      final dotCount = '.'.allMatches(amountRaw).length;
+      if (dotCount > 1) {
+        final lastDot = amountRaw.lastIndexOf('.');
+        amountRaw = amountRaw.replaceAll('.', '');
+        amountRaw = amountRaw.substring(0, lastDot) + '.' + amountRaw.substring(lastDot);
+      }
       double? amount = double.tryParse(amountRaw);
       if (amount == null) continue;
 
