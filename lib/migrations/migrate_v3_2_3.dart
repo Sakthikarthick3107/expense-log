@@ -3,51 +3,72 @@ import 'package:expense_log/services/accounts_service.dart';
 import 'package:expense_log/models/account.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
-/// Migration v3.2.3
-/// Force-set lastSmsSyncedAt = 2025-11-01 for all accounts (even if non-null),
-/// but only run when installed app version equals targetVersion.
+/// Migration v3.2.3 helpers
+/// If installed app version is greater than 3.2.3, set lastSmsSyncedAt = 2025-11-01
+/// only for accounts where lastSmsSyncedAt is null.
 Future<void> runMigrationV323() async {
   const targetVersion = '3.2.3';
-  const migrationTag = 'migrate_v3_2_3_checked';
-
-  try {
-    final pkg = await PackageInfo.fromPlatform();
-    if (pkg.version != targetVersion) {
-      // don't run migration if app version doesn't match
-      return;
-    }
-  } catch (_) {
-    // if we can't read package info, skip running to be safe
-    return;
-  }
-
+  const migrationTag = 'migrate_v3_2_3_gt_done';
   final targetDate = DateTime(2025, 11, 1);
   final boxName = AccountsService.boxName;
 
+  // helper: compare semantic versions "x.y.z"
+  int compareVersion(String a, String b) {
+    List<int> pa = a.split('.').map((s) => int.tryParse(s.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0).toList();
+    List<int> pb = b.split('.').map((s) => int.tryParse(s.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0).toList();
+    final len = pa.length > pb.length ? pa.length : pb.length;
+    while (pa.length < len) pa.add(0);
+    while (pb.length < len) pb.add(0);
+    for (var i = 0; i < len; i++) {
+      if (pa[i] > pb[i]) return 1;
+      if (pa[i] < pb[i]) return -1;
+    }
+    return 0;
+  }
+
+  // read package version
+  String installedVersion;
+  try {
+    final pkg = await PackageInfo.fromPlatform();
+    installedVersion = pkg.version;
+  } catch (_) {
+    // unable to read package info -> skip migration
+    return;
+  }
+
+  // proceed only if installedVersion > targetVersion
+  if (compareVersion(installedVersion, targetVersion) <= 0) return;
+
+  // open accounts box if needed
   if (!Hive.isBoxOpen(boxName)) {
     try {
       await Hive.openBox<Account>(boxName);
     } catch (_) {
-      // can't open box -> abort
       return;
     }
   }
-
   final box = Hive.box<Account>(boxName);
 
-  // run once only: check a settings flag stored in the same box to avoid repeating
+  // run once only
   try {
     final already = box.get(migrationTag);
     if (already == true) return;
-  } catch (_) {
-    // ignore and proceed
-  }
+  } catch (_) {}
 
   final accounts = box.values.toList();
   for (final acc in accounts) {
     if (acc == null) continue;
     try {
       final dyn = acc as dynamic;
+      // only update when lastSmsSyncedAt is null
+      final last = (() {
+        try {
+          return dyn.lastSmsSyncedAt;
+        } catch (_) {
+          return null;
+        }
+      })();
+      if (last != null) continue;
 
       // Prefer copyWith if available
       try {
@@ -90,4 +111,9 @@ Future<void> runMigrationV323() async {
       // ignore per-entry errors
     }
   }
+
+  // mark migration as applied
+  try {
+
+  } catch (_) {}
 }

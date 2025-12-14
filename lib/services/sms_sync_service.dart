@@ -24,10 +24,10 @@ class SmsSyncService with ChangeNotifier {
 
     final keyword = (account.smsKeyword ?? '').toLowerCase();
 
-    // improved amount regex: handles ₹, Rs, INR and plain amounts with commas and decimals
-    // NOTE: removed the loose fallback that matched plain numbers (avoids matching OTPs).
+    // Accept optional separators (space / dot / colon / hyphen) between currency and number,
+    // and avoid matching loose plain numbers to reduce OTP false positives.
     final amountRegex = RegExp(
-      r'(?:(?:₹|rs|inr)\s*[:\-]?\s*|amount\s*[:=]?\s*)([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{1,2})?)',
+      r'(?:(?:₹|rs|inr)[\s\.\-:]*|amount\s*[:=]?\s*)([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{1,2})?)',
       caseSensitive: false,
     );
 
@@ -65,7 +65,6 @@ class SmsSyncService with ChangeNotifier {
       final hasTxnWord = txnWords.any((w) => b.contains(w));
       if (!hasTxnWord) return false;
 
-      // when user provided a keyword, match it as a whole word (safer)
       if (keyword.isNotEmpty) {
         final kwRe = RegExp(r'\b' + RegExp.escape(keyword) + r'\b', caseSensitive: false);
         if (!kwRe.hasMatch(b)) return false;
