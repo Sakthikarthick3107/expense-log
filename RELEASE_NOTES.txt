@@ -1,10 +1,22 @@
-## 📦 Release Notes - v3.2.5
-#### Released on: 14-12-2025 10:00 AM
+## 📦 Release Notes - v26.3.4
+#### Released on: 20-07-2026
 
-### ✨ New Feature
+### ✨ UI Elegance Overhaul
+- Complete theme rewrite with Material 3: rounded cards, modern dialogs, elegant color scheme
+- Warm surfaces, subtle shadows, consistent border radius on inputs and buttons
+- All screens enhanced: Daily Expense, Group Detail, Metrics, Groups, Home, Drawer
 
-**Account transaction SMS Sync** New features :
-  * Account Transaction Sync with SMS and account keyword
-  * Easy entry via SMS syncs
+### 🎤 Voice Input Fixes
+- Single SpeechToText instance per screen (fixed "Speech not available" error)
+- Proper lifecycle management
+
+### 🧹 Collections Removed
+- Removed unused Collections module and all references
+
+### 🐛 Bug Fixes
+- Fixed blank expense form
+- Removed deprecated List Elevation toggle; all cards always elevated
+- Reduced Group/User filter dropdown sizes in Groups metrics tab
+- Added 5 new preset colors
 
 *Thank you for using Expense Log! Your feedback helps us keep improving and delivering a seamless experience.*
