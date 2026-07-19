@@ -58,8 +58,18 @@ class ExpenseService {
 
   List<Expense2> getExpenses() => _expenseBox2.values.toList();
 
+  List<Expense2> getIndividualExpenses() {
+    return getExpenses()
+        .where((e) => e.groupId == null || e.mappedUserName == 'Me')
+        .toList();
+  }
+
+  List<Expense2> getGroupExpenses(int groupId) {
+    return getExpenses().where((e) => e.groupId == groupId).toList();
+  }
+
   List<Expense2> getExpensesOfSelectedDuration(String rangeType,
-      {DateTimeRange? customDateRange}) {
+      {DateTimeRange? customDateRange, int? groupId, bool individualOnly = false}) {
     DateTime startDate;
     DateTime endDate;
 
@@ -75,7 +85,17 @@ class ExpenseService {
       throw Exception('No valid date range provided.');
     }
 
-    List<Expense2> filteredExpenses = getExpenses().where((expense) {
+    final allExpenses = getExpenses();
+    List<Expense2> sourceExpenses;
+    if (groupId != null) {
+      sourceExpenses = getGroupExpenses(groupId);
+    } else if (individualOnly) {
+      sourceExpenses = getIndividualExpenses();
+    } else {
+      sourceExpenses = allExpenses;
+    }
+
+    List<Expense2> filteredExpenses = sourceExpenses.where((expense) {
       return expense.date.isAfter(startDate.subtract(Duration(days: 1))) &&
           expense.date.isBefore(endDate.add(Duration(days: 1)));
     }).toList();
@@ -401,9 +421,18 @@ class ExpenseService {
   }
 
   List<String> expenseTypesOfSelectedDuration(String duration,
-      {DateTimeRange? customDateRange}) {
+      {DateTimeRange? customDateRange, int? groupId, bool individualOnly = false}) {
     final expenseTypes = getExpenseTypes();
-    final expenses = getExpenses();
+    final allExpenses = getExpenses();
+
+    List<Expense2> expenses;
+    if (groupId != null) {
+      expenses = getGroupExpenses(groupId);
+    } else if (individualOnly) {
+      expenses = getIndividualExpenses();
+    } else {
+      expenses = allExpenses;
+    }
 
     DateTime startDate;
     DateTime endDate;
@@ -436,10 +465,21 @@ class ExpenseService {
       {
         bool? isDebit = null,
     DateTimeRange? customDateRange,
+    int? groupId,
+    bool individualOnly = false,
   }) {
     final expenseTypes = getExpenseTypes();
-    final expenses = getExpenses();
+    final allExpenses = getExpenses();
     final uiService = UiService();
+
+    List<Expense2> expenses;
+    if (groupId != null) {
+      expenses = getGroupExpenses(groupId);
+    } else if (individualOnly) {
+      expenses = getIndividualExpenses();
+    } else {
+      expenses = allExpenses;
+    }
 
     Map<K, double> metricData = {};
 
@@ -497,9 +537,19 @@ class ExpenseService {
   Map<Map<String, double>, List<Map<String, double>>> getMetrics2(
       String duration, String metricBy, List<String> unselectedTypes,
       bool isDebit,
-      {DateTimeRange? customDateRange}) {
+      {DateTimeRange? customDateRange, int? groupId, bool individualOnly = false}) {
     final expenseTypes = getExpenseTypes();
-    final expenses = getExpenses();
+    final allExpenses = getExpenses();
+
+    List<Expense2> expenses;
+    if (groupId != null) {
+      expenses = getGroupExpenses(groupId);
+    } else if (individualOnly) {
+      expenses = getIndividualExpenses();
+    } else {
+      expenses = allExpenses;
+    }
+
     UiService uiService = UiService();
     Map<Map<String, double>, List<Map<String, double>>> fullMetrics = {};
     fullMetrics[{'Total': 0.0}] = [];

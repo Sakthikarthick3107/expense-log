@@ -25,13 +25,14 @@ class AccountAdapter extends TypeAdapter<Account> {
       updatedAt: fields[5] as DateTime?,
       smsKeyword: fields[6] as String?,
       lastSmsSyncedAt: fields[7] as DateTime?,
+      isExternalAccount: fields[8] as bool?,
     );
   }
 
   @override
   void write(BinaryWriter writer, Account obj) {
     writer
-      ..writeByte(8)
+      ..writeByte(9)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -47,7 +48,9 @@ class AccountAdapter extends TypeAdapter<Account> {
       ..writeByte(6)
       ..write(obj.smsKeyword)
       ..writeByte(7)
-      ..write(obj.lastSmsSyncedAt);
+      ..write(obj.lastSmsSyncedAt)
+      ..writeByte(8)
+      ..write(obj.isExternalAccount);
   }
 
   @override

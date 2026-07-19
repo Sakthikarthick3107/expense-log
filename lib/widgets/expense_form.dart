@@ -31,6 +31,7 @@ class _ExpenseFormState extends State<ExpenseForm> {
   final _descriptionController = TextEditingController();
   int selectedExpenseTypeId = 0;
   int? _selectedAccountId;
+  bool _isCredit = false;
 
   late ExpenseService _expenseService;
   late SettingsService _settingsService;
@@ -54,8 +55,9 @@ class _ExpenseFormState extends State<ExpenseForm> {
 
     if (widget.expense != null) {
       _nameController.text = widget.expense!.name;
-      _priceController.text = widget.expense!.price.toString();
+      _priceController.text = widget.expense!.price.abs().toString();
       _descriptionController.text = widget.expense!.description != null ? widget.expense!.description.toString():'';
+      _isCredit = widget.expense!.price < 0;
       selectedExpenseTypeId = widget.expense!.expenseType.id;
       // try to read accountId from provided expense (robust to int or String)
       final rawAccount = (widget.expense as dynamic).accountId;
@@ -106,34 +108,32 @@ class _ExpenseFormState extends State<ExpenseForm> {
                 },
               ),
 
-              TextFormField(
-                controller: _priceController,
-                decoration: InputDecoration(
-                    labelText: 'Price',
-                  suffixIcon: InkWell(
-                    onTap: () {
-                      showDialog(
-                        context: context,
-                        builder: (_) => AlertDialog(
-                          title: const Text('Price Info'),
-                          content: const Text(
-                            '• Negative value = Credit (money received)\n'
-                                '• Positive value = Debit (money spent)',
-                          ),
-                        ),
-                      );
-                    },
-                    child: const Icon(Icons.info_outline),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _priceController,
+                      decoration: const InputDecoration(labelText: 'Amount'),
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Amount is mandatory';
+                        }
+                        return null;
+                      },
+                    ),
                   ),
-                ),
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Price is mandatory';
-                  }
-                  return null;
-                },
+                  const SizedBox(width: 8),
+                  DropdownButton<String>(
+                    value: _isCredit ? 'Credit' : 'Debit',
+                    onChanged: (v) =>
+                        setState(() => _isCredit = v == 'Credit'),
+                    items: const [
+                      DropdownMenuItem(value: 'Debit', child: Text('Debit')),
+                      DropdownMenuItem(value: 'Credit', child: Text('Credit')),
+                    ],
+                  ),
+                ],
               ),
               selectedExpenseTypeId == -1
                   ? Container(
@@ -269,7 +269,8 @@ class _ExpenseFormState extends State<ExpenseForm> {
               if (_formKey.currentState?.validate() ?? false) {
                 final name = _nameController.text;
                 final description = _descriptionController.text;
-                final price = double.parse(_priceController.text);
+                final rawPrice = double.parse(_priceController.text);
+                final price = _isCredit ? -rawPrice : rawPrice;
 
                 final selectedExpenseType =
                     _expenseService.getExpenseTypes().firstWhere(

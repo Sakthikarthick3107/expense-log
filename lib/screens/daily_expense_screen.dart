@@ -80,6 +80,7 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
   Widget buildExpenseTile(Expense2 expOfDay, {bool showType = true}) {
     var accId = expOfDay.accountId;
     var accName = accId != null ? accounts.firstWhere((x) => x.id == expOfDay.accountId).name:'';
+    final isGroupExpense = expOfDay.groupId != null;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10.0),
       margin: const EdgeInsets.only(bottom: 10),
@@ -100,7 +101,13 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
                       ? Colors.green
                       : Colors.grey,
                 )
-              : null,
+              : (isGroupExpense
+                  ? CircleAvatar(
+                      radius: 14,
+                      backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                      child: Icon(Icons.group, size: 16, color: Theme.of(context).primaryColor),
+                    )
+                  : null),
           onTap: () async {
             if (deleteList.isNotEmpty) {
               setState(() {
@@ -142,13 +149,22 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          subtitle: showType
-              ? Text(
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (showType)
+                Text(
                   expOfDay.expenseType.name,
                   style: const TextStyle(
                       fontSize: 12, fontWeight: FontWeight.w100),
-                )
-              : null,
+                ),
+              if (isGroupExpense && expOfDay.mappedUserName != null)
+                Text(
+                  '${expOfDay.mappedUserName} • Group',
+                  style: TextStyle(fontSize: 10, color: Colors.grey[500]),
+                ),
+            ],
+          ),
           trailing: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.end,
@@ -161,9 +177,18 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    Text(
+                      expOfDay.price > 0 ? 'Debit' : 'Credit',
+                      style: TextStyle(
+                        fontSize: 9,
+                        color: expOfDay.price > 0 ? Colors.red : Colors.green,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
                     Icon(expOfDay.price > 0 ? Icons.arrow_downward : Icons.arrow_upward,
-                    size: 14,
+                    size: 12,
                     color: expOfDay.price > 0 ? Colors.red : Colors.green,),
+                    const SizedBox(width: 4),
                     Text(
                         accName,
                         style: const TextStyle(
@@ -333,9 +358,18 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
                           return Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
+                              Text(
+                                totalExpense > 0 ? 'Debit' : 'Credit',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: totalExpense > 0 ? Colors.red : Colors.green,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
                               Icon(totalExpense > 0? Icons.arrow_downward : Icons.arrow_upward,
                               color: totalExpense > 0 ? Colors.red: Colors.green,
-                              size: 20,),
+                              size: 16,),
+                              const SizedBox(width: 4),
                           Text(
                           "₹ ${totalExpense.abs().toStringAsFixed(2)}",
                             style: const TextStyle(

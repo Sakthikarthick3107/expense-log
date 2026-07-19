@@ -296,6 +296,7 @@ class SettingsService with ChangeNotifier {
       "Expenses",
       "Types",
       "Metrics",
+      "Groups",
       "Collections",
       "Audit Log",
       "Downloads",

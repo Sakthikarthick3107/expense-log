@@ -1,0 +1,1 @@
+/home/sakthikarthick3107/Coding/expense-log/android/app/build/intermediates/cxx/debug/43a23f2q/obj/x86_64

@@ -48,8 +48,9 @@ class _AppDrawerState extends State<AppDrawer> {
   final Map<String, IconData> screenIcons = {
     "Expenses": Icons.calculate,
     "Types": Icons.category_outlined,
-    "Collections": Icons.collections_bookmark_rounded,
     "Metrics": Icons.auto_graph_outlined,
+    "Groups": Icons.groups,
+    "Collections": Icons.collections_bookmark_rounded,
     "Audit Log": Icons.history,
     "Downloads": Icons.download,
     "Schedules": Icons.schedule,

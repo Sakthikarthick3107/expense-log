@@ -32,6 +32,15 @@ class Expense2{
   @HiveField(8)
   String? description;
 
+  @HiveField(9)
+  int? groupId;
+
+  @HiveField(10)
+  String? mappedUserName;
+
+  bool get isCredit => price < 0;
+  bool get isDebit => price > 0;
+  bool get isGroupExpense => groupId != null;
 
   Expense2({
     required this.id,
@@ -42,7 +51,9 @@ class Expense2{
     required this.created,
     this.updated,
     this.accountId,
-    this.description
+    this.description,
+    this.groupId,
+    this.mappedUserName
   });
 
   Expense2 copyWith({
@@ -54,7 +65,9 @@ class Expense2{
     DateTime? created,
     DateTime? updated,
     int? accountId,
-    String? description
+    String? description,
+    int? groupId,
+    String? mappedUserName
   }) {
     return Expense2(
         id: id ?? this.id,
@@ -65,7 +78,9 @@ class Expense2{
         created: created ?? this.created,
         updated: updated ?? this.updated,
         accountId: accountId ?? this.accountId,
-        description: description ?? this.description
+        description: description ?? this.description,
+        groupId: groupId ?? this.groupId,
+        mappedUserName: mappedUserName ?? this.mappedUserName
     );
   }
 
@@ -79,7 +94,9 @@ class Expense2{
       'created': created.toIso8601String(),
       'updated': updated?.toIso8601String(),
       'accountId': accountId,
-      'description' : description
+      'description' : description,
+      'groupId': groupId,
+      'mappedUserName': mappedUserName
     };
   }
 
@@ -93,7 +110,9 @@ class Expense2{
       created: DateTime.parse(json['created']),
       updated: json['updated'] != null ? DateTime.parse(json['updated']) : null,
       accountId: json['accountId'] as int?,
-      description: json['description'] as String?
+      description: json['description'] as String?,
+      groupId: json['groupId'] as int?,
+      mappedUserName: json['mappedUserName'] as String?
     );
   }
 }

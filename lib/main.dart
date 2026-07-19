@@ -1,6 +1,7 @@
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:expense_log/models/account.dart';
 import 'package:expense_log/models/expense2.dart';
+import 'package:expense_log/models/group.dart';
 import 'package:expense_log/models/schedule.dart';
 import 'package:expense_log/models/upi.dart';
 import 'package:expense_log/models/expense_type.dart';
@@ -9,6 +10,7 @@ import 'package:expense_log/models/message.dart';
 import 'package:expense_log/screens/home_screen.dart';
 import 'package:expense_log/services/accounts_service.dart';
 import 'package:expense_log/services/collection_service.dart';
+import 'package:expense_log/services/group_service.dart';
 import 'package:expense_log/services/notification_service.dart';
 import 'package:expense_log/services/schedule_service.dart';
 import 'package:expense_log/services/sms_sync_service.dart';
@@ -78,6 +80,7 @@ Future<void> main() async {
   Hive.registerAdapter(ScheduleTypeAdapter());
   Hive.registerAdapter(RepeatOptionAdapter());
   Hive.registerAdapter(CustomByTypeAdapter());
+  Hive.registerAdapter(GroupAdapter());
 
   var expenseBox = await Hive.openBox<Expense2>('expense2Box');
   var accountBox = await Hive.openBox<Account>('accountsBox');
@@ -87,6 +90,7 @@ Future<void> main() async {
   var upiLogBox = await Hive.openBox<UpiLog>('upiLogBox');
   var messageBox = await Hive.openBox<app_message.Message>('messageBox');
   var scheduleBox = await Hive.openBox<Schedule>('scheduleBox');
+  var groupsBox = await Hive.openBox<Group>('groupsBox');
 
   await Future.wait([
     expenseBox.compact(),
@@ -96,8 +100,8 @@ Future<void> main() async {
     collectionBox.compact(),
     upiLogBox.compact(),
     messageBox.compact(),
-    scheduleBox.compact()
-
+    scheduleBox.compact(),
+    groupsBox.compact()
   ]);
 
   // run migration v3.2.3 (force-update lastSmsSyncedAt)
@@ -134,6 +138,7 @@ Future<void> main() async {
         Provider(create: (_) => ReportService()),
         ChangeNotifierProvider(create: (_) => ScheduleService()),
         ChangeNotifierProvider(create: (_) => accountsService),
+        ChangeNotifierProvider(create: (_) => GroupService()),
         ChangeNotifierProvider(create: (_) => SmsSyncService()),
       ],
       child: const MyApp(),
