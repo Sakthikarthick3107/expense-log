@@ -95,43 +95,43 @@ jobs:
          path: tag_name.txt
 
   build-ios:
-   name: Build iOS
-   runs-on: macos-latest
-   needs: build-apk
+    name: Build iOS
+    runs-on: macos-latest
+    needs: build-apk
 
-   steps:
+    steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up Flutter
-       uses: subosito/flutter-action@v2
-       with:
-         flutter-version: '3.22.3'
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.3'
 
-     - name: Install CocoaPods
-       run: |
-         sudo gem install cocoapods
-         pod repo update
+      - name: Install CocoaPods
+        run: |
+          sudo gem install cocoapods
+          pod repo update
 
-     - name: Install dependencies
-       run: flutter pub get
+      - name: Install dependencies
+        run: flutter pub get
 
-     - name: Install iOS dependencies
-       run: |
-         cd ios
-         pod install
-         cd ..
+      - name: Install iOS dependencies
+        run: |
+          cd ios
+          pod install
+          cd ..
 
-     - name: Build iOS App
-       run: flutter build ios --release --no-codesign
+      - name: Build iOS App
+        run: flutter build ios --release --no-codesign
 
-     - name: Archive and Export IPA
-       run: |
-         mkdir Payload
-         cp -r build/ios/iphoneos/Runner.app Payload/
-         cd Payload
-         zip -r ../Runner.ipa .
-         cd ..
+      - name: Archive and Export IPA
+        run: |
+          mkdir Payload
+          cp -r build/ios/iphoneos/Runner.app Payload/
+          cd Payload
+          zip -r ../Runner.ipa .
+          cd ..
 
       - name: Download release tag
         uses: actions/download-artifact@v4
