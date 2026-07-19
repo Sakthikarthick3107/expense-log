@@ -16,12 +16,14 @@ class ExpenseForm extends StatefulWidget {
   final DateTime expenseDate;
   final Expense2? expense;
   final bool? isFromCollection;
+  final VoiceParseResult? prefill;
 
   const ExpenseForm(
       {super.key,
       required this.expenseDate,
       this.expense,
-      this.isFromCollection});
+      this.isFromCollection,
+      this.prefill});
 
   @override
   State<ExpenseForm> createState() => _ExpenseFormState();
@@ -81,6 +83,7 @@ class _ExpenseFormState extends State<ExpenseForm> {
           ? _expenseService.getExpenseTypes().first.id
           : -1;
     }
+    if (widget.prefill != null) _applyVoiceResult(widget.prefill!);
   }
 
   @override
@@ -91,7 +94,7 @@ class _ExpenseFormState extends State<ExpenseForm> {
     _descriptionController.dispose();
   }
 
-  void _onVoiceResult(VoiceParseResult result) {
+  void _applyVoiceResult(VoiceParseResult result) {
     if (result.amount != null) _priceController.text = result.amount!;
     if (result.typeName != null) {
       final match = _expenseService.getExpenseTypes().where(
@@ -139,38 +142,19 @@ class _ExpenseFormState extends State<ExpenseForm> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: _nameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Enter expense',
-                        isDense: true,
-                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Expense is mandatory';
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-                  if (widget.expense == null)
-                    VoiceInputButton(
-                      onResult: _onVoiceResult,
-                      expenseTypeNames: _expenseService
-                          .getExpenseTypes()
-                          .map((t) => t.name)
-                          .toList(),
-                      accountNames: Provider.of<AccountsService>(context, listen: false)
-                          .all.map((a) => a.name).toList(),
-                      groupNames: Provider.of<GroupService>(context, listen: false)
-                          .getGroups().map((g) => g.name).toList(),
-                    ),
-                ],
+              TextFormField(
+                controller: _nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Enter expense',
+                  isDense: true,
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Expense is mandatory';
+                  }
+                  return null;
+                },
               ),
 
               Row(

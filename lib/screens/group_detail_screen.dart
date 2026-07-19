@@ -6,7 +6,10 @@ import 'package:expense_log/services/expense_service.dart';
 import 'package:expense_log/services/ui_service.dart';
 import 'package:expense_log/widgets/group_expense_form.dart';
 import 'package:expense_log/widgets/message_widget.dart';
+import 'package:expense_log/widgets/voice_input.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:provider/provider.dart';
@@ -325,9 +328,63 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _addExpense(),
-        child: const Icon(Icons.add),
+      floatingActionButton: SpeedDial(
+        icon: Icons.menu,
+        activeIcon: Icons.close,
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Colors.white,
+        activeBackgroundColor: Colors.redAccent,
+        spacing: 10,
+        spaceBetweenChildren: 10,
+        childrenButtonSize: const Size(45, 45),
+        buttonSize: const Size(50, 50),
+        overlayOpacity: 0.1,
+        elevation: 8.0,
+        children: [
+          SpeedDialChild(
+            child: const Icon(Icons.mic_none),
+            label: 'Voice Input',
+            labelBackgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            onTap: () async {
+              final sttPlugin = stt.SpeechToText();
+              final available = await sttPlugin.initialize();
+              if (!available) {
+                MessageWidget.showToast(context: context, message: 'Speech not available', status: 0);
+                return;
+              }
+              MessageWidget.showToast(context: context, message: 'Speak now...', status: 1);
+              sttPlugin.listen(
+                onResult: (result) {
+                  if (result.finalResult) {
+                    final parsed = parseVoiceInput(
+                      result.recognizedWords,
+                      _expenseService.getExpenseTypes().map((t) => t.name).toList(),
+                      accountNames: accounts.map((a) => a.name).toList(),
+                      groupMemberNames: widget.group.members,
+                    );
+                    showDialog<bool>(
+                      context: context,
+                      builder: (_) => GroupExpenseForm(
+                        group: widget.group,
+                        expenseDate: _selectedDateNotifier.value,
+                        prefill: parsed,
+                      ),
+                    ).then((result) {
+                      if (result == true) setState(() {});
+                    });
+                  }
+                },
+                listenOptions: stt.SpeechListenOptions(localeId: 'en_US'),
+              );
+            },
+          ),
+          SpeedDialChild(
+            child: const Icon(Icons.add),
+            label: 'New Expense',
+            labelBackgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            onTap: () => _addExpense(),
+          ),
+        ],
       ),
     );
   }

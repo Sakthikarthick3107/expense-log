@@ -19,6 +19,8 @@ import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
+import 'package:expense_log/widgets/voice_input.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 import '../models/collection.dart';
 
 class DailyExpenseScreen extends StatefulWidget {
@@ -615,6 +617,51 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
                       }
                     }
                   });
+            },
+          ),
+          SpeedDialChild(
+            child: const Icon(Icons.mic_none),
+            label: 'Voice Input',
+            labelBackgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            onTap: () async {
+              final sttPlugin = stt.SpeechToText();
+              final available = await sttPlugin.initialize();
+              if (!available) {
+                MessageWidget.showToast(context: context, message: 'Speech not available', status: 0);
+                return;
+              }
+              MessageWidget.showToast(context: context, message: 'Speak now...', status: 1);
+              sttPlugin.listen(
+                onResult: (result) {
+                  if (result.finalResult) {
+                    final parsed = parseVoiceInput(
+                      result.recognizedWords,
+                      _expenseService.getExpenseTypes().map((t) => t.name).toList(),
+                      accountNames: accounts.map((a) => a.name).toList(),
+                    );
+                    final getTypes = _expenseService.getExpenseTypes();
+                    if (getTypes.isNotEmpty) {
+                      showDialog<bool>(
+                        context: context,
+                        builder: (context) => ExpenseForm(
+                          expenseDate: _selectedDateNotifier.value,
+                          prefill: parsed,
+                        ),
+                      ).then((result) {
+                        if (result == true) {
+                          setState(() {
+                            totalExpense = _expenseService
+                                .selectedDayTotalExpense(_selectedDateNotifier.value);
+                            _metricsData =
+                                _expenseService.getMetrics('This month', 'By type', []);
+                          });
+                        }
+                      });
+                    }
+                  }
+                },
+                listenOptions: stt.SpeechListenOptions(localeId: 'en_US'),
+              );
             },
           ),
           SpeedDialChild(

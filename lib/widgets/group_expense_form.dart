@@ -12,12 +12,14 @@ class GroupExpenseForm extends StatefulWidget {
   final Group group;
   final DateTime expenseDate;
   final Expense2? expense;
+  final VoiceParseResult? prefill;
 
   const GroupExpenseForm({
     super.key,
     required this.group,
     required this.expenseDate,
     this.expense,
+    this.prefill,
   });
 
   @override
@@ -56,6 +58,7 @@ class _GroupExpenseFormState extends State<GroupExpenseForm> {
       final types = _expenseService.getExpenseTypes();
       selectedExpenseTypeId = types.isNotEmpty ? types.first.id : -1;
     }
+    if (widget.prefill != null) _applyVoiceResult(widget.prefill!);
   }
 
   @override
@@ -66,7 +69,7 @@ class _GroupExpenseFormState extends State<GroupExpenseForm> {
     super.dispose();
   }
 
-  void _onVoiceResult(VoiceParseResult result) {
+  void _applyVoiceResult(VoiceParseResult result) {
     if (result.amount != null) _priceController.text = result.amount!;
     if (result.typeName != null) {
       final match = _expenseService.getExpenseTypes().where(
@@ -86,10 +89,6 @@ class _GroupExpenseFormState extends State<GroupExpenseForm> {
     if (_nameController.text.isEmpty || result.fullText.isNotEmpty) {
       _nameController.text = result.fullText;
     }
-    MessageWidget.showToast(
-        context: context,
-        message: 'Voice input captured',
-        status: 1);
   }
 
   @override
@@ -122,33 +121,15 @@ class _GroupExpenseFormState extends State<GroupExpenseForm> {
                 ),
               ),
               const SizedBox(height: 4),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: _nameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Enter expense',
-                        isDense: true,
-                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                      ),
-                      validator: (v) =>
-                          v == null || v.isEmpty ? 'Expense is mandatory' : null,
-                    ),
-                  ),
-                  if (widget.expense == null)
-                    VoiceInputButton(
-                      onResult: _onVoiceResult,
-                      expenseTypeNames: _expenseService
-                          .getExpenseTypes()
-                          .map((t) => t.name)
-                          .toList(),
-                      accountNames: Provider.of<AccountsService>(context, listen: false)
-                          .all.map((a) => a.name).toList(),
-                      groupMemberNames: widget.group.members,
-                    ),
-                ],
+              TextFormField(
+                controller: _nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Enter expense',
+                  isDense: true,
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                ),
+                validator: (v) =>
+                    v == null || v.isEmpty ? 'Expense is mandatory' : null,
               ),
               const SizedBox(height: 4),
               Row(
