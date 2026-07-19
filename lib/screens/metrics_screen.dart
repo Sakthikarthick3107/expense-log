@@ -186,8 +186,9 @@ class _MetricsScreenState extends State<MetricsScreen>
     return Column(children: [
       if (_tabController.index == 1) ...[
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
           child: DropdownButtonFormField<int>(
+            isDense: true,
             value: _selectedGroupId,
             isExpanded: true,
             hint: const Text('Select Group'),
@@ -207,16 +208,18 @@ class _MetricsScreenState extends State<MetricsScreen>
             },
             decoration: const InputDecoration(
               labelText: 'Group',
+              isDense: true,
               border: OutlineInputBorder(),
               contentPadding:
-                  EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             ),
           ),
         ),
         if (_selectedGroupId != null)
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
             child: DropdownButtonFormField<String>(
+              isDense: true,
               value: _selectedUserName,
               isExpanded: true,
               hint: const Text('All Users'),
@@ -234,9 +237,10 @@ class _MetricsScreenState extends State<MetricsScreen>
               },
               decoration: const InputDecoration(
                 labelText: 'User',
+                isDense: true,
                 border: OutlineInputBorder(),
                 contentPadding:
-                    EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               ),
             ),
           ),
@@ -528,10 +532,10 @@ class _MetricsScreenState extends State<MetricsScreen>
         ]),
       ),
       bottomNavigationBar: Container(
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         color: Theme.of(context).appBarTheme.backgroundColor,
         child: SizedBox(
-          height: 80,
+          height: 56,
           child: Column(
             children: [
               if (selectedDateRange != null)

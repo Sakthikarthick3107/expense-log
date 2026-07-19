@@ -243,7 +243,7 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
                             .subtract(const Duration(days: 1));
                       });
                     },
-                    padding: const EdgeInsets.all(20.0),
+                    padding: const EdgeInsets.all(8.0),
                     icon: const Icon(Icons.arrow_back_ios)),
                 ValueListenableBuilder<DateTime>(
                     valueListenable: _selectedDateNotifier,
@@ -287,12 +287,12 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
                         });
                       }
                     },
-                    padding: const EdgeInsets.all(20.0),
+                    padding: const EdgeInsets.all(8.0),
                     icon: const Icon(Icons.arrow_forward_ios))
               ],
             ),
             Container(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               color: Colors.transparent,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,

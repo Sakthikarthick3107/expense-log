@@ -79,6 +79,7 @@ class _GroupExpenseFormState extends State<GroupExpenseForm> {
             mainAxisSize: MainAxisSize.min,
             children: [
               DropdownButtonFormField<String>(
+                isDense: true,
                 value: _selectedUser,
                 items: widget.group.members.map((m) {
                   return DropdownMenuItem(
@@ -87,51 +88,68 @@ class _GroupExpenseFormState extends State<GroupExpenseForm> {
                   );
                 }).toList(),
                 onChanged: (v) => setState(() => _selectedUser = v!),
-                decoration: const InputDecoration(labelText: 'Mapped User'),
+                decoration: const InputDecoration(
+                  labelText: 'Mapped User',
+                  isDense: true,
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               TextFormField(
                 controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Enter expense'),
+                decoration: const InputDecoration(
+                  labelText: 'Enter expense',
+                  isDense: true,
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                ),
                 validator: (v) =>
                     v == null || v.isEmpty ? 'Expense is mandatory' : null,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
                     child: TextFormField(
                       controller: _priceController,
-                      decoration: const InputDecoration(labelText: 'Amount'),
+                      decoration: const InputDecoration(
+                        labelText: 'Amount',
+                        isDense: true,
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      ),
                       keyboardType:
                           const TextInputType.numberWithOptions(decimal: true),
                       validator: (v) =>
                           v == null || v.isEmpty ? 'Amount is mandatory' : null,
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  DropdownButton<String>(
-                    value: _isCredit ? 'Credit' : 'Debit',
-                    onChanged: (v) =>
-                        setState(() => _isCredit = v == 'Credit'),
-                    items: const [
-                      DropdownMenuItem(
-                          value: 'Debit', child: Text('Debit')),
-                      DropdownMenuItem(
-                          value: 'Credit', child: Text('Credit')),
-                    ],
+                  const SizedBox(width: 4),
+                  SizedBox(
+                    height: 44,
+                    child: DropdownButton<String>(
+                      value: _isCredit ? 'Credit' : 'Debit',
+                      onChanged: (v) =>
+                          setState(() => _isCredit = v == 'Credit'),
+                      items: const [
+                        DropdownMenuItem(
+                            value: 'Debit', child: Text('Debit')),
+                        DropdownMenuItem(
+                            value: 'Credit', child: Text('Credit')),
+                      ],
+                    ),
                   ),
                 ],
               ),
+              const SizedBox(height: 4),
               if (selectedExpenseTypeId == -1)
                 Container(
-                  padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
                   alignment: Alignment.center,
                   child: const Text('Create a type from expense type screen'),
                 )
               else ...[
-                const SizedBox(height: 8),
                 DropdownButtonFormField<int>(
+                  isDense: true,
                   value: selectedExpenseTypeId,
                   items: _expenseService.getExpenseTypes().map((t) {
                     return DropdownMenuItem(
@@ -140,10 +158,15 @@ class _GroupExpenseFormState extends State<GroupExpenseForm> {
                     );
                   }).toList(),
                   onChanged: (v) => setState(() => selectedExpenseTypeId = v!),
-                  decoration: const InputDecoration(labelText: 'Expense Type'),
+                  decoration: const InputDecoration(
+                    labelText: 'Expense Type',
+                    isDense: true,
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 4),
                 DropdownButtonFormField<int>(
+                  isDense: true,
                   value: _selectedAccountId,
                   items: accounts
                       .map((a) => DropdownMenuItem(
@@ -153,14 +176,22 @@ class _GroupExpenseFormState extends State<GroupExpenseForm> {
                           ))
                       .toList(),
                   onChanged: (v) => setState(() => _selectedAccountId = v),
-                  decoration: const InputDecoration(labelText: 'Payment Account'),
+                  decoration: const InputDecoration(
+                    labelText: 'Payment Account',
+                    isDense: true,
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  ),
                   validator: (v) => v == null ? 'Select account' : null,
                 ),
               ],
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               TextFormField(
                 controller: _descriptionController,
-                decoration: const InputDecoration(labelText: 'Description'),
+                decoration: const InputDecoration(
+                  labelText: 'Description',
+                  isDense: true,
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                ),
                 keyboardType: TextInputType.multiline,
                 maxLines: 2,
                 minLines: 2,
