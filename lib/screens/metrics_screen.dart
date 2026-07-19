@@ -191,11 +191,12 @@ class _MetricsScreenState extends State<MetricsScreen>
             isDense: true,
             value: _selectedGroupId,
             isExpanded: true,
+            style: const TextStyle(fontSize: 14),
             hint: const Text('Select Group'),
             items: _groupService.getGroups().map((g) {
               return DropdownMenuItem(
                 value: g.id,
-                child: Text(g.name),
+                child: Text(g.name, style: const TextStyle(fontSize: 14)),
               );
             }).toList(),
             onChanged: (v) {
@@ -222,13 +223,14 @@ class _MetricsScreenState extends State<MetricsScreen>
               isDense: true,
               value: _selectedUserName,
               isExpanded: true,
+              style: const TextStyle(fontSize: 14),
               hint: const Text('All Users'),
               items: [
                 const DropdownMenuItem(
                     value: null, child: Text('All Users')),
                 ...(_groupService.getById(_selectedGroupId!)?.members
                         .map((m) => DropdownMenuItem(
-                            value: m, child: Text(m))) ??
+                            value: m, child: Text(m, style: const TextStyle(fontSize: 14)))) ??
                     []),
               ],
               onChanged: (v) {
