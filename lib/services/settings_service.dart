@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:expense_log/models/account.dart';
-import 'package:expense_log/models/collection.dart';
 import 'package:expense_log/models/expense_type.dart';
 import 'package:expense_log/models/user.dart';
 import 'package:expense_log/services/audit_log_service.dart';
@@ -93,14 +92,12 @@ class SettingsService with ChangeNotifier {
 
       final expense2Box = Hive.box<Expense2>('expense2Box');
       final expenseTypeBox = Hive.box<ExpenseType>('expenseTypeBox');
-      final collectionBox = Hive.box<Collection>('collectionBox');
       final settingsBox = Hive.box('settingsBox');
       final accountsBox = Hive.box<Account>('accountsBox');
 
       Map<String, dynamic> backupData = {
         "Expense2": expense2Box.values.map((e) => e.toJson()).toList(),
         "ExpenseType": expenseTypeBox.values.map((e) => e.toJson()).toList(),
-        "Collection": collectionBox.values.map((e) => e.toJson()).toList(),
         "Account": accountsBox.values.map((e) => e.toJson()).toList(),
         "Settings":
             settingsBox.toMap(),
@@ -141,13 +138,11 @@ class SettingsService with ChangeNotifier {
 
         var expense2Box = Hive.box<Expense2>('expense2Box');
         var expenseTypeBox = Hive.box<ExpenseType>('expenseTypeBox');
-        var collectionBox = Hive.box<Collection>('collectionBox');
         var settingsBox = Hive.box('settingsBox');
         var accountsBox = Hive.box<Account>('accountsBox');
 
         expense2Box.clear();
         expenseTypeBox.clear();
-        collectionBox.clear();
         settingsBox.clear();
         accountsBox.clear();
 
@@ -162,13 +157,6 @@ class SettingsService with ChangeNotifier {
           for (var entry in backupData["ExpenseType"]) {
             expenseTypeBox.put(
                 ExpenseType.fromJson(entry).id, ExpenseType.fromJson(entry));
-          }
-        }
-
-        if (backupData.containsKey("Collection")) {
-          for (var entry in backupData["Collection"]) {
-            collectionBox.put(
-                Collection.fromJson(entry).id, Collection.fromJson(entry));
           }
         }
 
@@ -329,26 +317,6 @@ class SettingsService with ChangeNotifier {
       AuditLogService.writeLog('Error while saving app screen order');
     }
     notifyListeners();
-  }
-
-  Future<bool> enableElevation(bool isEnable) async {
-    await _settingsBox.put('elevation', isEnable);
-    AuditLogService.writeLog(
-        'App list elevation is ${isEnable ? 'enabled' : 'disabled'}');
-    notifyListeners();
-    return true;
-  }
-
-  bool getElevation() {
-    final dynamic storedValue = _settingsBox.get('elevation');
-
-    if (storedValue is bool) {
-      return storedValue;
-    } else if (storedValue is String) {
-      _settingsBox.put('elevation', storedValue.toLowerCase() == 'true');
-      return storedValue.toLowerCase() == 'true';
-    }
-    return false;
   }
 
   String landingMetric() {

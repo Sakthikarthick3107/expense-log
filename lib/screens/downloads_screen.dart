@@ -1,11 +1,8 @@
-import 'package:expense_log/services/settings_service.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:open_file/open_file.dart';
 import 'package:expense_log/screens/pdf_viewer_screen.dart';
 import 'dart:io';
-
-import 'package:provider/provider.dart';
 
 class DownloadsScreen extends StatefulWidget {
   const DownloadsScreen({super.key});
@@ -63,10 +60,8 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<SettingsService>(
-        builder: (context, settingsService, child) {
-      return Scaffold(
-        body: pdfFiles.isEmpty
+    return Scaffold(
+      body: pdfFiles.isEmpty
             ? const Center(child: Text('No downloads found.'))
             : ListView.builder(
                 itemCount: pdfFiles.length,
@@ -76,7 +71,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                   return Container(
                     margin: EdgeInsets.only(bottom: 4),
                     child: Material(
-                        elevation: settingsService.getElevation() ? 4 : 0,
+                        elevation: 2,
                         borderRadius: BorderRadius.circular(10),
                         color: Theme.of(context).cardColor,
                         child: ListTile(
@@ -132,6 +127,5 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                 },
               ),
       );
-    });
   }
 }

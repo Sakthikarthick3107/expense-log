@@ -3,7 +3,6 @@ import 'package:expense_log/models/expense2.dart';
 import 'package:expense_log/screens/home_screen.dart';
 import 'package:expense_log/services/accounts_service.dart';
 import 'package:expense_log/services/audit_log_service.dart';
-import 'package:expense_log/services/collection_service.dart';
 import 'package:expense_log/services/expense_service.dart';
 import 'package:expense_log/services/settings_service.dart';
 import 'package:expense_log/services/report_service.dart';
@@ -11,7 +10,6 @@ import 'package:expense_log/services/ui_service.dart';
 import 'package:expense_log/widgets/expense_form.dart';
 import 'package:expense_log/widgets/info_dialog.dart';
 import 'package:expense_log/widgets/message_widget.dart';
-import 'package:expense_log/widgets/view_collection_modal.dart';
 import 'package:expense_log/widgets/warning_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
@@ -21,7 +19,6 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
 import 'package:expense_log/widgets/voice_input.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
-import '../models/collection.dart';
 
 class DailyExpenseScreen extends StatefulWidget {
   const DailyExpenseScreen({super.key});
@@ -33,11 +30,9 @@ class DailyExpenseScreen extends StatefulWidget {
 class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
   late UiService _uiService;
   late ExpenseService _expenseService;
-  late CollectionService _collectionService;
   late SettingsService _settingsService;
   late ReportService _reportService;
   late AccountsService _accountsService;
-  late List<Collection> availableCollections;
   String? expenseType;
   final ValueNotifier<DateTime> _selectedDateNotifier =
       ValueNotifier<DateTime>(DateTime.now());
@@ -46,18 +41,18 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
   late Map<String, double> _metricsData = {};
   bool groupByType = false;
   List<Account> accounts = [];
+  late stt.SpeechToText _speech;
 
   @override
   void initState() {
     super.initState();
+    _speech = stt.SpeechToText();
     _uiService = Provider.of<UiService>(context, listen: false);
     _expenseService = Provider.of<ExpenseService>(context, listen: false);
     _settingsService = Provider.of<SettingsService>(context, listen: false);
-    _collectionService = Provider.of<CollectionService>(context, listen: false);
     _reportService = Provider.of<ReportService>(context, listen: false);
     _accountsService = Provider.of<AccountsService>(context, listen: false);
     setState(() {
-      availableCollections = _collectionService.getCollections();
       accounts = _accountsService.all;
     });
     totalExpense =
@@ -75,8 +70,10 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
 
   @override
   void dispose() {
-    super.dispose();
+    _speech.stop();
+    _speech.cancel();
     _selectedDateNotifier.dispose();
+    super.dispose();
   }
 
   Widget buildExpenseTile(Expense2 expOfDay, {bool showType = true}) {
@@ -582,29 +579,6 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
                     });
               },
             ),
-          if (availableCollections.isNotEmpty)
-            SpeedDialChild(
-              child: const Icon(Icons.collections_bookmark_rounded),
-              label: 'Load from Collection',
-              labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
-              labelBackgroundColor: Theme.of(context).colorScheme.surface,
-              onTap: () {
-                showModalBottomSheet(
-                    isScrollControlled: true,
-                    showDragHandle: true,
-                    shape: const RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.vertical(top: Radius.circular(20)),
-                    ),
-                    context: context,
-                    builder: (context) {
-                      return ViewCollectionModal(
-                        collections: availableCollections,
-                        expenseDate: _selectedDateNotifier.value,
-                      );
-                    });
-              },
-            ),
           SpeedDialChild(
             child: const Icon(Icons.copy),
             label: 'Copy expense from other day',
@@ -674,14 +648,13 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
             labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
             labelBackgroundColor: Theme.of(context).colorScheme.surface,
             onTap: () async {
-              final sttPlugin = stt.SpeechToText();
-              final available = await sttPlugin.initialize();
+              final available = await _speech.initialize();
               if (!available) {
-                MessageWidget.showToast(context: context, message: 'Speech not available', status: 0);
+                MessageWidget.showToast(context: context, message: 'Speech not available on this device', status: 0);
                 return;
               }
               MessageWidget.showToast(context: context, message: 'Speak now...', status: 1);
-              sttPlugin.listen(
+              _speech.listen(
                 onResult: (result) {
                   if (result.finalResult) {
                     final parsed = parseVoiceInput(

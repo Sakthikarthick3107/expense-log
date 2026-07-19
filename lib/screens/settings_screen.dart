@@ -346,22 +346,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 },
               ),
               ListTile(
-                title: Text('List Elevation'),
-                trailing: Transform.scale(
-                  scale: 0.75,
-                  child: Switch(
-                    value: _settingsService.getElevation(),
-                    onChanged: (value) {
-                      _settingsService.enableElevation(value);
-                    },
-                  ),
-                ),
-                onTap: () {
-                  final current = _settingsService.getElevation();
-                  _settingsService.enableElevation(!current);
-                },
-              ),
-              ListTile(
                 title: const Text('Color'),
                 subtitle: Padding(
                   padding: const EdgeInsets.only(top: 8.0),

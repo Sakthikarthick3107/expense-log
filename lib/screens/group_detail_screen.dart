@@ -30,6 +30,7 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
   List<Account> accounts = [];
   final ValueNotifier<DateTime> _selectedDateNotifier =
       ValueNotifier<DateTime>(DateTime.now());
+  late stt.SpeechToText _speech;
 
   static const List<String> _durations = [
     'This week', 'Last week', 'This month', 'Last month'
@@ -39,6 +40,7 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
   @override
   void initState() {
     super.initState();
+    _speech = stt.SpeechToText();
     _uiService = Provider.of<UiService>(context, listen: false);
     _expenseService = Provider.of<ExpenseService>(context, listen: false);
     _accountsService = Provider.of<AccountsService>(context, listen: false);
@@ -48,6 +50,8 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
 
   @override
   void dispose() {
+    _speech.stop();
+    _speech.cancel();
     _selectedDateNotifier.dispose();
     super.dispose();
   }
@@ -370,14 +374,13 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
             labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
             labelBackgroundColor: Theme.of(context).colorScheme.surface,
             onTap: () async {
-              final sttPlugin = stt.SpeechToText();
-              final available = await sttPlugin.initialize();
+              final available = await _speech.initialize();
               if (!available) {
-                MessageWidget.showToast(context: context, message: 'Speech not available', status: 0);
+                MessageWidget.showToast(context: context, message: 'Speech not available on this device', status: 0);
                 return;
               }
               MessageWidget.showToast(context: context, message: 'Speak now...', status: 1);
-              sttPlugin.listen(
+              _speech.listen(
                 onResult: (result) {
                   if (result.finalResult) {
                     final parsed = parseVoiceInput(

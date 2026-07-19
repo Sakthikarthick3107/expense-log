@@ -1,4 +1,3 @@
-import 'package:expense_log/models/collection.dart';
 import 'package:expense_log/models/date_range.dart';
 import 'package:expense_log/models/expense2.dart';
 import 'package:expense_log/models/expense_type.dart';
@@ -12,7 +11,6 @@ class ExpenseService {
   final UiService uiService;
   final _expenseTypeBox = Hive.box<ExpenseType>('expenseTypeBox');
   final _expenseBox2 = Hive.box<Expense2>('expense2Box');
-  final _collectionBox = Hive.box<Collection>('collectionBox');
 
   ExpenseService({required this.uiService});
 
@@ -191,11 +189,6 @@ class ExpenseService {
           .where((expense) => expense.expenseType.id == type.id)
           .forEach((expense) => _expenseBox2.put(
               expense.id, expense.copyWith(expenseType: type)));
-
-      _collectionBox.values.forEach((collection) {
-        collection.updateExpensesForType(type);
-        _collectionBox.put(collection.id, collection);
-      });
       return 1;
     }
   }

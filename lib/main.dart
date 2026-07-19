@@ -9,7 +9,6 @@ import 'package:expense_log/models/message.dart' as app_message;
 import 'package:expense_log/models/message.dart';
 import 'package:expense_log/screens/home_screen.dart';
 import 'package:expense_log/services/accounts_service.dart';
-import 'package:expense_log/services/collection_service.dart';
 import 'package:expense_log/services/group_service.dart';
 import 'package:expense_log/services/notification_service.dart';
 import 'package:expense_log/services/schedule_service.dart';
@@ -34,7 +33,6 @@ import 'package:expense_log/utility/pdf_helper.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'dart:async';
 import 'package:device_preview/device_preview.dart';
-import 'models/collection.dart';
 import 'package:expense_log/migrations/migrate_v3_2_3.dart';
 
 void startTelegramPolling() {
@@ -73,7 +71,6 @@ Future<void> main() async {
   Hive.registerAdapter(ExpenseTypeAdapter());
   Hive.registerAdapter(Expense2Adapter());
   Hive.registerAdapter(AccountAdapter());
-  Hive.registerAdapter(CollectionAdapter());
   Hive.registerAdapter(UpiLogAdapter());
   Hive.registerAdapter(MessageAdapter());
   Hive.registerAdapter(ScheduleAdapter());
@@ -86,7 +83,6 @@ Future<void> main() async {
   var accountBox = await Hive.openBox<Account>('accountsBox');
   var expenseTypeBox = await Hive.openBox<ExpenseType>('expenseTypeBox');
   var settingsBox = await Hive.openBox('settingsBox');
-  var collectionBox = await Hive.openBox<Collection>('collectionBox');
   var upiLogBox = await Hive.openBox<UpiLog>('upiLogBox');
   var messageBox = await Hive.openBox<app_message.Message>('messageBox');
   var scheduleBox = await Hive.openBox<Schedule>('scheduleBox');
@@ -97,7 +93,6 @@ Future<void> main() async {
     accountBox.compact(),
     expenseTypeBox.compact(),
     settingsBox.compact(),
-    collectionBox.compact(),
     upiLogBox.compact(),
     messageBox.compact(),
     scheduleBox.compact(),
@@ -130,9 +125,6 @@ Future<void> main() async {
         Provider(create: (_) => UiService()),
         ProxyProvider<UiService, ExpenseService>(
           update: (_, uiService, __) => ExpenseService(uiService: uiService),
-        ),
-        Provider(
-          create: (_) => CollectionService(),
         ),
         Provider(create: (_) => UpiService()),
         Provider(create: (_) => ReportService()),

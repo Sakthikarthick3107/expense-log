@@ -191,7 +191,8 @@ class _MetricsScreenState extends State<MetricsScreen>
       if (_tabController.index == 1) ...[
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          child: DropdownButtonFormField<int>(
+          child:           DropdownButtonFormField<int>(
+            isDense: true,
             value: _selectedGroupId,
             isExpanded: true,
             hint: const Text('Select Group'),
@@ -218,7 +219,8 @@ class _MetricsScreenState extends State<MetricsScreen>
         if (_selectedGroupId != null)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: DropdownButtonFormField<String>(
+            child:             DropdownButtonFormField<String>(
+              isDense: true,
               value: _selectedUserName,
               isExpanded: true,
               hint: const Text('All Users'),
@@ -467,37 +469,34 @@ class _MetricsScreenState extends State<MetricsScreen>
                               duration: const Duration(milliseconds: 200),
                               curve: Curves.easeInOut,
                               child: isSelected && secondaryMetrics != null
-                                  ? Card(
-                                      margin: const EdgeInsets.symmetric(horizontal: 32, vertical: 2),
-                                      color: Theme.of(context).colorScheme.surface,
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(16),
-                                        child: Column(
-                                          children: secondaryMetrics.map((secondary) {
-                                            final secondaryMetricName = secondary.keys.first;
-                                            final secondaryMetricValue = secondary[secondaryMetricName] ?? 0.0;
-                                            return Padding(
-                                              padding: const EdgeInsets.symmetric(vertical: 4),
-                                              child: Row(
-                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                children: [
-                                                  Text(
-                                                    secondaryMetricName,
-                                                    style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
+                                  ? Padding(
+                                      padding: const EdgeInsets.only(left: 72, right: 16, bottom: 8),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: secondaryMetrics.map((secondary) {
+                                          final secondaryMetricName = secondary.keys.first;
+                                          final secondaryMetricValue = secondary[secondaryMetricName] ?? 0.0;
+                                          return Padding(
+                                            padding: const EdgeInsets.symmetric(vertical: 3),
+                                            child: Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                Text(
+                                                  secondaryMetricName,
+                                                  style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
+                                                ),
+                                                Text(
+                                                  '₹${secondaryMetricValue.toStringAsFixed(2)}',
+                                                  style: TextStyle(
+                                                    fontSize: 13,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: secondaryMetricValue > 0 ? (isDebit ? Colors.red : Colors.green) : null,
                                                   ),
-                                                  Text(
-                                                    '₹${secondaryMetricValue.toStringAsFixed(2)}',
-                                                    style: TextStyle(
-                                                      fontSize: 14,
-                                                      fontWeight: FontWeight.w600,
-                                                      color: secondaryMetricValue > 0 ? (isDebit ? Colors.red : Colors.green) : null,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            );
-                                          }).toList(),
-                                        ),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        }).toList(),
                                       ),
                                     )
                                   : const SizedBox.shrink(),

@@ -318,72 +318,56 @@ class _ExpenseFormState extends State<ExpenseForm> {
                             ),
                           ]),
               const SizedBox(height: 12),
-              TextFormField(
-                controller: _descriptionController,
-                decoration: const InputDecoration(
-                  labelText: 'Description (optional)',
+              if (widget.expense != null &&
+                  widget.expense?.name == _nameController.text &&
+                  widget.expense?.price == double.tryParse(_priceController.text) &&
+                  widget.expense?.expenseType.id == selectedExpenseTypeId &&
+                  (widget.expense?.description ?? '') == _descriptionController.text &&
+                  widget.expense?.groupId == _selectedGroupId &&
+                  widget.expense?.mappedUserName ==
+                      (_selectedGroupId != null ? _selectedGroupUser : null))
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Created - ${_uiService.displayDay(widget.expense!.created)}',
+                        style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
+                      ),
+                      if (widget.expense?.updated != null)
+                        Text(
+                          'Updated - ${_uiService.displayDay(widget.expense!.updated!)}',
+                          style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
+                        ),
+                    ],
+                  ),
                 ),
-                keyboardType: TextInputType.multiline,
-                maxLines: null,
-                minLines: 2,
-              ),
             ],
           ),
         ),
       ),
       actions: [
-        if (widget.expense != null &&
-            (widget.expense?.name == _nameController.text &&
-                widget.expense?.price ==
-                    double.tryParse(_priceController.text) &&
-                widget.expense?.expenseType.id == selectedExpenseTypeId
-                && (widget.expense?.description ?? '') == _descriptionController.text
-                && widget.expense?.groupId == _selectedGroupId
-                && widget.expense?.mappedUserName ==
-                    (_selectedGroupId != null ? _selectedGroupUser : null)
-            ))
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Created - ${_uiService.displayDay(widget.expense!.created)}',
-                  style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
-                ),
-                if (widget.expense?.updated != null)
-                  Text(
-                    'Updated - ${_uiService.displayDay(widget.expense!.updated!)}',
-                    style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
-                  ),
-              ],
-            ),
-          ),
-        const Spacer(),
         if ((widget.expense?.name != _nameController.text ||
-                widget.expense?.price !=
-                    double.tryParse(_priceController.text) ||
+                widget.expense?.price != double.tryParse(_priceController.text) ||
                 widget.expense?.expenseType.id != selectedExpenseTypeId ||
                 widget.expense?.accountId != _selectedAccountId ||
-            (widget.expense?.description ?? '') != _descriptionController.text ||
+                (widget.expense?.description ?? '') != _descriptionController.text ||
                 widget.expense?.groupId != _selectedGroupId ||
                 widget.expense?.mappedUserName !=
-                    (_selectedGroupId != null ? _selectedGroupUser : null)
-            ))
+                    (_selectedGroupId != null ? _selectedGroupUser : null)))
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Cancel'),
           ),
         if ((widget.expense?.name != _nameController.text ||
-                widget.expense?.price !=
-                    double.tryParse(_priceController.text) ||
+                widget.expense?.price != double.tryParse(_priceController.text) ||
                 widget.expense?.expenseType.id != selectedExpenseTypeId ||
                 widget.expense?.accountId != _selectedAccountId ||
-            (widget.expense?.description ?? '') != _descriptionController.text ||
+                (widget.expense?.description ?? '') != _descriptionController.text ||
                 widget.expense?.groupId != _selectedGroupId ||
                 widget.expense?.mappedUserName !=
-                    (_selectedGroupId != null ? _selectedGroupUser : null)
-            ))
+                    (_selectedGroupId != null ? _selectedGroupUser : null)))
           ElevatedButton(
             onPressed: () async {
               if (_formKey.currentState?.validate() ?? false) {
