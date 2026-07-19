@@ -534,17 +534,20 @@ class _MetricsScreenState extends State<MetricsScreen>
         ]),
       ),
       bottomNavigationBar: Container(
-        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         color: Theme.of(context).appBarTheme.backgroundColor,
-        child: SizedBox(
-          height: 56,
-          child: Column(
-            children: [
-              if (selectedDateRange != null)
-                Text(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (selectedDateRange != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 2),
+                child: Text(
                   '${_uiService.displayDay(selectedDateRange!.start)} - ${_uiService.displayDay(selectedDateRange!.end)}',
+                  style: const TextStyle(fontSize: 12),
                 ),
-              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+              ),
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                 DropdownButton<String>(
                   value: _selectedMetricBy.value,
                   onChanged: (String? newValue) {
@@ -598,7 +601,6 @@ class _MetricsScreenState extends State<MetricsScreen>
             ],
           ),
         ),
-      ),
     );
   }
 }
