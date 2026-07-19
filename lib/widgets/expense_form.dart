@@ -1,5 +1,7 @@
 import 'package:expense_log/models/expense2.dart';
+import 'package:expense_log/models/group.dart';
 import 'package:expense_log/services/expense_service.dart';
+import 'package:expense_log/services/group_service.dart';
 import 'package:expense_log/services/settings_service.dart';
 import 'package:expense_log/services/ui_service.dart';
 import 'package:expense_log/widgets/info_dialog.dart';
@@ -32,6 +34,8 @@ class _ExpenseFormState extends State<ExpenseForm> {
   int selectedExpenseTypeId = 0;
   int? _selectedAccountId;
   bool _isCredit = false;
+  int? _selectedGroupId;
+  String _selectedGroupUser = 'Me';
 
   late ExpenseService _expenseService;
   late SettingsService _settingsService;
@@ -58,6 +62,8 @@ class _ExpenseFormState extends State<ExpenseForm> {
       _priceController.text = widget.expense!.price.abs().toString();
       _descriptionController.text = widget.expense!.description != null ? widget.expense!.description.toString():'';
       _isCredit = widget.expense!.price < 0;
+      _selectedGroupId = widget.expense!.groupId;
+      _selectedGroupUser = widget.expense!.mappedUserName ?? 'Me';
       selectedExpenseTypeId = widget.expense!.expenseType.id;
       // try to read accountId from provided expense (robust to int or String)
       final rawAccount = (widget.expense as dynamic).accountId;
@@ -135,6 +141,46 @@ class _ExpenseFormState extends State<ExpenseForm> {
                   ),
                 ],
               ),
+              const SizedBox(height: 8),
+              Consumer<GroupService>(builder: (context, groupService, _) {
+                final groups = groupService.getGroups();
+                final selectedGroup = _selectedGroupId != null
+                    ? groups.where((g) => g.id == _selectedGroupId).firstOrNull
+                    : null;
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    DropdownButtonFormField<int?>(
+                      value: _selectedGroupId,
+                      items: [
+                        const DropdownMenuItem(
+                            value: null, child: Text('None (Individual)')),
+                        ...groups.map((g) => DropdownMenuItem(
+                            value: g.id, child: Text(g.name))),
+                      ],
+                      onChanged: (v) => setState(() {
+                        _selectedGroupId = v;
+                        _selectedGroupUser = 'Me';
+                      }),
+                      decoration: const InputDecoration(labelText: 'Group'),
+                    ),
+                    if (selectedGroup != null) ...[
+                      const SizedBox(height: 8),
+                      DropdownButtonFormField<String>(
+                        value: _selectedGroupUser,
+                        items: selectedGroup.members.map((m) {
+                          return DropdownMenuItem(
+                              value: m, child: Text(m));
+                        }).toList(),
+                        onChanged: (v) =>
+                            setState(() => _selectedGroupUser = v!),
+                        decoration:
+                            const InputDecoration(labelText: 'Mapped User'),
+                      ),
+                    ],
+                  ],
+                );
+              }),
               selectedExpenseTypeId == -1
                   ? Container(
                       padding:
@@ -233,7 +279,9 @@ class _ExpenseFormState extends State<ExpenseForm> {
                     double.tryParse(_priceController.text) &&
                 widget.expense?.expenseType.id == selectedExpenseTypeId
                 && (widget.expense?.description ?? '') == _descriptionController.text
-            // && widget.expense?.isReturnable == _isReturnable
+                && widget.expense?.groupId == _selectedGroupId
+                && widget.expense?.mappedUserName ==
+                    (_selectedGroupId != null ? _selectedGroupUser : null)
             ))
           Column(
             // mainAxisAlignment: MainAxisAlignment.start,
@@ -251,7 +299,10 @@ class _ExpenseFormState extends State<ExpenseForm> {
                     double.tryParse(_priceController.text) ||
                 widget.expense?.expenseType.id != selectedExpenseTypeId ||
                 widget.expense?.accountId != _selectedAccountId ||
-            (widget.expense?.description ?? '') != _descriptionController.text
+            (widget.expense?.description ?? '') != _descriptionController.text ||
+                widget.expense?.groupId != _selectedGroupId ||
+                widget.expense?.mappedUserName !=
+                    (_selectedGroupId != null ? _selectedGroupUser : null)
             ))
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -262,7 +313,10 @@ class _ExpenseFormState extends State<ExpenseForm> {
                     double.tryParse(_priceController.text) ||
                 widget.expense?.expenseType.id != selectedExpenseTypeId ||
                 widget.expense?.accountId != _selectedAccountId ||
-            (widget.expense?.description ?? '') != _descriptionController.text
+            (widget.expense?.description ?? '') != _descriptionController.text ||
+                widget.expense?.groupId != _selectedGroupId ||
+                widget.expense?.mappedUserName !=
+                    (_selectedGroupId != null ? _selectedGroupUser : null)
             ))
           ElevatedButton(
             onPressed: () async {
@@ -285,10 +339,12 @@ class _ExpenseFormState extends State<ExpenseForm> {
                   date: widget.expenseDate,
                   created: widget.expense?.created ?? DateTime.now(),
                   expenseType: selectedExpenseType,
-                  accountId: _selectedAccountId, // nullable int
+                  accountId: _selectedAccountId,
                   updated: widget.expense != null ? DateTime.now() : null,
-                  description: description
-                  // isReturnable: widget.expense?.isReturnable ?? _isReturnable
+                  description: description,
+                  groupId: _selectedGroupId,
+                  mappedUserName:
+                      _selectedGroupId != null ? _selectedGroupUser : null,
                 );
 
                 if (widget.isFromCollection == true) {

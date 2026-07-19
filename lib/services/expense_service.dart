@@ -69,7 +69,7 @@ class ExpenseService {
   }
 
   List<Expense2> getExpensesOfSelectedDuration(String rangeType,
-      {DateTimeRange? customDateRange, int? groupId, bool individualOnly = false}) {
+      {DateTimeRange? customDateRange, int? groupId, bool individualOnly = false, String? mappedUserName}) {
     DateTime startDate;
     DateTime endDate;
 
@@ -93,6 +93,11 @@ class ExpenseService {
       sourceExpenses = getIndividualExpenses();
     } else {
       sourceExpenses = allExpenses;
+    }
+
+    if (mappedUserName != null) {
+      sourceExpenses =
+          sourceExpenses.where((e) => e.mappedUserName == mappedUserName).toList();
     }
 
     List<Expense2> filteredExpenses = sourceExpenses.where((expense) {
@@ -421,7 +426,7 @@ class ExpenseService {
   }
 
   List<String> expenseTypesOfSelectedDuration(String duration,
-      {DateTimeRange? customDateRange, int? groupId, bool individualOnly = false}) {
+      {DateTimeRange? customDateRange, int? groupId, bool individualOnly = false, String? mappedUserName}) {
     final expenseTypes = getExpenseTypes();
     final allExpenses = getExpenses();
 
@@ -432,6 +437,10 @@ class ExpenseService {
       expenses = getIndividualExpenses();
     } else {
       expenses = allExpenses;
+    }
+
+    if (mappedUserName != null) {
+      expenses = expenses.where((e) => e.mappedUserName == mappedUserName).toList();
     }
 
     DateTime startDate;
@@ -467,6 +476,7 @@ class ExpenseService {
     DateTimeRange? customDateRange,
     int? groupId,
     bool individualOnly = false,
+    String? mappedUserName,
   }) {
     final expenseTypes = getExpenseTypes();
     final allExpenses = getExpenses();
@@ -479,6 +489,10 @@ class ExpenseService {
       expenses = getIndividualExpenses();
     } else {
       expenses = allExpenses;
+    }
+
+    if (mappedUserName != null) {
+      expenses = expenses.where((e) => e.mappedUserName == mappedUserName).toList();
     }
 
     Map<K, double> metricData = {};
@@ -537,7 +551,7 @@ class ExpenseService {
   Map<Map<String, double>, List<Map<String, double>>> getMetrics2(
       String duration, String metricBy, List<String> unselectedTypes,
       bool isDebit,
-      {DateTimeRange? customDateRange, int? groupId, bool individualOnly = false}) {
+      {DateTimeRange? customDateRange, int? groupId, bool individualOnly = false, String? mappedUserName}) {
     final expenseTypes = getExpenseTypes();
     final allExpenses = getExpenses();
 
@@ -548,6 +562,10 @@ class ExpenseService {
       expenses = getIndividualExpenses();
     } else {
       expenses = allExpenses;
+    }
+
+    if (mappedUserName != null) {
+      expenses = expenses.where((e) => e.mappedUserName == mappedUserName).toList();
     }
 
     UiService uiService = UiService();

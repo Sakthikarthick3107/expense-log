@@ -53,6 +53,7 @@ class _MetricsScreenState extends State<MetricsScreen>
   bool isDebit = true;
 
   int? _selectedGroupId;
+  String? _selectedUserName;
 
   @override
   void initState() {
@@ -73,7 +74,10 @@ class _MetricsScreenState extends State<MetricsScreen>
   void _onTabChanged() {
     if (!_tabController.indexIsChanging) {
       setState(() {
-        _selectedGroupId = null;
+        final groups = _groupService.getGroups();
+        _selectedGroupId =
+            _tabController.index == 1 && groups.isNotEmpty ? groups.first.id : null;
+        _selectedUserName = null;
         _unSelectedTypes = [];
       });
       _loadMetrics();
@@ -83,11 +87,13 @@ class _MetricsScreenState extends State<MetricsScreen>
   void _loadMetrics() {
     final isIndividual = _tabController.index == 0;
     final individualOnly = isIndividual && _selectedGroupId == null;
+    final mappedUser = _tabController.index == 1 ? _selectedUserName : null;
     _expenseTypesOfDuration = _expenseService.expenseTypesOfSelectedDuration(
         _selectedDurationNotifier.value,
         customDateRange: selectedDateRange,
         groupId: _selectedGroupId,
-        individualOnly: individualOnly);
+        individualOnly: individualOnly,
+        mappedUserName: mappedUser);
     _metricsData2 = _expenseService.getMetrics2(
         _selectedDurationNotifier.value,
         _selectedMetricBy.value,
@@ -95,19 +101,22 @@ class _MetricsScreenState extends State<MetricsScreen>
         isDebit,
         customDateRange: selectedDateRange,
         groupId: _selectedGroupId,
-        individualOnly: individualOnly);
+        individualOnly: individualOnly,
+        mappedUserName: mappedUser);
     _barCharData = _expenseService.getMetrics(
         _selectedDurationNotifier.value, 'By type', _unSelectedTypes,
         isDebit: isDebit,
         customDateRange: selectedDateRange,
         groupId: _selectedGroupId,
-        individualOnly: individualOnly);
+        individualOnly: individualOnly,
+        mappedUserName: mappedUser);
     _calendarChartData = _expenseService.getMetrics<DateTime>(
         _selectedDurationNotifier.value, 'By day', _unSelectedTypes,
         isDebit: isDebit,
         customDateRange: selectedDateRange,
         groupId: _selectedGroupId,
-        individualOnly: individualOnly);
+        individualOnly: individualOnly,
+        mappedUserName: mappedUser);
     if (mounted) setState(() {});
   }
 
@@ -175,7 +184,7 @@ class _MetricsScreenState extends State<MetricsScreen>
       }
     }
     return Column(children: [
-      if (_tabController.index == 1)
+      if (_tabController.index == 1) ...[
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           child: DropdownButtonFormField<int>(
@@ -191,6 +200,7 @@ class _MetricsScreenState extends State<MetricsScreen>
             onChanged: (v) {
               setState(() {
                 _selectedGroupId = v;
+                _selectedUserName = null;
                 _unSelectedTypes = [];
               });
               _loadMetrics();
@@ -203,6 +213,34 @@ class _MetricsScreenState extends State<MetricsScreen>
             ),
           ),
         ),
+        if (_selectedGroupId != null)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            child: DropdownButtonFormField<String>(
+              value: _selectedUserName,
+              isExpanded: true,
+              hint: const Text('All Users'),
+              items: [
+                const DropdownMenuItem(
+                    value: null, child: Text('All Users')),
+                ...(_groupService.getById(_selectedGroupId!)?.members
+                        .map((m) => DropdownMenuItem(
+                            value: m, child: Text(m))) ??
+                    []),
+              ],
+              onChanged: (v) {
+                setState(() => _selectedUserName = v);
+                _loadMetrics();
+              },
+              decoration: const InputDecoration(
+                labelText: 'User',
+                border: OutlineInputBorder(),
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              ),
+            ),
+          ),
+      ],
       Container(
         child: Row(
           children: [
@@ -262,12 +300,14 @@ class _MetricsScreenState extends State<MetricsScreen>
                             message: 'Downloading in progress...');
                         final isIndividual = _tabController.index == 0;
                         final individualOnly = isIndividual && _selectedGroupId == null;
+                        final mappedUser = _tabController.index == 1 ? _selectedUserName : null;
                         await _reportService.prepareMetricsReport(
                             _expenseService.getExpensesOfSelectedDuration(
                                 _selectedDurationNotifier.value,
                                 customDateRange: selectedDateRange,
                                 groupId: _selectedGroupId,
-                                individualOnly: individualOnly),
+                                individualOnly: individualOnly,
+                                mappedUserName: mappedUser),
                             _expenseTypesOfDuration
                                 .where(
                                     (type) => !_unSelectedTypes.contains(type))
