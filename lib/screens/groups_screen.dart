@@ -27,16 +27,16 @@ class _GroupsScreenState extends State<GroupsScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.groups, size: 100, color: Colors.grey[400]),
-                  const SizedBox(height: 16),
+                  Icon(Icons.groups, size: 64, color: Colors.grey[400]),
+                  const SizedBox(height: 12),
                   Text(
                     'No groups yet',
-                    style: TextStyle(fontSize: 20, color: Colors.grey[600]),
+                    style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 4),
                   Text(
                     'Tap + to create a group',
-                    style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+                    style: TextStyle(fontSize: 13, color: Colors.grey[500]),
                   ),
                 ],
               ),
@@ -48,25 +48,29 @@ class _GroupsScreenState extends State<GroupsScreen> {
               final group = groups[index];
               final memberCount = group.members.length;
               return Container(
-                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 child: Material(
                   elevation: 2,
                   borderRadius: BorderRadius.circular(12),
+                  color: Theme.of(context).cardColor,
                   child: ListTile(
+                    dense: true,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                     leading: CircleAvatar(
+                      radius: 16,
                       child: Text(
                         group.name[0].toUpperCase(),
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                       ),
                     ),
                     title: Text(
                       group.name,
-                      style: const TextStyle(fontWeight: FontWeight.w600),
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                     ),
-                    subtitle: Text('$memberCount members'),
+                    subtitle: Text('$memberCount members',
+                        style: const TextStyle(fontSize: 12)),
                     trailing: PopupMenuButton<String>(
                       onSelected: (value) async {
                         if (value == 'edit') {

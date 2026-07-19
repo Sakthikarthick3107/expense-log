@@ -165,11 +165,12 @@ class _ExpenseFormState extends State<ExpenseForm> {
                     DropdownButtonFormField<int?>(
                       isDense: true,
                       value: _selectedGroupId,
+                      style: const TextStyle(fontSize: 14),
                       items: [
                         const DropdownMenuItem(
                             value: null, child: Text('None (Individual)')),
                         ...groups.map((g) => DropdownMenuItem(
-                            value: g.id, child: Text(g.name))),
+                            value: g.id, child: Text(g.name, style: const TextStyle(fontSize: 14)))),
                       ],
                       onChanged: (v) => setState(() {
                         _selectedGroupId = v;
@@ -186,9 +187,10 @@ class _ExpenseFormState extends State<ExpenseForm> {
                       DropdownButtonFormField<String>(
                         isDense: true,
                         value: _selectedGroupUser,
+                        style: const TextStyle(fontSize: 14),
                         items: selectedGroup.members.map((m) {
                           return DropdownMenuItem(
-                              value: m, child: Text(m));
+                              value: m, child: Text(m, style: const TextStyle(fontSize: 14)));
                         }).toList(),
                         onChanged: (v) =>
                             setState(() => _selectedGroupUser = v!),

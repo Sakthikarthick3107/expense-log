@@ -40,6 +40,7 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
     _expenseService = Provider.of<ExpenseService>(context, listen: false);
     _accountsService = Provider.of<AccountsService>(context, listen: false);
     accounts = _accountsService.all;
+    _selectedDateNotifier.addListener(() => setState(() {}));
   }
 
   @override
@@ -246,24 +247,24 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
       appBar: AppBar(
         title: Text(widget.group.name),
       ),
-      body: Column(
-        children: [
-          _buildChart(),
-          GestureDetector(
-            onHorizontalDragEnd: (details) {
-              if (details.primaryVelocity! < 0) {
-                if (_selectedDateNotifier.value.year == DateTime.now().year &&
-                    _selectedDateNotifier.value.month == DateTime.now().month &&
-                    _selectedDateNotifier.value.day == DateTime.now().day) {
-                  MessageWidget.showToast(context: context, message: 'Cannot set expenses for future dates', status: 0);
-                } else {
-                  _selectedDateNotifier.value = _selectedDateNotifier.value.add(const Duration(days: 1));
-                }
-              } else if (details.primaryVelocity! > 0) {
-                _selectedDateNotifier.value = _selectedDateNotifier.value.subtract(const Duration(days: 1));
-              }
-            },
-            child: Row(
+      body: GestureDetector(
+        onHorizontalDragEnd: (details) {
+          if (details.primaryVelocity! < 0) {
+            if (_selectedDateNotifier.value.year == DateTime.now().year &&
+                _selectedDateNotifier.value.month == DateTime.now().month &&
+                _selectedDateNotifier.value.day == DateTime.now().day) {
+              MessageWidget.showToast(context: context, message: 'Cannot set expenses for future dates', status: 0);
+            } else {
+              _selectedDateNotifier.value = _selectedDateNotifier.value.add(const Duration(days: 1));
+            }
+          } else if (details.primaryVelocity! > 0) {
+            _selectedDateNotifier.value = _selectedDateNotifier.value.subtract(const Duration(days: 1));
+          }
+        },
+        child: Column(
+          children: [
+            _buildChart(),
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 IconButton(
@@ -301,28 +302,28 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
                 ),
               ],
             ),
-          ),
-          Expanded(
-            child: ValueListenableBuilder(
-              valueListenable: Hive.box<Expense2>('expense2Box').listenable(),
-              builder: (context, Box<Expense2> box, _) {
-                final dayExpenses = _getDayExpenses();
-                if (dayExpenses.isEmpty) {
-                  return Center(
-                    child: Text(
-                      'No expenses for ${_uiService.displayDay(_selectedDateNotifier.value)}\nTap + to add',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 14, color: Colors.grey[500]),
-                    ),
+            Expanded(
+              child: ValueListenableBuilder(
+                valueListenable: Hive.box<Expense2>('expense2Box').listenable(),
+                builder: (context, Box<Expense2> box, _) {
+                  final dayExpenses = _getDayExpenses();
+                  if (dayExpenses.isEmpty) {
+                    return Center(
+                      child: Text(
+                        'No expenses for ${_uiService.displayDay(_selectedDateNotifier.value)}\nTap + to add',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+                      ),
+                    );
+                  }
+                  return ListView(
+                    children: dayExpenses.map((e) => buildExpenseTile(e)).toList(),
                   );
-                }
-                return ListView(
-                  children: dayExpenses.map((e) => buildExpenseTile(e)).toList(),
-                );
-              },
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _addExpense(),
