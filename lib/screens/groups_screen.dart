@@ -24,102 +24,117 @@ class _GroupsScreenState extends State<GroupsScreen> {
           final groups = Provider.of<GroupService>(context, listen: false).getGroups();
           if (groups.isEmpty) {
             return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.groups, size: 64, color: Colors.grey[400]),
-                  const SizedBox(height: 12),
-                  Text(
-                    'No groups yet',
-                    style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Tap + to create a group',
-                    style: TextStyle(fontSize: 13, color: Colors.grey[500]),
-                  ),
-                ],
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
+                      ),
+                      child: Icon(Icons.groups, size: 48, color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5)),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      'No groups yet',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Create a group to split expenses\nwith friends and family',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
+                    ),
+                  ],
+                ),
               ),
             );
           }
           return ListView.builder(
+            padding: const EdgeInsets.symmetric(vertical: 8),
             itemCount: groups.length,
             itemBuilder: (context, index) {
               final group = groups[index];
               final memberCount = group.members.length;
-              return Container(
-                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                child: Material(
-                  elevation: 2,
-                  borderRadius: BorderRadius.circular(12),
-                  color: Theme.of(context).cardColor,
-                  child: ListTile(
-                    dense: true,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    leading: CircleAvatar(
-                      radius: 16,
-                      child: Text(
-                        group.name[0].toUpperCase(),
-                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              return Card(
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+                child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  leading: CircleAvatar(
+                    backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                    child: Text(
+                      group.name[0].toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.primary,
                       ),
                     ),
-                    title: Text(
-                      group.name,
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-                    ),
-                    subtitle: Text('$memberCount members',
-                        style: const TextStyle(fontSize: 12)),
-                    trailing: PopupMenuButton<String>(
-                      onSelected: (value) async {
-                        if (value == 'edit') {
-                          final result = await showDialog<bool>(
-                            context: context,
-                            builder: (_) => GroupForm(group: group),
-                          );
-                          if (result == true) setState(() {});
-                        } else if (value == 'delete') {
-                          WarningDialog.showWarning(
-                            context: context,
-                            title: 'Delete Group',
-                            message:
-                                'Are you sure you want to delete "${group.name}"?',
-                            onConfirmed: () {
-                              Provider.of<GroupService>(context, listen: false)
-                                  .deleteGroup(group.id);
-                              setState(() {});
-                            },
-                          );
-                        }
-                      },
-                      itemBuilder: (_) => [
-                        const PopupMenuItem(
-                          value: 'edit',
-                          child: Text('Edit'),
-                        ),
-                        const PopupMenuItem(
-                          value: 'delete',
-                          child: Text('Delete'),
-                        ),
-                      ],
-                    ),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => GroupDetailScreen(group: group),
-                        ),
-                      );
-                    },
                   ),
+                  title: Text(
+                    group.name,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                  subtitle: Row(
+                    children: [
+                      Icon(Icons.people_outline, size: 14, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
+                      const SizedBox(width: 4),
+                      Text('$memberCount members',
+                          style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6))),
+                    ],
+                  ),
+                  trailing: PopupMenuButton<String>(
+                    onSelected: (value) async {
+                      if (value == 'edit') {
+                        final result = await showDialog<bool>(
+                          context: context,
+                          builder: (_) => GroupForm(group: group),
+                        );
+                        if (result == true) setState(() {});
+                      } else if (value == 'delete') {
+                        WarningDialog.showWarning(
+                          context: context,
+                          title: 'Delete Group',
+                          message:
+                              'Are you sure you want to delete "${group.name}"?',
+                          onConfirmed: () {
+                            Provider.of<GroupService>(context, listen: false)
+                                .deleteGroup(group.id);
+                            setState(() {});
+                          },
+                        );
+                      }
+                    },
+                    icon: Icon(Icons.more_vert, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
+                    itemBuilder: (_) => [
+                      const PopupMenuItem(
+                        value: 'edit',
+                        child: ListTile(leading: Icon(Icons.edit_outlined, size: 20), title: Text('Edit'), dense: true),
+                      ),
+                      const PopupMenuItem(
+                        value: 'delete',
+                        child: ListTile(leading: Icon(Icons.delete_outline, size: 20, color: Colors.red), title: Text('Delete', style: TextStyle(color: Colors.red)), dense: true),
+                      ),
+                    ],
+                  ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => GroupDetailScreen(group: group),
+                      ),
+                    );
+                  },
                 ),
               );
             },
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           final result = await showDialog<bool>(
             context: context,
@@ -127,7 +142,8 @@ class _GroupsScreenState extends State<GroupsScreen> {
           );
           if (result == true) setState(() {});
         },
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: const Text('New Group'),
       ),
     );
   }

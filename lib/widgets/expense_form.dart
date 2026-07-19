@@ -146,8 +146,6 @@ class _ExpenseFormState extends State<ExpenseForm> {
                 controller: _nameController,
                 decoration: const InputDecoration(
                   labelText: 'Enter expense',
-                  isDense: true,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -157,6 +155,7 @@ class _ExpenseFormState extends State<ExpenseForm> {
                 },
               ),
 
+              const SizedBox(height: 12),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -165,8 +164,6 @@ class _ExpenseFormState extends State<ExpenseForm> {
                       controller: _priceController,
                       decoration: const InputDecoration(
                         labelText: 'Amount',
-                        isDense: true,
-                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                       ),
                       keyboardType: const TextInputType.numberWithOptions(decimal: true),
                       validator: (value) {
@@ -177,167 +174,154 @@ class _ExpenseFormState extends State<ExpenseForm> {
                       },
                     ),
                   ),
-                  const SizedBox(width: 4),
-                  SizedBox(
-                    height: 44,
+                  const SizedBox(width: 8),
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3)),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: DropdownButton<String>(
                       value: _isCredit ? 'Credit' : 'Debit',
                       onChanged: (v) =>
                           setState(() => _isCredit = v == 'Credit'),
+                      underline: const SizedBox(),
                       items: const [
-                        DropdownMenuItem(value: 'Debit', child: Text('Debit')),
-                        DropdownMenuItem(value: 'Credit', child: Text('Credit')),
+                        DropdownMenuItem(value: 'Debit', child: Text('Debit', style: TextStyle(fontSize: 13))),
+                        DropdownMenuItem(value: 'Credit', child: Text('Credit', style: TextStyle(fontSize: 13))),
                       ],
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 12),
               Consumer<GroupService>(builder: (context, groupService, _) {
                 final groups = groupService.getGroups();
                 final selectedGroup = _selectedGroupId != null
                     ? groups.where((g) => g.id == _selectedGroupId).firstOrNull
                     : null;
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    DropdownButtonFormField<int?>(
-                      isDense: true,
-                      value: _selectedGroupId,
-                      style: const TextStyle(fontSize: 14),
-                      items: [
-                        const DropdownMenuItem(
-                            value: null, child: Text('None (Individual)')),
-                        ...groups.map((g) => DropdownMenuItem(
-                            value: g.id, child: Text(g.name, style: const TextStyle(fontSize: 14)))),
-                      ],
-                      onChanged: (v) => setState(() {
-                        _selectedGroupId = v;
-                        _selectedGroupUser = 'Me';
-                      }),
-                      decoration: const InputDecoration(
-                        labelText: 'Group',
-                        isDense: true,
-                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                      ),
-                    ),
-                    if (selectedGroup != null) ...[
-                      const SizedBox(height: 4),
-                      DropdownButtonFormField<String>(
-                        isDense: true,
-                        value: _selectedGroupUser,
-                        style: const TextStyle(fontSize: 14),
-                        items: selectedGroup.members.map((m) {
-                          return DropdownMenuItem(
-                              value: m, child: Text(m, style: const TextStyle(fontSize: 14)));
-                        }).toList(),
-                        onChanged: (v) =>
-                            setState(() => _selectedGroupUser = v!),
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      DropdownButtonFormField<int?>(
+                        value: _selectedGroupId,
+                        items: [
+                          const DropdownMenuItem(
+                              value: null, child: Text('None (Individual)')),
+                          ...groups.map((g) => DropdownMenuItem(
+                              value: g.id, child: Text(g.name))),
+                        ],
+                        onChanged: (v) => setState(() {
+                          _selectedGroupId = v;
+                          _selectedGroupUser = 'Me';
+                        }),
                         decoration: const InputDecoration(
-                          labelText: 'Mapped User',
-                          isDense: true,
-                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                          labelText: 'Group',
                         ),
                       ),
+                      if (selectedGroup != null) ...[
+                        const SizedBox(height: 12),
+                        DropdownButtonFormField<String>(
+                          value: _selectedGroupUser,
+                          items: selectedGroup.members.map((m) {
+                            return DropdownMenuItem(
+                                value: m, child: Text(m));
+                          }).toList(),
+                          onChanged: (v) =>
+                              setState(() => _selectedGroupUser = v!),
+                          decoration: const InputDecoration(
+                            labelText: 'Mapped User',
+                          ),
+                        ),
+                      ],
                     ],
-                  ],
-                );
+                  );
               }),
-              const SizedBox(height: 4),
-              selectedExpenseTypeId == -1
-                  ? Container(
-                      padding:
-                          EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-                      alignment: Alignment.center,
-                      child:
-                          const Text('Create a type from expense type screen'),
-                    )
-                  : Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                          DropdownButtonFormField<int>(
-                            isDense: true,
-                            value: selectedExpenseTypeId,
-                            items: _expenseService
-                                .getExpenseTypes()
-                                .map((expType) {
-                              return DropdownMenuItem<int>(
-                                value: expType.id,
-                                child: Text(expType.name,
-                                    style: TextStyle(fontSize: 14)),
-                              );
-                            }).toList(),
-                            onChanged: (int? newValue) {
-                              setState(() {
-                                selectedExpenseTypeId = newValue!;
-                                try {
-                                  final selType = _expenseService
-                                      .getExpenseTypes()
-                                      .firstWhere(
-                                          (t) => t.id == selectedExpenseTypeId);
-                                  final defAcc =
-                                      (selType as dynamic).defaultAccountId;
-                                  if ((_selectedAccountId == null) &&
-                                      defAcc != null) {
-                                    if (defAcc is int) {
-                                      _selectedAccountId = defAcc;
-                                    } else if (defAcc is String) {
-                                      _selectedAccountId = int.tryParse(defAcc);
-                                    }
-                                  }
-                                } catch (_) {}
-                              });
-                            },
-                            decoration: const InputDecoration(
-                              labelText: "Expense Type",
-                              isDense: true,
-                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          DropdownButtonFormField<int>(
-                            isDense: true,
-                            value: _selectedAccountId,
-                            items: accounts
-                                .map((Account a) {
-                                  int? aid;
+                const SizedBox(height: 12),
+                selectedExpenseTypeId == -1
+                    ? Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        alignment: Alignment.center,
+                        child: Text(
+                          'Create a type from expense type screen',
+                          style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 13),
+                        ),
+                      )
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                            DropdownButtonFormField<int>(
+                              value: selectedExpenseTypeId,
+                              items: _expenseService
+                                  .getExpenseTypes()
+                                  .map((expType) {
+                                return DropdownMenuItem<int>(
+                                  value: expType.id,
+                                  child: Text(expType.name),
+                                );
+                              }).toList(),
+                              onChanged: (int? newValue) {
+                                setState(() {
+                                  selectedExpenseTypeId = newValue!;
                                   try {
-                                    aid = a.id;
-                                  } catch (_) {
-                                    aid = null;
-                                  }
-                                  return DropdownMenuItem<int>(
-                                    value: aid,
-                                    child: Text(
-                                        '${a.name} ${'(${a.code})'}',
-                                        style: TextStyle(fontSize: 12),
-                                        softWrap: true,
-                                        overflow: TextOverflow.visible,
-                                      ),
-                                  );
-                                })
-                                .where((item) => item.value != null)
-                                .toList(),
-                            onChanged: (int? v) =>
-                                setState(() => _selectedAccountId = v),
-                            decoration: const InputDecoration(
-                              labelText: 'Payment Account',
-                              isDense: true,
-                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                    final selType = _expenseService
+                                        .getExpenseTypes()
+                                        .firstWhere(
+                                            (t) => t.id == selectedExpenseTypeId);
+                                    final defAcc =
+                                        (selType as dynamic).defaultAccountId;
+                                    if ((_selectedAccountId == null) &&
+                                        defAcc != null) {
+                                      if (defAcc is int) {
+                                        _selectedAccountId = defAcc;
+                                      } else if (defAcc is String) {
+                                        _selectedAccountId = int.tryParse(defAcc);
+                                      }
+                                    }
+                                  } catch (_) {}
+                                });
+                              },
+                              decoration: const InputDecoration(
+                                labelText: "Expense Type",
+                              ),
                             ),
-                            validator: (v) {
-                              if (v == null) return 'Select account';
-                              return null;
-                            },
-                          ),
-                        ]),
-              const SizedBox(height: 4),
+                            const SizedBox(height: 12),
+                            DropdownButtonFormField<int>(
+                              value: _selectedAccountId,
+                              items: accounts
+                                  .map((Account a) {
+                                    int? aid;
+                                    try {
+                                      aid = a.id;
+                                    } catch (_) {
+                                      aid = null;
+                                    }
+                                    return DropdownMenuItem<int>(
+                                      value: aid,
+                                      child: Text(
+                                          '${a.name} (${a.code})',
+                                          overflow: TextOverflow.visible,
+                                        ),
+                                    );
+                                  })
+                                  .where((item) => item.value != null)
+                                  .toList(),
+                              onChanged: (int? v) =>
+                                  setState(() => _selectedAccountId = v),
+                              decoration: const InputDecoration(
+                                labelText: 'Payment Account',
+                              ),
+                              validator: (v) {
+                                if (v == null) return 'Select account';
+                                return null;
+                              },
+                            ),
+                          ]),
+              const SizedBox(height: 12),
               TextFormField(
                 controller: _descriptionController,
                 decoration: const InputDecoration(
-                  labelText: 'Description',
-                  isDense: true,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  labelText: 'Description (optional)',
                 ),
                 keyboardType: TextInputType.multiline,
                 maxLines: null,
@@ -358,17 +342,24 @@ class _ExpenseFormState extends State<ExpenseForm> {
                 && widget.expense?.mappedUserName ==
                     (_selectedGroupId != null ? _selectedGroupUser : null)
             ))
-          Column(
-            // mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                  'Created - ${_uiService.displayDay(widget.expense!.created)}'),
-              if (widget.expense?.updated != null)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Text(
-                    'Updated - ${_uiService.displayDay(widget.expense!.updated!)}')
-            ],
+                  'Created - ${_uiService.displayDay(widget.expense!.created)}',
+                  style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
+                ),
+                if (widget.expense?.updated != null)
+                  Text(
+                    'Updated - ${_uiService.displayDay(widget.expense!.updated!)}',
+                    style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
+                  ),
+              ],
+            ),
           ),
+        const Spacer(),
         if ((widget.expense?.name != _nameController.text ||
                 widget.expense?.price !=
                     double.tryParse(_priceController.text) ||

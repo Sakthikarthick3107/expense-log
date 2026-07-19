@@ -241,18 +241,26 @@ class _HomeScreenState extends State<HomeScreen> {
               ? null
               : AppDrawer(onSelectScreen: _onDrawerItemSelected),
           appBar: AppBar(
-            title: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              crossAxisAlignment: CrossAxisAlignment.start,
+            title: Row(
               children: [
+                Icon(Icons.menu_book_rounded, size: 22, color: Theme.of(context).colorScheme.primary),
+                const SizedBox(width: 8),
                 Text(
                   'expense.log',
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 22),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22, color: Theme.of(context).colorScheme.primary),
                 ),
-                if (orderScreens[_currentIndex].runtimeType == MetricsScreen)
-                  SizedBox(
-                    height: 30,
+              ],
+            ),
+            actions: [
+              if (orderScreens[_currentIndex].runtimeType == MetricsScreen)
+                Padding(
+                  padding: const EdgeInsets.only(right: 4),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
+                    ),
                     child: DropdownButton<String>(
                       isDense: true,
                       value: settingsService.getMetricChart(),
@@ -265,51 +273,42 @@ class _HomeScreenState extends State<HomeScreen> {
                           .map<DropdownMenuItem<String>>((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
-                          child: Text(
-                            value,
-                            style: TextStyle(fontSize: 12),
-                          ),
+                          child: Text(value, style: const TextStyle(fontSize: 12)),
                         );
                       }).toList(),
-                      underline: SizedBox(),
+                      underline: const SizedBox(),
                     ),
                   ),
-                if (orderScreens[_currentIndex].runtimeType == DownloadsScreen)
-                  Tooltip(
-                    // key: _tooltipKey,
-                    message:
-                        '/storage/emulated/0/Android/data/com.expenseapp.expense_log/files/downloads/ExpenseLog_Reports',
-                    child: Text(
-                      '/storage/emulated/0/Android/data/com.expenseapp.expense_log/files/downloads/ExpenseLog_Reports',
-                      style: const TextStyle(fontSize: 8),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-              ],
-            ),
-            actions: [
-              
-              if (user == null)
-                Container(
-                  padding: EdgeInsets.all(10),
-                  child: Text(
-                    '$version',
-                    style: TextStyle(color: Colors.white, fontSize: 12),
+                ),
+              if (orderScreens[_currentIndex].runtimeType == DownloadsScreen)
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: Tooltip(
+                    message: '/storage/emulated/0/Android/data/com.expenseapp.expense_log/files/downloads/ExpenseLog_Reports',
+                    child: Icon(Icons.folder_open, size: 20, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
                   ),
                 ),
               if (user != null)
-                Container(
-                    padding: EdgeInsets.all(6),
-                    child: AvatarWidget(
-                      imageUrl: user!.image,
-                      userName: user!.userName,
-                      onTap: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => SettingsScreen()));
-                      },
-                    ))
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: AvatarWidget(
+                    imageUrl: user!.image,
+                    userName: user!.userName,
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => SettingsScreen()));
+                    },
+                  )),
+              if (user == null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Text(
+                    'v$version',
+                    style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
+                  ),
+                ),
             ],
           ),
           body: Platform.isWindows

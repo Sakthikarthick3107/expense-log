@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class WarningDialog extends StatelessWidget {
@@ -18,8 +17,11 @@ class WarningDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-      title: Text(title),
+      title: Row(children: [
+        Icon(Icons.warning_amber_rounded, color: Colors.amber, size: 24),
+        const SizedBox(width: 10),
+        Expanded(child: Text(title)),
+      ]),
       content: Text(message),
       actions: <Widget>[
         TextButton(
@@ -30,14 +32,14 @@ class WarningDialog extends StatelessWidget {
               Navigator.of(context).pop();
             }
           },
-          child: const Text('No'),
+          child: const Text('Cancel'),
         ),
         ElevatedButton(
           onPressed: () {
             Navigator.of(context).pop();
             onConfirmed();
           },
-          child: const Text('Yes'),
+          child: const Text('Confirm'),
         ),
       ],
     );

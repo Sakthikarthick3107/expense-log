@@ -83,124 +83,123 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
     var accId = expOfDay.accountId;
     var accName = accId != null ? accounts.firstWhere((x) => x.id == expOfDay.accountId).name:'';
     final isGroupExpense = expOfDay.groupId != null;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10.0),
-      margin: const EdgeInsets.only(bottom: 10),
-      decoration: const BoxDecoration(
-        borderRadius: BorderRadius.all(Radius.circular(20)),
-      ),
-      child: Material(
-        elevation: _settingsService.getElevation() ? 4 : 0,
-        borderRadius: BorderRadius.circular(10),
-        color: Theme.of(context).cardColor,
-        child: ListTile(
-          leading: deleteList.isNotEmpty
-              ? Icon(
-                  deleteList.containsKey(expOfDay.id)
-                      ? Icons.check_box
-                      : Icons.check_box_outline_blank,
-                  color: deleteList.containsKey(expOfDay.id)
-                      ? Colors.green
-                      : Colors.grey,
-                )
-              : (isGroupExpense
-                  ? CircleAvatar(
-                      radius: 14,
-                      backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
-                      child: Icon(Icons.group, size: 16, color: Theme.of(context).primaryColor),
-                    )
-                  : null),
-          onTap: () async {
-            if (deleteList.isNotEmpty) {
-              setState(() {
-                if (deleteList.containsKey(expOfDay.id)) {
-                  deleteList.remove(expOfDay.id);
-                } else {
-                  deleteList[expOfDay.id] = expOfDay;
-                }
-              });
-            } else {
-              final result = await showDialog<bool>(
-                context: context,
-                builder: (context) => ExpenseForm(
-                  expenseDate: _selectedDateNotifier.value,
-                  expense: expOfDay,
-                ),
-              );
-              if (result == true) {
-                setState(() {
-                  totalExpense = _expenseService
-                      .selectedDayTotalExpense(_selectedDateNotifier.value);
-                  _metricsData =
-                      _expenseService.getMetrics('This month', 'By type', []);
-                });
-              }
-            }
-          },
-          onLongPress: () {
+    final isDebit = expOfDay.price > 0;
+    final debitColor = isDebit ? Colors.red : Colors.green;
+
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () async {
+          if (deleteList.isNotEmpty) {
             setState(() {
-              if (!deleteList.containsKey(expOfDay.id)) {
+              if (deleteList.containsKey(expOfDay.id)) {
+                deleteList.remove(expOfDay.id);
+              } else {
                 deleteList[expOfDay.id] = expOfDay;
               }
             });
-          },
-          title: Text(
-            expOfDay.name,
-            style: const TextStyle(
-              fontSize: 16,
-              overflow: TextOverflow.ellipsis,
+          } else {
+            final result = await showDialog<bool>(
+              context: context,
+              builder: (context) => ExpenseForm(
+                expenseDate: _selectedDateNotifier.value,
+                expense: expOfDay,
+              ),
+            );
+            if (result == true) {
+              setState(() {
+                totalExpense = _expenseService
+                    .selectedDayTotalExpense(_selectedDateNotifier.value);
+                _metricsData =
+                    _expenseService.getMetrics('This month', 'By type', []);
+              });
+            }
+          }
+        },
+        onLongPress: () {
+          setState(() {
+            if (!deleteList.containsKey(expOfDay.id)) {
+              deleteList[expOfDay.id] = expOfDay;
+            }
+          });
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+          child: ListTile(
+            leading: deleteList.isNotEmpty
+                ? Icon(
+                    deleteList.containsKey(expOfDay.id)
+                        ? Icons.check_box
+                        : Icons.check_box_outline_blank,
+                    color: deleteList.containsKey(expOfDay.id)
+                        ? debitColor
+                        : Colors.grey,
+                  )
+                : CircleAvatar(
+                    backgroundColor: debitColor.withValues(alpha: 0.1),
+                    child: Icon(
+                      isGroupExpense ? Icons.group : (isDebit ? Icons.arrow_downward : Icons.arrow_upward),
+                      size: 18,
+                      color: debitColor,
+                    ),
+                  ),
+            title: Text(
+              expOfDay.name,
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, overflow: TextOverflow.ellipsis),
             ),
-          ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (showType)
-                Text(
-                  expOfDay.expenseType.name,
-                  style: const TextStyle(
-                      fontSize: 12, fontWeight: FontWeight.w100),
-                ),
-              if (isGroupExpense && expOfDay.mappedUserName != null)
-                Text(
-                  '${expOfDay.mappedUserName} • Group',
-                  style: TextStyle(fontSize: 10, color: Colors.grey[500]),
-                ),
-            ],
-          ),
-          trailing: Column(
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (showType)
+                  Text(
+                    expOfDay.expenseType.name,
+                    style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
+                  ),
+                if (isGroupExpense && expOfDay.mappedUserName != null)
+                  Row(
+                    children: [
+                      Icon(Icons.group, size: 12, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4)),
+                      const SizedBox(width: 3),
+                      Text(
+                        '${expOfDay.mappedUserName}',
+                        style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+            trailing: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                   expOfDay.price.abs().toStringAsFixed(2),
-                  style: const TextStyle(fontSize: 14),
+                  '₹${expOfDay.price.abs().toStringAsFixed(2)}',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: debitColor),
                 ),
+                const SizedBox(height: 2),
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      expOfDay.price > 0 ? 'Debit' : 'Credit',
-                      style: TextStyle(
-                        fontSize: 9,
-                        color: expOfDay.price > 0 ? Colors.red : Colors.green,
-                      ),
+                      isDebit ? 'Debit' : 'Credit',
+                      style: TextStyle(fontSize: 10, color: debitColor.withValues(alpha: 0.7)),
                     ),
-                    const SizedBox(width: 4),
-                    Icon(expOfDay.price > 0 ? Icons.arrow_downward : Icons.arrow_upward,
-                    size: 12,
-                    color: expOfDay.price > 0 ? Colors.red : Colors.green,),
-                    const SizedBox(width: 4),
-                    Text(
+                    if (accName.isNotEmpty) ...[
+                      const SizedBox(width: 4),
+                      Container(width: 3, height: 3, decoration: BoxDecoration(color: Colors.grey[400]!, shape: BoxShape.circle)),
+                      const SizedBox(width: 4),
+                      Text(
                         accName,
-                        style: const TextStyle(
-                          fontSize: 10,
-                          fontStyle: FontStyle.italic,
-                        ))
+                        style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4)),
+                      ),
+                    ],
                   ],
                 ),
-
-              ]),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -234,154 +233,190 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
         },
         child: Column(
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _selectedDateNotifier.value = _selectedDateNotifier
-                            .value
-                            .subtract(const Duration(days: 1));
-                      });
-                    },
-                    padding: const EdgeInsets.all(8.0),
-                    icon: const Icon(Icons.arrow_back_ios)),
-                ValueListenableBuilder<DateTime>(
-                    valueListenable: _selectedDateNotifier,
-                    builder: (context, selectedDate, _) {
-                      return TextButton(
-                          onPressed: () async {
-                            DateTime pickDate = await _uiService.selectDate(
-                                context,
-                                last: DateTime.now(),
-                                current: _selectedDateNotifier.value);
-                            setState(() {
-                              _selectedDateNotifier.value = pickDate;
-                            });
-                          },
-                          child: Text(
-                            _uiService.displayDay(_selectedDateNotifier.value),
-                            style: const TextStyle(
-                                // color: Colors.black,
-                                fontSize: 22,
-                                fontWeight: FontWeight.w700),
-                          ));
-                    }),
-                IconButton(
-                    onPressed: () {
-                      if (_selectedDateNotifier.value.year ==
-                              DateTime.now().year &&
-                          _selectedDateNotifier.value.month ==
-                              DateTime.now().month &&
-                          _selectedDateNotifier.value.day ==
-                              DateTime.now().day) {
-                        MessageWidget.showToast(
-                            context: context,
-                            message:
-                                'Cannot able to set daily expense for future dates',
-                            status: 0);
-                      } else {
-                        setState(() {
-                          _selectedDateNotifier.value = _selectedDateNotifier
-                              .value
-                              .add(const Duration(days: 1));
-                        });
-                      }
-                    },
-                    padding: const EdgeInsets.all(8.0),
-                    icon: const Icon(Icons.arrow_forward_ios))
-              ],
-            ),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              color: Colors.transparent,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
                 children: [
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Checkbox(
-                        value: _settingsService.groupExpByType(),
-                        onChanged: (value) {
-                          setState(() async {
-                            await _settingsService.setGrpExpByType(value!);
+                      IconButton(
+                        onPressed: () {
+                          setState(() {
+                            _selectedDateNotifier.value = _selectedDateNotifier
+                                .value
+                                .subtract(const Duration(days: 1));
                           });
                         },
+                        icon: const Icon(Icons.chevron_left),
                       ),
-                      const Text("Group by Type"),
+                      ValueListenableBuilder<DateTime>(
+                        valueListenable: _selectedDateNotifier,
+                        builder: (context, selectedDate, _) {
+                          return TextButton(
+                            onPressed: () async {
+                              DateTime pickDate = await _uiService.selectDate(
+                                  context,
+                                  last: DateTime.now(),
+                                  current: _selectedDateNotifier.value);
+                              setState(() {
+                                _selectedDateNotifier.value = pickDate;
+                              });
+                            },
+                            child: Text(
+                              _uiService.displayDay(_selectedDateNotifier.value),
+                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                            ),
+                          );
+                        },
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          if (_selectedDateNotifier.value.year == DateTime.now().year &&
+                              _selectedDateNotifier.value.month == DateTime.now().month &&
+                              _selectedDateNotifier.value.day == DateTime.now().day) {
+                            MessageWidget.showToast(
+                                context: context,
+                                message: 'Cannot set expenses for future dates',
+                                status: 0);
+                          } else {
+                            setState(() {
+                              _selectedDateNotifier.value = _selectedDateNotifier
+                                  .value
+                                  .add(const Duration(days: 1));
+                            });
+                          }
+                        },
+                        icon: const Icon(Icons.chevron_right),
+                      ),
                     ],
                   ),
-                  ValueListenableBuilder(
-                      valueListenable: _selectedDateNotifier,
-                      builder: (context, date, _) {
-                        if (deleteList.isNotEmpty) {
-                          return ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red,
-                              ),
-                              onPressed: () {
-                                WarningDialog.showWarning(
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        InkWell(
+                          borderRadius: BorderRadius.circular(8),
+                          onTap: () {
+                            setState(() async {
+                              await _settingsService.setGrpExpByType(!_settingsService.groupExpByType());
+                            });
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                              color: _settingsService.groupExpByType()
+                                  ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
+                                  : Colors.transparent,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.category,
+                                  size: 16,
+                                  color: _settingsService.groupExpByType()
+                                      ? Theme.of(context).colorScheme.primary
+                                      : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  "Group by Type",
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: _settingsService.groupExpByType() ? FontWeight.w600 : FontWeight.normal,
+                                    color: _settingsService.groupExpByType()
+                                        ? Theme.of(context).colorScheme.primary
+                                        : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        ValueListenableBuilder(
+                          valueListenable: _selectedDateNotifier,
+                          builder: (context, date, _) {
+                            if (deleteList.isNotEmpty) {
+                              return ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                ),
+                                onPressed: () {
+                                  WarningDialog.showWarning(
                                     context: context,
-                                    title: 'Warning',
-                                    message:
-                                        'Are you sure to delete selected ${deleteList.length} expenses?',
+                                    title: 'Delete Expenses',
+                                    message: 'Delete selected ${deleteList.length} expenses?',
                                     onConfirmed: () {
                                       _expenseService.deleteExpense(deleteList);
                                       setState(() {
                                         deleteList.clear();
-                                        totalExpense = _expenseService
-                                            .selectedDayTotalExpense(
-                                                _selectedDateNotifier.value);
-                                        _metricsData = _expenseService
-                                            .getMetrics(
-                                                'This month', 'By type', []);
+                                        totalExpense = _expenseService.selectedDayTotalExpense(_selectedDateNotifier.value);
+                                        _metricsData = _expenseService.getMetrics('This month', 'By type', []);
                                       });
                                     },
                                     onCancelled: () {
                                       setState(() {
                                         deleteList.clear();
-                                        totalExpense = _expenseService
-                                            .selectedDayTotalExpense(
-                                                _selectedDateNotifier.value);
-                                        _metricsData = _expenseService
-                                            .getMetrics(
-                                                'This month', 'By type', []);
+                                        totalExpense = _expenseService.selectedDayTotalExpense(_selectedDateNotifier.value);
+                                        _metricsData = _expenseService.getMetrics('This month', 'By type', []);
                                       });
                                       Navigator.pop(context);
-                                    });
-                              },
-                              child: Text(
-                                'Delete (${deleteList.length})',
-                                style: const TextStyle(
-                                    color: Colors.white, fontSize: 16),
-                              ));
-                        } else {
-                          return Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                totalExpense > 0 ? 'Debit' : 'Credit',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: totalExpense > 0 ? Colors.red : Colors.green,
-                                ),
+                                    },
+                                  );
+                                },
+                                icon: const Icon(Icons.delete_outline, size: 18),
+                                label: Text('Delete (${deleteList.length})'),
+                              );
+                            }
+                            final isTotalDebit = totalExpense > 0;
+                            return Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                color: isTotalDebit
+                                    ? Colors.red.withValues(alpha: 0.06)
+                                    : Colors.green.withValues(alpha: 0.06),
                               ),
-                              const SizedBox(width: 4),
-                              Icon(totalExpense > 0? Icons.arrow_downward : Icons.arrow_upward,
-                              color: totalExpense > 0 ? Colors.red: Colors.green,
-                              size: 16,),
-                              const SizedBox(width: 4),
-                          Text(
-                          "₹ ${totalExpense.abs().toStringAsFixed(2)}",
-                            style: const TextStyle(
-                            fontSize: 22, fontWeight: FontWeight.bold),
-                              )
-                            ],
-                          );
-
-                        }
-                      })
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    isTotalDebit ? Icons.arrow_downward : Icons.arrow_upward,
+                                    color: isTotalDebit ? Colors.red : Colors.green,
+                                    size: 18,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        isTotalDebit ? 'Total Debit' : 'Total Credit',
+                                        style: TextStyle(fontSize: 10, color: isTotalDebit ? Colors.red : Colors.green, fontWeight: FontWeight.w500),
+                                      ),
+                                      Text(
+                                        '₹ ${totalExpense.abs().toStringAsFixed(2)}',
+                                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: isTotalDebit ? Colors.red : Colors.green),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -392,21 +427,31 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
                 final expenseOfTheDate = _expenseService
                     .getExpensesOfTheDay(_selectedDateNotifier.value);
                 if (expenseOfTheDate.isEmpty) {
-                  return Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Lottie.asset(
-                        'assets/add-note.json',
-                        width: 200,
-                        height: 200,
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(32),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Lottie.asset(
+                            'assets/add-note.json',
+                            width: 180,
+                            height: 180,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No expenses yet',
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Tap + to create expense for\n${_uiService.displayDay(_selectedDateNotifier.value)}',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
+                          ),
+                        ],
                       ),
-                      Text(
-                        'Tap + icon to create expense for \n ${_uiService.displayDay(_selectedDateNotifier.value)}',
-                        style: TextStyle(),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
+                    ),
                   );
                 }
 
@@ -430,52 +475,53 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
                       double typeDebit = expenses.where((x)=> (x.price > 0)).fold<double>(0.0, (sum, e) => sum + e.price);
                       return [
                         Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 20.0, vertical: 6),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                type,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 10,
-                                  color: Theme.of(context).primaryColor,
-                                ),
-                              ),
-                              Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.end,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                          child: Card(
+                            margin: EdgeInsets.zero,
+                            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Row(
                                     children: [
-                                      Icon(Icons.arrow_upward,color: Colors.green,size: 12,),
+                                      Icon(Icons.folder_special_outlined, size: 16, color: Theme.of(context).colorScheme.primary),
+                                      const SizedBox(width: 8),
                                       Text(
-                                        "₹ ${typeCredit.abs().toStringAsFixed(2)}",
+                                        type,
                                         style: TextStyle(
-                                          fontSize: 10,
-                                          color: Theme.of(context).primaryColor,
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 13,
+                                          color: Theme.of(context).colorScheme.primary,
                                         ),
                                       ),
                                     ],
                                   ),
                                   Row(
                                     children: [
-                                      Icon(Icons.arrow_downward,color: Colors.red,size: 12,),
-                                      Text(
-                                        "₹ ${typeDebit.abs().toStringAsFixed(2)}",
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          color: Theme.of(context).primaryColor,
+                                      if (typeCredit != 0) ...[
+                                        Icon(Icons.arrow_upward, color: Colors.green, size: 14),
+                                        const SizedBox(width: 2),
+                                        Text(
+                                          '₹${typeCredit.abs().toStringAsFixed(2)}',
+                                          style: const TextStyle(fontSize: 11, color: Colors.green, fontWeight: FontWeight.w500),
                                         ),
-                                      ),
+                                        const SizedBox(width: 10),
+                                      ],
+                                      if (typeDebit != 0) ...[
+                                        Icon(Icons.arrow_downward, color: Colors.red, size: 14),
+                                        const SizedBox(width: 2),
+                                        Text(
+                                          '₹${typeDebit.abs().toStringAsFixed(2)}',
+                                          style: const TextStyle(fontSize: 11, color: Colors.red, fontWeight: FontWeight.w500),
+                                        ),
+                                      ],
                                     ],
                                   ),
                                 ],
-                              )
-
-                            ],
+                              ),
+                            ),
                           ),
                         ),
                         ...expenses
@@ -517,7 +563,8 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
             SpeedDialChild(
               child: const Icon(Icons.print),
               label: 'Daily Expense Report',
-              labelBackgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+              labelBackgroundColor: Theme.of(context).colorScheme.surface,
               onTap: () {
                 WarningDialog.showWarning(
                     context: context,
@@ -539,7 +586,8 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
             SpeedDialChild(
               child: const Icon(Icons.collections_bookmark_rounded),
               label: 'Load from Collection',
-              labelBackgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+              labelBackgroundColor: Theme.of(context).colorScheme.surface,
               onTap: () {
                 showModalBottomSheet(
                     isScrollControlled: true,
@@ -560,7 +608,8 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
           SpeedDialChild(
             child: const Icon(Icons.copy),
             label: 'Copy expense from other day',
-            labelBackgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+            labelBackgroundColor: Theme.of(context).colorScheme.surface,
             onTap: () async {
               DateTime? copyFromDate = await _uiService.selectDate(context,
                   last: DateTime.now(),
@@ -622,7 +671,8 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
           SpeedDialChild(
             child: const Icon(Icons.mic_none),
             label: 'Voice Input',
-            labelBackgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+            labelBackgroundColor: Theme.of(context).colorScheme.surface,
             onTap: () async {
               final sttPlugin = stt.SpeechToText();
               final available = await sttPlugin.initialize();
@@ -667,7 +717,8 @@ class _DailyExpenseScreenState extends State<DailyExpenseScreen> {
           SpeedDialChild(
             child: const Icon(Icons.add),
             label: 'Create New Expense',
-            labelBackgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+            labelBackgroundColor: Theme.of(context).colorScheme.surface,
             onTap: () async {
               final getTypes = _expenseService.getExpenseTypes();
               if (getTypes.isNotEmpty) {

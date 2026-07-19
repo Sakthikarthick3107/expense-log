@@ -60,26 +60,37 @@ class _GroupFormState extends State<GroupForm> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(widget.group != null ? 'Edit Group' : 'New Group'),
+      title: Row(children: [
+        Icon(Icons.groups, color: Theme.of(context).colorScheme.primary, size: 24),
+        const SizedBox(width: 10),
+        Text(widget.group != null ? 'Edit Group' : 'New Group'),
+      ]),
       content: Form(
         key: _formKey,
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              const SizedBox(height: 8),
               TextFormField(
                 controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Group Name'),
+                decoration: const InputDecoration(
+                  labelText: 'Group Name',
+                  prefixIcon: Icon(Icons.badge_outlined),
+                ),
                 validator: (v) =>
                     v == null || v.isEmpty ? 'Group name is mandatory' : null,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
               TextFormField(
                 controller: _descriptionController,
-                decoration: const InputDecoration(labelText: 'Description'),
+                decoration: const InputDecoration(
+                  labelText: 'Description (optional)',
+                  prefixIcon: Icon(Icons.description_outlined),
+                ),
                 maxLines: 2,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
               Row(
                 children: [
                   Expanded(
@@ -88,24 +99,35 @@ class _GroupFormState extends State<GroupForm> {
                       decoration: const InputDecoration(
                         labelText: 'Add Member',
                         hintText: 'Enter name',
+                        prefixIcon: Icon(Icons.person_add_outlined),
                       ),
+                      onFieldSubmitted: (_) => _addMember(),
                     ),
                   ),
-                  IconButton(
+                  const SizedBox(width: 8),
+                  FilledButton(
                     onPressed: _addMember,
-                    icon: const Icon(Icons.add_circle),
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.all(14),
+                      shape: const CircleBorder(),
+                    ),
+                    child: const Icon(Icons.add, size: 20),
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
               if (_members.isEmpty)
                 const Text('No members. Add at least one member.')
               else
                 Wrap(
                   spacing: 8,
-                  runSpacing: 4,
+                  runSpacing: 6,
                   children: _members.map((member) {
                     return Chip(
+                      avatar: CircleAvatar(
+                        backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                        child: Text(member[0].toUpperCase(), style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary)),
+                      ),
                       label: Text(member),
                       deleteIcon:
                           member == 'Me' ? null : const Icon(Icons.close, size: 18),

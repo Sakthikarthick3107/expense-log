@@ -60,48 +60,91 @@ class _AppDrawerState extends State<AppDrawer> {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       child: Container(
-        padding: EdgeInsets.all(10),
-        margin: EdgeInsets.symmetric(vertical: 20),
+        padding: EdgeInsets.only(top: 48, bottom: 16),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Column(
-              children: _screenNames.asMap().entries.map((entry) {
-                int index = entry.key;
-                String item = entry.value;
-                return ListTile(
-                  onTap: () => widget.onSelectScreen(index),
-                  title: Text(
-                    item,
-                    style: TextStyle(fontSize: 16),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 22,
+                    backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                    child: Icon(Icons.menu_book_rounded, color: Theme.of(context).colorScheme.primary, size: 24),
                   ),
-                  leading: Icon(
-                    screenIcons[item],
-                    color: Theme.of(context).iconTheme.color,
-                    size: 20,
+                  const SizedBox(width: 12),
+                  Text(
+                    'expense.log',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
                   ),
-                );
-              }).toList(),
+                ],
+              ),
             ),
-            ListTile(
-              onTap: () {
-                if (!Platform.isWindows) {
-                  Navigator.pop(context);
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => SettingsScreen()));
-                } else {
-                  widget.onSelectScreen(5);
-                }
-              },
-              leading: Icon(Icons.settings,
-                  color: Theme.of(context).iconTheme.color),
-              title: Text('Settings'),
-            )
+            const Divider(thickness: 0.5),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                children: _screenNames.asMap().entries.map((entry) {
+                  int index = entry.key;
+                  String item = entry.value;
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 1),
+                    child: ListTile(
+                      onTap: () => widget.onSelectScreen(index),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
+                        ),
+                        child: Icon(
+                          screenIcons[item],
+                          color: Theme.of(context).colorScheme.primary,
+                          size: 20,
+                        ),
+                      ),
+                      title: Text(
+                        item,
+                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+            const Divider(thickness: 0.5),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: ListTile(
+                onTap: () {
+                  if (!Platform.isWindows) {
+                    Navigator.pop(context);
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => SettingsScreen()));
+                  } else {
+                    widget.onSelectScreen(5);
+                  }
+                },
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.grey.withValues(alpha: 0.1),
+                  ),
+                  child: const Icon(Icons.settings, color: Colors.grey, size: 20),
+                ),
+                title: const Text('Settings', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
+              ),
+            ),
           ],
         ),
       ),

@@ -135,9 +135,11 @@ class _MetricsScreenState extends State<MetricsScreen>
       builder: (ctx) {
         return StatefulBuilder(builder: (ctx, setStateDialog) {
           return AlertDialog(
-            shape:
-                const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-            title: Text("Select/Unselect"),
+            title: Row(children: [
+              Icon(Icons.filter_list, color: Theme.of(context).colorScheme.primary, size: 24),
+              const SizedBox(width: 10),
+              const Expanded(child: Text('Filter Types')),
+            ]),
             content: SingleChildScrollView(
               child: ListBody(
                 children: _expenseTypesOfDuration.map((item) {
@@ -145,6 +147,8 @@ class _MetricsScreenState extends State<MetricsScreen>
                   return CheckboxListTile(
                     title: Text(item),
                     value: isUnchecked,
+                    dense: true,
+                    activeColor: Theme.of(context).colorScheme.primary,
                     onChanged: (isChecked) {
                       setStateDialog(() {
                         if (isChecked == true) {
@@ -164,7 +168,7 @@ class _MetricsScreenState extends State<MetricsScreen>
                   Navigator.pop(context);
                   _loadMetrics();
                 },
-                child: Text("OK"),
+                child: const Text('Apply'),
               ),
             ],
           );
@@ -186,17 +190,15 @@ class _MetricsScreenState extends State<MetricsScreen>
     return Column(children: [
       if (_tabController.index == 1) ...[
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           child: DropdownButtonFormField<int>(
-            isDense: true,
             value: _selectedGroupId,
             isExpanded: true,
-            style: const TextStyle(fontSize: 14),
             hint: const Text('Select Group'),
             items: _groupService.getGroups().map((g) {
               return DropdownMenuItem(
                 value: g.id,
-                child: Text(g.name, style: const TextStyle(fontSize: 14)),
+                child: Text(g.name),
               );
             }).toList(),
             onChanged: (v) {
@@ -209,28 +211,23 @@ class _MetricsScreenState extends State<MetricsScreen>
             },
             decoration: const InputDecoration(
               labelText: 'Group',
-              isDense: true,
-              border: OutlineInputBorder(),
-              contentPadding:
-                  EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              prefixIcon: Icon(Icons.groups, size: 20),
             ),
           ),
         ),
         if (_selectedGroupId != null)
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             child: DropdownButtonFormField<String>(
-              isDense: true,
               value: _selectedUserName,
               isExpanded: true,
-              style: const TextStyle(fontSize: 14),
               hint: const Text('All Users'),
               items: [
                 const DropdownMenuItem(
                     value: null, child: Text('All Users')),
                 ...(_groupService.getById(_selectedGroupId!)?.members
                         .map((m) => DropdownMenuItem(
-                            value: m, child: Text(m, style: const TextStyle(fontSize: 14)))) ??
+                            value: m, child: Text(m))) ??
                     []),
               ],
               onChanged: (v) {
@@ -239,94 +236,122 @@ class _MetricsScreenState extends State<MetricsScreen>
               },
               decoration: const InputDecoration(
                 labelText: 'User',
-                isDense: true,
-                border: OutlineInputBorder(),
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                prefixIcon: Icon(Icons.person_outline, size: 20),
               ),
             ),
           ),
       ],
       Container(
-        child: Row(
-          children: [
-            if (_metricsData2.keys
-                .where((metric) => metric.keys.first != 'Total')
-                .isNotEmpty)
-              DropdownButton<bool>(
-                value: isDebit,
-                onChanged: (bool? newValue) {
-                  setState(() {
-                    isDebit = newValue!;
-                  });
-                  _loadMetrics();
-                },
-                items: [
-                  DropdownMenuItem(
-                    value: true,
-                    child: Text("Debit", style: TextStyle(fontSize: 16)),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Card(
+          margin: EdgeInsets.zero,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                if (_metricsData2.keys
+                    .where((metric) => metric.keys.first != 'Total')
+                    .isNotEmpty)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: Theme.of(context).colorScheme.surface,
+                    ),
+                    child: DropdownButton<bool>(
+                      value: isDebit,
+                      underline: const SizedBox(),
+                      onChanged: (bool? newValue) {
+                        setState(() {
+                          isDebit = newValue!;
+                        });
+                        _loadMetrics();
+                      },
+                      items: [
+                        DropdownMenuItem(
+                          value: true,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.arrow_downward, size: 16, color: Colors.red),
+                              const SizedBox(width: 4),
+                              const Text('Debit'),
+                            ],
+                          ),
+                        ),
+                        DropdownMenuItem(
+                          value: false,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.arrow_upward, size: 16, color: Colors.green),
+                              const SizedBox(width: 4),
+                              const Text('Credit'),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  DropdownMenuItem(
-                    value: false,
-                    child: Text("Credit", style: TextStyle(fontSize: 16)),
+                Expanded(
+                  child: Column(
+                    children: [
+                      Text(
+                        'Total',
+                        style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
+                      ),
+                      Text(
+                        '₹ ${_metricsData2.keys.first['Total']?.toStringAsFixed(2) ?? '0.00'}',
+                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: isDebit ? Colors.red : Colors.green),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            Expanded(
-              child: Align(
-                alignment: Alignment.center,
-                child: Text(
-                  '₹ ${_metricsData2.keys.first['Total']?.toStringAsFixed(2)}',
-                  style: const TextStyle(
-                      fontSize: 28, fontWeight: FontWeight.bold),
                 ),
-              ),
-            ),
-            if (_metricsData2.keys
-                .where((metric) => metric.keys.first != 'Total')
-                .isNotEmpty)
-              IconButton(
-                onPressed: () async {
-                  WarningDialog.showWarning(
-                      context: context,
-                      title:
-                          'Metrics Report - ${_selectedDurationNotifier.value}',
-                      message: 'Proceed to download report ' +
-                          '\n' +
-                          'Selected Types : ' +
-                          '\n - ' +
-                          _expenseTypesOfDuration
-                              .where((type) => !_unSelectedTypes.contains(type))
-                              .join('\n - ') +
-                          '\n' +
-                          'View : ${_selectedMetricBy.value}',
-                      onConfirmed: () async {
-                        MessageWidget.showToast(
+                if (_metricsData2.keys
+                    .where((metric) => metric.keys.first != 'Total')
+                    .isNotEmpty)
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
+                    ),
+                    child: IconButton(
+                      onPressed: () async {
+                        WarningDialog.showWarning(
                             context: context,
-                            message: 'Downloading in progress...');
-                        final isIndividual = _tabController.index == 0;
-                        final individualOnly = isIndividual && _selectedGroupId == null;
-                        final mappedUser = _tabController.index == 1 ? _selectedUserName : null;
-                        await _reportService.prepareMetricsReport(
-                            _expenseService.getExpensesOfSelectedDuration(
-                                _selectedDurationNotifier.value,
-                                customDateRange: selectedDateRange,
-                                groupId: _selectedGroupId,
-                                individualOnly: individualOnly,
-                                mappedUserName: mappedUser),
-                            _expenseTypesOfDuration
-                                .where(
-                                    (type) => !_unSelectedTypes.contains(type))
-                                .toList(),
-                            _selectedMetricBy.value,
-                            _expenseService.uiService.getDateRange(
-                                _selectedDurationNotifier.value!,
-                                customDateRange: selectedDateRange)!);
-                      });
-                },
-                icon: const Icon(Icons.print),
-              ),
-          ],
+                            title: 'Metrics Report - ${_selectedDurationNotifier.value}',
+                            message: 'Proceed to download report\n\n' +
+                                'Selected Types:\n - ${_expenseTypesOfDuration.where((type) => !_unSelectedTypes.contains(type)).join('\n - ')}\n\nView: ${_selectedMetricBy.value}',
+                            onConfirmed: () async {
+                              MessageWidget.showToast(
+                                  context: context,
+                                  message: 'Downloading in progress...');
+                              final isIndividual = _tabController.index == 0;
+                              final individualOnly = isIndividual && _selectedGroupId == null;
+                              final mappedUser = _tabController.index == 1 ? _selectedUserName : null;
+                              await _reportService.prepareMetricsReport(
+                                  _expenseService.getExpensesOfSelectedDuration(
+                                      _selectedDurationNotifier.value,
+                                      customDateRange: selectedDateRange,
+                                      groupId: _selectedGroupId,
+                                      individualOnly: individualOnly,
+                                      mappedUserName: mappedUser),
+                                  _expenseTypesOfDuration
+                                      .where((type) => !_unSelectedTypes.contains(type))
+                                      .toList(),
+                                  _selectedMetricBy.value,
+                                  _expenseService.uiService.getDateRange(
+                                      _selectedDurationNotifier.value!,
+                                      customDateRange: selectedDateRange)!);
+                            });
+                      },
+                      icon: const Icon(Icons.download_rounded),
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+              ],
+            ),
+          ),
         ),
       ),
       Expanded(
@@ -362,148 +387,121 @@ class _MetricsScreenState extends State<MetricsScreen>
                       }
 
                       return ListView(children: [
-                        Container(
-                          padding: EdgeInsets.all(16),
-                          child: SizedBox(
-                            height: 300,
-                            child: _settingsService.getMetricChart() ==
-                                    'Bar Chart'
-                                ? ExpenseBarChart(
-                                    expenseData: Map.from(_barCharData)
-                                      ..remove('Total'))
-                                : _settingsService.getMetricChart() ==
-                                        'Pie Chart'
-                                    ? SingleChildScrollView(
-                                        child: ExpensePieChart(
-                                            expenseData:
-                                                Map.from(_barCharData)
-                                                  ..remove('Total')))
-                                    : Container(
-                                        height: 200,
-                                        child: SingleChildScrollView(
-                                          child: CalendarChartWidget(
-                                            dayAmountMap:
-                                                _calendarChartData,
-                                            durationType:
-                                                _selectedDurationNotifier
-                                                    .value,
-                                            customDateRange:
-                                                selectedDateRange,
+                        Card(
+                          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: SizedBox(
+                              height: 300,
+                              child: _settingsService.getMetricChart() == 'Bar Chart'
+                                  ? ExpenseBarChart(
+                                      expenseData: Map.from(_barCharData)..remove('Total'))
+                                  : _settingsService.getMetricChart() == 'Pie Chart'
+                                      ? SingleChildScrollView(
+                                          child: ExpensePieChart(
+                                              expenseData: Map.from(_barCharData)..remove('Total')))
+                                      : SizedBox(
+                                          height: 200,
+                                          child: SingleChildScrollView(
+                                            child: CalendarChartWidget(
+                                              dayAmountMap: _calendarChartData,
+                                              durationType: _selectedDurationNotifier.value,
+                                              customDateRange: selectedDateRange,
+                                            ),
                                           ),
                                         ),
-                                      ),
+                            ),
                           ),
                         ),
                         ...primaryMetric
-                            .where((metric) =>
-                                metric.keys.first != 'Total')
+                            .where((metric) => metric.keys.first != 'Total')
                             .map((metric) {
                           final key = metric.keys.first;
                           final value = metric[key] ?? 0.0;
-                          final secondaryMetrics =
-                              _metricsData2[metric];
+                          final secondaryMetrics = _metricsData2[metric];
+                          final isSelected = _selectedKey == key;
                           return Column(children: [
-                            Container(
-                              margin: EdgeInsets.only(bottom: 8),
-                              child: Material(
-                                elevation: _settingsService
-                                        .getElevation()
-                                    ? (_selectedKey == key ? 4 : 2)
-                                    : 0,
-                                borderRadius:
-                                    BorderRadius.circular(10),
-                                color: Theme.of(context).cardColor,
-                                child: ListTile(
-                                  onTap: () {
-                                    setState(() {
-                                      _selectedKey =
-                                          _selectedKey == key
-                                              ? null
-                                              : key;
-                                    });
-                                  },
-                                  title: Text(
-                                    key,
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: _selectedKey ==
-                                                key
-                                            ? FontWeight.bold
-                                            : FontWeight.normal,
-                                        color: _selectedKey == key
-                                            ? Theme.of(context)
-                                                .primaryColor
-                                            : Theme.of(context)
-                                                .textTheme
-                                                .displayMedium
-                                                ?.color),
-                                  ),
-                                  trailing: Text(
-                                    '₹${value.toStringAsFixed(2)}',
-                                    style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: _selectedKey ==
-                                                key
-                                            ? FontWeight.bold
-                                            : FontWeight.normal,
-                                        color: _selectedKey == key
-                                            ? Theme.of(context)
-                                                .primaryColor
-                                            : Theme.of(context)
-                                                .textTheme
-                                                .displayMedium
-                                                ?.color),
+                            Card(
+                              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(16),
+                                onTap: () {
+                                  setState(() {
+                                    _selectedKey = isSelected ? null : key;
+                                  });
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                  child: ListTile(
+                                    leading: CircleAvatar(
+                                      backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: isSelected ? 0.15 : 0.08),
+                                      child: Icon(
+                                        isDebit ? Icons.arrow_downward : Icons.arrow_upward,
+                                        size: 18,
+                                        color: isSelected ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                                      ),
+                                    ),
+                                    title: Text(
+                                      key,
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                                        color: isSelected ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.onSurface,
+                                      ),
+                                    ),
+                                    trailing: Text(
+                                      '₹${value.toStringAsFixed(2)}',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                                        color: isSelected
+                                            ? (isDebit ? Colors.red : Colors.green)
+                                            : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
                             AnimatedSize(
-                                duration: const Duration(
-                                    milliseconds: 200),
-                                curve: Curves.easeInOut,
-                                child: _selectedKey == key &&
-                                        secondaryMetrics != null
-                                    ? Padding(
-                                        padding:
-                                            const EdgeInsets
-                                                    .symmetric(
-                                                horizontal: 30),
+                              duration: const Duration(milliseconds: 200),
+                              curve: Curves.easeInOut,
+                              child: isSelected && secondaryMetrics != null
+                                  ? Card(
+                                      margin: const EdgeInsets.symmetric(horizontal: 32, vertical: 2),
+                                      color: Theme.of(context).colorScheme.surface,
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(16),
                                         child: Column(
-                                          children: secondaryMetrics
-                                              .map((secondary) {
-                                            final secondaryMetricName =
-                                                secondary.keys
-                                                    .first;
-                                            final secondaryMetricValue =
-                                                secondary[secondaryMetricName] ??
-                                                    0.0;
-                                            return Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: [
-                                                Text(
-                                                  secondaryMetricName,
-                                                  style: TextStyle(
-                                                    fontSize: 14,
-                                                    color: Colors
-                                                        .grey[700],
+                                          children: secondaryMetrics.map((secondary) {
+                                            final secondaryMetricName = secondary.keys.first;
+                                            final secondaryMetricValue = secondary[secondaryMetricName] ?? 0.0;
+                                            return Padding(
+                                              padding: const EdgeInsets.symmetric(vertical: 4),
+                                              child: Row(
+                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                children: [
+                                                  Text(
+                                                    secondaryMetricName,
+                                                    style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
                                                   ),
-                                                ),
-                                                Text(
-                                                  '₹${secondaryMetricValue.toStringAsFixed(2)}',
-                                                  style: TextStyle(
-                                                    fontSize: 14,
-                                                    color: Colors
-                                                        .grey[700],
+                                                  Text(
+                                                    '₹${secondaryMetricValue.toStringAsFixed(2)}',
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                      fontWeight: FontWeight.w600,
+                                                      color: secondaryMetricValue > 0 ? (isDebit ? Colors.red : Colors.green) : null,
+                                                    ),
                                                   ),
-                                                )
-                                              ],
+                                                ],
+                                              ),
                                             );
                                           }).toList(),
                                         ),
-                                      )
-                                    : SizedBox.shrink()),
+                                      ),
+                                    )
+                                  : const SizedBox.shrink(),
+                            ),
                           ]);
                         }).toList(),
                       ]);
@@ -516,40 +514,51 @@ class _MetricsScreenState extends State<MetricsScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      body: Container(
-        padding: const EdgeInsets.all(10),
-        child: Column(children: [
-          Container(
-            child: TabBar(
-              controller: _tabController,
-              labelColor: Theme.of(context).primaryColor,
-              unselectedLabelColor: Colors.grey,
-              tabs: const [
-                Tab(text: 'Individual'),
-                Tab(text: 'Groups'),
-              ],
-            ),
+      body: Column(children: [
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            borderRadius: BorderRadius.circular(12),
           ),
-          Expanded(child: _buildMetricsContent()),
-        ]),
-      ),
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        color: Theme.of(context).appBarTheme.backgroundColor,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (selectedDateRange != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 2),
-                child: Text(
-                  '${_uiService.displayDay(selectedDateRange!.start)} - ${_uiService.displayDay(selectedDateRange!.end)}',
-                  style: const TextStyle(fontSize: 12),
+          child: TabBar(
+            controller: _tabController,
+            labelColor: Theme.of(context).colorScheme.primary,
+            unselectedLabelColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+            indicator: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
+            ),
+            indicatorSize: TabBarIndicatorSize.tab,
+            indicatorPadding: const EdgeInsets.all(4),
+            dividerColor: Colors.transparent,
+            tabs: const [
+              Tab(text: 'Individual'),
+              Tab(text: 'Groups'),
+            ],
+          ),
+        ),
+        Expanded(child: _buildMetricsContent()),
+      ]),
+      bottomNavigationBar: Card(
+        margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (selectedDateRange != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Text(
+                    '${_uiService.displayDay(selectedDateRange!.start)} - ${_uiService.displayDay(selectedDateRange!.end)}',
+                    style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.w500),
+                  ),
                 ),
-              ),
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                 DropdownButton<String>(
                   value: _selectedMetricBy.value,
+                  underline: const SizedBox(),
                   onChanged: (String? newValue) {
                     setState(() {
                       _selectedMetricBy.value = newValue!;
@@ -558,11 +567,12 @@ class _MetricsScreenState extends State<MetricsScreen>
                   items: metricsBy.map((String value) {
                     return DropdownMenuItem<String>(
                         value: value,
-                        child: Text(value, style: TextStyle(fontSize: 16)));
+                        child: Text(value, style: const TextStyle(fontSize: 14)));
                   }).toList(),
                 ),
                 DropdownButton<String>(
                   value: _selectedDurationNotifier.value,
+                  underline: const SizedBox(),
                   onChanged: (String? newValue) async {
                     if (newValue == 'Custom') {
                       DateTimeRange? getRange =
@@ -587,20 +597,22 @@ class _MetricsScreenState extends State<MetricsScreen>
                         value: value,
                         child: Text(
                           value,
-                          style: TextStyle(fontSize: 16),
+                          style: const TextStyle(fontSize: 14),
                         ));
                   }).toList(),
                 ),
                 TextButton(
-                  onPressed: () {
-                    _showMultiSelectDialog(context);
-                  },
-                  child: Text('Filter Types'),
+                  onPressed: () => _showMultiSelectDialog(context),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  ),
+                  child: const Text('Filter', style: TextStyle(fontSize: 13)),
                 )
               ]),
             ],
           ),
         ),
+      ),
     );
   }
 }

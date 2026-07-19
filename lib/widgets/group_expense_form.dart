@@ -105,7 +105,6 @@ class _GroupExpenseFormState extends State<GroupExpenseForm> {
             mainAxisSize: MainAxisSize.min,
             children: [
               DropdownButtonFormField<String>(
-                isDense: true,
                 value: _selectedUser,
                 items: widget.group.members.map((m) {
                   return DropdownMenuItem(
@@ -116,22 +115,18 @@ class _GroupExpenseFormState extends State<GroupExpenseForm> {
                 onChanged: (v) => setState(() => _selectedUser = v!),
                 decoration: const InputDecoration(
                   labelText: 'Mapped User',
-                  isDense: true,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 12),
               TextFormField(
                 controller: _nameController,
                 decoration: const InputDecoration(
                   labelText: 'Enter expense',
-                  isDense: true,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 ),
                 validator: (v) =>
                     v == null || v.isEmpty ? 'Expense is mandatory' : null,
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 12),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -140,8 +135,6 @@ class _GroupExpenseFormState extends State<GroupExpenseForm> {
                       controller: _priceController,
                       decoration: const InputDecoration(
                         labelText: 'Amount',
-                        isDense: true,
-                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                       ),
                       keyboardType:
                           const TextInputType.numberWithOptions(decimal: true),
@@ -149,74 +142,73 @@ class _GroupExpenseFormState extends State<GroupExpenseForm> {
                           v == null || v.isEmpty ? 'Amount is mandatory' : null,
                     ),
                   ),
-                  const SizedBox(width: 4),
-                  SizedBox(
-                    height: 44,
+                  const SizedBox(width: 8),
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3)),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: DropdownButton<String>(
                       value: _isCredit ? 'Credit' : 'Debit',
                       onChanged: (v) =>
                           setState(() => _isCredit = v == 'Credit'),
+                      underline: const SizedBox(),
                       items: const [
                         DropdownMenuItem(
-                            value: 'Debit', child: Text('Debit')),
+                            value: 'Debit', child: Text('Debit', style: TextStyle(fontSize: 13))),
                         DropdownMenuItem(
-                            value: 'Credit', child: Text('Credit')),
+                            value: 'Credit', child: Text('Credit', style: TextStyle(fontSize: 13))),
                       ],
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 12),
               if (selectedExpenseTypeId == -1)
                 Container(
-                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
                   alignment: Alignment.center,
-                  child: const Text('Create a type from expense type screen'),
+                  child: Text(
+                    'Create a type from expense type screen',
+                    style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 13),
+                  ),
                 )
               else ...[
                 DropdownButtonFormField<int>(
-                  isDense: true,
                   value: selectedExpenseTypeId,
                   items: _expenseService.getExpenseTypes().map((t) {
                     return DropdownMenuItem(
                       value: t.id,
-                      child: Text(t.name, style: const TextStyle(fontSize: 14)),
+                      child: Text(t.name),
                     );
                   }).toList(),
                   onChanged: (v) => setState(() => selectedExpenseTypeId = v!),
                   decoration: const InputDecoration(
                     labelText: 'Expense Type',
-                    isDense: true,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 12),
                 DropdownButtonFormField<int>(
-                  isDense: true,
                   value: _selectedAccountId,
                   items: accounts
                       .map((a) => DropdownMenuItem(
                             value: a.id,
-                            child: Text('${a.name} (${a.code})',
-                                style: const TextStyle(fontSize: 12)),
+                            child: Text('${a.name} (${a.code})'),
                           ))
                       .toList(),
                   onChanged: (v) => setState(() => _selectedAccountId = v),
                   decoration: const InputDecoration(
                     labelText: 'Payment Account',
-                    isDense: true,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                   ),
                   validator: (v) => v == null ? 'Select account' : null,
                 ),
               ],
-              const SizedBox(height: 4),
+              const SizedBox(height: 12),
               TextFormField(
                 controller: _descriptionController,
                 decoration: const InputDecoration(
-                  labelText: 'Description',
-                  isDense: true,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  labelText: 'Description (optional)',
                 ),
                 keyboardType: TextInputType.multiline,
                 maxLines: 2,

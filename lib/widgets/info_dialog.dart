@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class InfoDialog extends StatelessWidget {
@@ -16,8 +15,11 @@ class InfoDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-      title: Text(title),
+      title: Row(children: [
+        Icon(Icons.info_outline_rounded, color: Theme.of(context).colorScheme.primary, size: 24),
+        const SizedBox(width: 10),
+        Expanded(child: Text(title)),
+      ]),
       content: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
