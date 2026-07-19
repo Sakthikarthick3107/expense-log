@@ -2,9 +2,6 @@ import 'dart:io';
 import 'package:expense_log/screens/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:provider/provider.dart';
-
-import '../services/settings_service.dart';
 
 class AppDrawer extends StatefulWidget {
   final Function(int) onSelectScreen;
@@ -16,14 +13,32 @@ class AppDrawer extends StatefulWidget {
 }
 
 class _AppDrawerState extends State<AppDrawer> {
-  late SettingsService _settingsService;
-  late List<String> _screenNames = [];
+  final List<String> _screenNames = [
+    "Expenses",
+    "Types",
+    "Metrics",
+    "Groups",
+    "Audit Log",
+    "Downloads",
+    "Schedules",
+    "Accounts",
+  ];
+
+  final Map<String, IconData> screenIcons = {
+    "Expenses": Icons.calculate,
+    "Types": Icons.category_outlined,
+    "Metrics": Icons.auto_graph_outlined,
+    "Groups": Icons.groups,
+    "Audit Log": Icons.history,
+    "Downloads": Icons.download,
+    "Schedules": Icons.schedule,
+    "Accounts": Icons.account_balance_wallet_rounded,
+  };
 
   @override
   void initState() {
     super.initState();
-    _settingsService = Provider.of<SettingsService>(context, listen: false);
-    loadMenuOrder();
+    requestStoragePermission();
   }
 
   Future<void> requestStoragePermission() async {
@@ -37,24 +52,6 @@ class _AppDrawerState extends State<AppDrawer> {
       openAppSettings();
     }
   }
-
-  Future<void> loadMenuOrder() async {
-    List<String> order = await _settingsService.getScreenOrder();
-    setState(() {
-      _screenNames = order;
-    });
-  }
-
-  final Map<String, IconData> screenIcons = {
-    "Expenses": Icons.calculate,
-    "Types": Icons.category_outlined,
-    "Metrics": Icons.auto_graph_outlined,
-    "Groups": Icons.groups,
-    "Audit Log": Icons.history,
-    "Downloads": Icons.download,
-    "Schedules": Icons.schedule,
-    "Accounts": Icons.account_balance_wallet_rounded,
-  };
 
   @override
   Widget build(BuildContext context) {

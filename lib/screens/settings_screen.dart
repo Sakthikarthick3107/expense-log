@@ -19,7 +19,6 @@ import 'package:share_plus/share_plus.dart';
 
 import '../main.dart';
 import '../utility/preset_colors.dart';
-import '../widgets/screen_order_popup.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -79,14 +78,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (await canLaunchUrl(emailUri)) {
       await launchUrl(emailUri);
     }
-  }
-
-  void showReorderPopup(BuildContext context, List<String> screens,
-      Function(List<String>) onSave) {
-    showDialog(
-      context: context,
-      builder: (context) => ScreenOrderPopup(screens: screens, onSave: onSave),
-    );
   }
 
   @override
@@ -386,24 +377,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   }).toList(),
                 ),
                 onTap: () {},
-              ),
-              ListTile(
-                onTap: () {
-                  List<String> screens = _settingsService.getScreenOrder();
-
-                  showReorderPopup(context, screens, (newOrder) async {
-                    AuditLogService.writeLog(
-                        "Updated Order: ${newOrder.join(',')}");
-                    await _settingsService.saveScreenOrder(newOrder);
-                    MessageWidget.showToast(
-                        context: context,
-                        message: 'Closing application for reorder settings');
-                    Future.delayed(Duration(seconds: 4), () {
-                      exit(0);
-                    });
-                  });
-                },
-                title: Text('Customize Navigation'),
               ),
               Text('Background'),
               // ListTile(

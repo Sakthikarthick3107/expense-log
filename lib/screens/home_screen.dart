@@ -38,7 +38,6 @@ class _HomeScreenState extends State<HomeScreen> {
   User? user;
   late SettingsService _settingsService;
   late UiService _uiService;
-  late List<Widget> orderScreens = [];
 
   @override
   void initState() {
@@ -56,7 +55,6 @@ class _HomeScreenState extends State<HomeScreen> {
       final appUpdate = AppUpdate();
       appUpdate.checkForUpdates(context);
       welcomeGreeting();
-      reorderScreens();
     });
     _fetchVersion();
   }
@@ -79,25 +77,6 @@ class _HomeScreenState extends State<HomeScreen> {
     const AccountsListScreen(),
     const SettingsScreen()
   ];
-
-  Future<void> reorderScreens() async {
-    List<String> savedOrder = await _settingsService.getScreenOrder();
-    List<String> defaultOrder =
-        await _settingsService.getScreenOrder(getDefault: true);
-    List<Widget> orderedScreens = [];
-
-    for (String screen in savedOrder) {
-      int index = defaultOrder.indexOf(screen);
-      if (index != -1) {
-        orderedScreens.add(_screens[index]);
-      }
-    }
-    orderedScreens.add(_screens.last);
-
-    setState(() {
-      orderScreens = orderedScreens;
-    });
-  }
 
   Future<void> _fetchVersion() async {
     final packageInfo = await PackageInfo.fromPlatform();
@@ -250,7 +229,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
             actions: [
-              if (orderScreens[_currentIndex].runtimeType == MetricsScreen)
+              if (_screens[_currentIndex].runtimeType == MetricsScreen)
                 Padding(
                   padding: const EdgeInsets.only(right: 4),
                   child: Container(
@@ -278,7 +257,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
-              if (orderScreens[_currentIndex].runtimeType == DownloadsScreen)
+              if (_screens[_currentIndex].runtimeType == DownloadsScreen)
                 Padding(
                   padding: const EdgeInsets.only(right: 8),
                   child: Tooltip(
@@ -314,11 +293,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Row(
                     children: [
                       AppDrawer(onSelectScreen: _onDrawerItemSelected),
-                      Expanded(child: orderScreens[_currentIndex])
+                      Expanded(child: _screens[_currentIndex])
                     ],
                   ),
                 )
-              : orderScreens[_currentIndex],
+              : _screens[_currentIndex],
         );
       }),
     );

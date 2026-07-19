@@ -279,45 +279,7 @@ class SettingsService with ChangeNotifier {
     return null;
   }
 
-  List<String> getScreenOrder({bool getDefault = false}) {
-    var defaultOrder = [
-      "Expenses",
-      "Types",
-      "Metrics",
-      "Groups",
-      "Collections",
-      "Audit Log",
-      "Downloads",
-      "Schedules",
-      "Accounts"
-    ];
 
-    if (getDefault) {
-      return defaultOrder;
-    }
-
-    var screenOrders = _settingsBox.get('screenOrder');
-
-    if (screenOrders != null &&
-        screenOrders is List &&
-        screenOrders.length == defaultOrder.length) {
-      return screenOrders
-          .map((e) => e.toString() == 'UPI Logs' ? 'Audit Log' : e.toString())
-          .toList();
-    }
-
-    return defaultOrder;
-  }
-
-  Future<void> saveScreenOrder(List<String> updatedOrder) async {
-    try {
-      await _settingsBox.put('screenOrder', updatedOrder);
-      AuditLogService.writeLog('App screen order is changed');
-    } catch (e) {
-      AuditLogService.writeLog('Error while saving app screen order');
-    }
-    notifyListeners();
-  }
 
   String landingMetric() {
     String landingMetric =
