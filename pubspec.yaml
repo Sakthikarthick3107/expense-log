@@ -46,6 +46,7 @@ dependencies:
   table_calendar: ^3.0.8
   flutter_markdown: ^0.7.7+1
   telephony: ^0.2.0
+  speech_to_text: ^7.0.0
 
 
 dev_dependencies:

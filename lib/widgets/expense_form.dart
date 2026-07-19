@@ -1,15 +1,16 @@
+import 'package:expense_log/models/account.dart';
 import 'package:expense_log/models/expense2.dart';
 import 'package:expense_log/models/group.dart';
+import 'package:expense_log/services/accounts_service.dart';
 import 'package:expense_log/services/expense_service.dart';
 import 'package:expense_log/services/group_service.dart';
 import 'package:expense_log/services/settings_service.dart';
 import 'package:expense_log/services/ui_service.dart';
 import 'package:expense_log/widgets/info_dialog.dart';
 import 'package:expense_log/widgets/message_widget.dart';
+import 'package:expense_log/widgets/voice_input.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:expense_log/services/accounts_service.dart';
-import 'package:expense_log/models/account.dart';
 
 class ExpenseForm extends StatefulWidget {
   final DateTime expenseDate;
@@ -90,6 +91,41 @@ class _ExpenseFormState extends State<ExpenseForm> {
     _descriptionController.dispose();
   }
 
+  void _onVoiceResult(VoiceParseResult result) {
+    if (result.amount != null) _priceController.text = result.amount!;
+    if (result.typeName != null) {
+      final match = _expenseService.getExpenseTypes().where(
+          (t) => t.name.toLowerCase() == result.typeName!.toLowerCase());
+      if (match.isNotEmpty) selectedExpenseTypeId = match.first.id;
+    }
+    if (result.isCredit != null) _isCredit = result.isCredit!;
+    if (result.accountName != null) {
+      final accounts = Provider.of<AccountsService>(context, listen: false).all;
+      final match = accounts.where(
+          (a) => a.name.toLowerCase() == result.accountName!.toLowerCase());
+      if (match.isNotEmpty) _selectedAccountId = match.first.id;
+    }
+    if (result.groupName != null) {
+      final groups = Provider.of<GroupService>(context, listen: false).getGroups();
+      final match = groups.where(
+          (g) => g.name.toLowerCase() == result.groupName!.toLowerCase());
+      if (match.isNotEmpty) {
+        _selectedGroupId = match.first.id;
+        _selectedGroupUser = 'Me';
+      }
+    }
+    if (result.groupUserName != null && _selectedGroupId != null) {
+      _selectedGroupUser = result.groupUserName!;
+    }
+    if (_nameController.text.isEmpty || result.fullText.isNotEmpty) {
+      _nameController.text = result.fullText;
+    }
+    MessageWidget.showToast(
+        context: context,
+        message: 'Voice input captured',
+        status: 1);
+  }
+
   @override
   Widget build(BuildContext context) {
     final accounts = Provider.of<AccountsService>(context).all;
@@ -103,19 +139,38 @@ class _ExpenseFormState extends State<ExpenseForm> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Enter expense',
-                  isDense: true,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Expense is mandatory';
-                  }
-                  return null;
-                },
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _nameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Enter expense',
+                        isDense: true,
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Expense is mandatory';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                  if (widget.expense == null)
+                    VoiceInputButton(
+                      onResult: _onVoiceResult,
+                      expenseTypeNames: _expenseService
+                          .getExpenseTypes()
+                          .map((t) => t.name)
+                          .toList(),
+                      accountNames: Provider.of<AccountsService>(context, listen: false)
+                          .all.map((a) => a.name).toList(),
+                      groupNames: Provider.of<GroupService>(context, listen: false)
+                          .getGroups().map((g) => g.name).toList(),
+                    ),
+                ],
               ),
 
               Row(
