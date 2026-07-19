@@ -94,7 +94,7 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                       return Container(
                           margin: EdgeInsets.all(4),
                           child: Material(
-                              elevation: settingsService.getElevation() ? 4 : 0,
+                              elevation: 2,
                               borderRadius: BorderRadius.circular(10),
                               color: Theme.of(context).cardColor,
                               child: ListTile(

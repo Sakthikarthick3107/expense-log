@@ -81,10 +81,8 @@ class _ExpenseTypeScreenState extends State<ExpenseTypeScreen> {
                               );
                             },
                             child: Card(
-                              elevation: settingsService.getElevation() ? 8 : 0,
-                              color: settingsService.getElevation()
-                                  ? Theme.of(context).cardColor
-                                  : Colors.transparent,
+                              elevation: 2,
+                              color: Theme.of(context).cardColor,
                               child: Container(
                                   padding: EdgeInsets.symmetric(
                                       horizontal: 8, vertical: 12),
