@@ -123,31 +123,19 @@ class VoiceInputButton extends StatefulWidget {
 class _VoiceInputButtonState extends State<VoiceInputButton> {
   final stt.SpeechToText _speech = stt.SpeechToText();
   bool _isListening = false;
-  bool _available = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _initSpeech();
-  }
-
-  Future<void> _initSpeech() async {
-    final available = await _speech.initialize();
-    if (mounted) setState(() => _available = available);
-  }
 
   Future<void> _listen() async {
     if (_isListening) {
       _speech.stop();
-      setState(() => _isListening = false);
+      if (mounted) setState(() => _isListening = false);
       return;
     }
 
-    final hasPermission = await _speech.initialize();
-    if (!hasPermission) {
+    final available = await _speech.initialize();
+    if (!available) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Microphone permission denied')),
+          const SnackBar(content: Text('Speech recognition not available on this device')),
         );
       }
       return;
@@ -174,14 +162,16 @@ class _VoiceInputButtonState extends State<VoiceInputButton> {
 
   @override
   Widget build(BuildContext context) {
-    if (!_available) return const SizedBox.shrink();
     return IconButton(
       icon: Icon(
         _isListening ? Icons.mic : Icons.mic_none,
-        color: _isListening ? Colors.red : null,
+        size: 20,
+        color: _isListening ? Colors.red : Colors.grey[600],
       ),
       onPressed: _listen,
       tooltip: _isListening ? 'Listening...' : 'Voice input',
+      constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+      padding: const EdgeInsets.all(6),
     );
   }
 }
